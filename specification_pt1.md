@@ -18,7 +18,7 @@ map is updated each time there's a new measurement using a probabilistic mapping
 function.  
 Furthermore, feature identification and cleanup algorithms need to be applied to
 the sonar data in order to remove noise (multiple reflections, echos, self
-reflections, and multipath euros) and make it usable for mapping.
+reflections, and multipath errors) and make it usable for mapping.
 
 In this first part of the project, we intend to develop the 2D view of the map
 and assume that the sonar is static (i.e. not moving between measurements).
