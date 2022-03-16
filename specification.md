@@ -47,6 +47,8 @@ These are the functionalities planned for this first part of the project.
   - Edge Detection, Differential Threshold, Range to first feature;
 - Probabilistic Mapping:
   - Inverse Model Estimator;
+- Ray casting:
+  - #d Bresenham algorithm.
 
 ## Planned robustness and scalability requirements
 
