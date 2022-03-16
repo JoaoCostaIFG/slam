@@ -1,36 +1,66 @@
 # Problem Specification
 
-## Empirical Analysis
-Mostrar o result
-Mas tambem fazer grafos e mostrar como da scale
-
 ## Problem
-Algoritmos de SLAM (Simultaneous Localization and Mapping) têm por objetivo o mapeamento do ambiente navegado por um veículo autónomo, localizando simultaneamente o mesmo no mapa construído, sem o recurso a mapas pré-existentes ou dispositivos externos. Este projeto incidirá na aplicação de algoritmos de SLAM em contexto de navegação subaquática recorrendo a instrumentos sonar.
+
+The goal of SLAM algorithms (Simultaneous Localization and Mapping) is to map an
+environment navigated by and autonomous vehicle, while simultaneously locating
+it in the map, without aces to per-existing maps or external devices. This
+project will focus on applying SLAM algorithms in the context of sub-aquatic
+navigation using a sonar device.
+
+The group will have access to sonar data measured by CRAS.
 
 ## Goals
-O objetivo passa por desenvolver um sistema de mapeamento denso focado nos espaços vazios do ambiente (o que permite inferir sobre os obstáculos presentes no mesmo).
+
+The goal is to develop a densely mapped system using empty spaces in the
+environment (which allows to infer obstacle's positions). The information on the
+map is updated each time there's a new measurement using a probabilistic mapping
+function.  
+Furthermore, feature identification and cleanup algorithms need to be applied to
+the sonar data in order to remove noise (multiple reflections, echos, self
+reflections, and multipath euros) and make it usable for mapping.
+
+In this first part of the project, we intend to develop the 2D view of the map
+and assume that the sonar is static (i.e. not moving between measurements).
 
 ## Functionalities
-+ Filtrar noise/efeitos indesejáveis nos dados
-+ Octrees e Octomaps
-+ Algoritmos probabilisticos de mapeamento
-	+ Estatico
-	+ Dinamico
-+ Adaptar para sistema em tempo real
+
+These are the functionalities planned for this first part of the project.
+
+- **Filter noise**/undesirable effects in data;
+- Represent map using an **Octomap/Octree**;
+- Implement static/dynamic **probabilistic mapping algorithms** based on sonar
+  data;
+- Support **incremental map growth**;
 
 ### Data Structures
-+ Octrees/Octomaps
-+ Listas hahahahha
+
+- Octrees/Octomaps
+  - Update a cell with a given probability
+  - Split a region into smaller cells
 
 ### Planned algorithms
-+ Filtrar dados
-	+ Kalman Filter, Extended Kalman Filter, Partifcle Filter
-+ Heuristicas para tratamento de dados
-	+ Edge Detection, Differencial Threshold, Range to first feature
-+ Mapeamento probabilistico
-	+ Inverse Model Estimator - Hornung Approach
+
+- Sonar data Filtering:
+  - Kalman Filter, Extended Kalman Filter, Particle Filter;
+- Heuristics for Data Cleaning:
+  - Edge Detection, Differential Threshold, Range to first feature;
+- Probabilistic Mapping:
+  - Inverse Model Estimator;
+
 ## Planned robustness and scalability requirements
-+ Eficiente para ser usado em tempo real (40 ms per measure)
-	+ Tem de funcionar para sonars mais rápidos
-+ Robusto a limitação de recursos (pc's do padoru)
-+ Eficiência em espaço
+
+- **Spacial efficiency** - The sub-aquatic environment can be enormous, as such,
+  the system must store the map in an efficient and scalable manner;
+- **Time efficiency** - The system must be efficient in a way that can keep with
+  sonar data in real time (about 40ms between measures). There's also
+  constraints related to the vehicle velocity: data in the direction the vehicle
+  is moving needs to be incorporated into the map quickly enough to avoid
+  collisions;
+- **Lightweight** - The system must be robust to limited hardware resources.
+
+## Planning
+
+- Problem definition and data structures (Mar 21) - João Costa
+- Key algorithms (Mar 28) - João Martins
+- Empirical analysis (Apr 4) - Henrique Ribeiro e Tiago Silva
