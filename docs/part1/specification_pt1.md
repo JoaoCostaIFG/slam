@@ -35,9 +35,10 @@ These are the functionalities planned for this first part of the project.
 
 ### Data Structures
 
-- Octrees/Octomaps
-  - Update a cell with a given probability
-  - Split a region into smaller cells
+- Octrees/Octomaps. Operations:
+  - Insert node;
+  - Remove node;
+  - Search node.
 
 ### Planned algorithms
 
