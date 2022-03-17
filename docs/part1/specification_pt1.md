@@ -3,7 +3,7 @@
 ## Problem
 
 The goal of SLAM algorithms (Simultaneous Localization and Mapping) is to map an
-environment navigated by and autonomous vehicle, while simultaneously locating
+environment navigated by an autonomous vehicle, while simultaneously locating
 it in the map, without access to pre-existing maps or external devices. This
 project will focus on applying SLAM algorithms in the context of sub-aquatic
 navigation using a sonar device.
