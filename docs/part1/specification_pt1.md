@@ -48,7 +48,7 @@ These are the functionalities planned for this first part of the project.
 - Probabilistic Mapping:
   - Inverse Model Estimator;
 - Ray casting:
-  - #d Bresenham algorithm.
+  - Bresenham algorithm.
 
 ## Planned robustness and scalability requirements
 
