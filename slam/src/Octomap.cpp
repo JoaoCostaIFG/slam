@@ -1,5 +1,7 @@
 #include "../include/octomap/Octomap.h"
 
+using namespace octomap;
+
 Octomap::Octomap(const unsigned int maxDepth) : maxDepth(maxDepth) {
     this->rootNode = Ocnode();
 }

@@ -4,6 +4,8 @@
 
 #include "../include/octomap/Ocnode.h"
 
+using namespace octomap;
+
 Ocnode::Ocnode() {
     this->occupancy = OCCUP_UNKOWN;
 }
