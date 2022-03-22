@@ -18,7 +18,7 @@ namespace octomap {
 
         Octomap();
 
-        Ocnode updateNode(const Vector3 &location);
+        Ocnode *updateNode(const Vector3 &location);
     };
 }
 

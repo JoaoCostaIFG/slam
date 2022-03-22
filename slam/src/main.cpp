@@ -6,11 +6,11 @@ using namespace std;
 using namespace octomap;
 
 int main() {
-    Vector3 v1 = Vector3(1, 2, 3);
-    Vector3 v2 = Vector3(1, 2, 4);
+    Vector3 p1 = Vector3(1, 2, 3);
 
-    cout << v1 << endl << v2 << endl;
-    cout << ((v1 == v2) ? "equal" : "not equal") << endl;
+    std::cout << p1 << std::endl;
+    Octomap o = Octomap();
+    o.updateNode(p1);
 
-    return 0;
+    return EXIT_SUCCESS;
 }
