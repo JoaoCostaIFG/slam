@@ -13,7 +13,7 @@ Ocnode::Ocnode() {
 
 Ocnode::~Ocnode() {
     // TODO :)
-    //delete this->children;
+    delete [] this->children;
 }
 
 Ocnode *Ocnode::getChild(unsigned int pos) const {

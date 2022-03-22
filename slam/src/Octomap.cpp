@@ -11,7 +11,7 @@ Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
     this->rootNode = Ocnode();
 
     // pre-calculate step sizes
-    this->stepLookupTable.reserve(this->depth);
+    this->stepLookupTable.reserve(this->depth + 1);
     for (unsigned int i = 0; i <= this->depth; ++i) {
         // equivalent to: 2^depth * resolution
         this->stepLookupTable[i] = this->resolution * double(1 << (this->depth - i));
