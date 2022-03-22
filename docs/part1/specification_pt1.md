@@ -28,7 +28,7 @@ and assume that the sonar is static (i.e. not moving between measurements).
 These are the functionalities planned for this first part of the project.
 
 - **Filter noise**/undesirable effects in data;
-- Represent map using an **Octomap/Octree**;
+- Represent map using an **Octomap/Octomap**;
 - Implement static/dynamic **probabilistic mapping algorithms** based on sonar
   data;
 - Support **incremental map growth**;
