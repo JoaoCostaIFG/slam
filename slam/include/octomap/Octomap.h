@@ -12,13 +12,25 @@ namespace octomap {
     private:
         const unsigned int maxDepth;
         const float resolution; // in meters
+
+        unsigned int size = 1;
+
+        // number of nodes in the tree (starts with 1 root node)
         Ocnode rootNode;
     public:
         Octomap(unsigned int maxDepth, float resolution);
 
         Octomap();
 
-        Ocnode updateNode(const Vector3 &location);
+        unsigned int getSize() const {
+            return this->size;
+        }
+
+        Ocnode *updateNode(const Vector3 &location);
+
+        bool writeBinary(std::ostream &os);
+
+        bool writeBinary(const std::string& filename);
     };
 }
 

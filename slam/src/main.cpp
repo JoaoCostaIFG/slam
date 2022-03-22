@@ -6,11 +6,20 @@ using namespace std;
 using namespace octomap;
 
 int main() {
-    Vector3 v1 = Vector3(1, 2, 3);
-    Vector3 v2 = Vector3(1, 2, 4);
+    Octomap o = Octomap();
 
-    cout << v1 << endl << v2 << endl;
-    cout << ((v1 == v2) ? "equal" : "not equal") << endl;
+    for (int x = -20; x < 20; x++) {
+        for (int y = -20; y < 20; y++) {
+            for (int z = -20; z < 20; z++) {
+                Vector3 endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
+                // integrate 'occupied' measurement
+                Ocnode *node = o.updateNode(endpoint);
+                node->setOccupancy(1.0);
+            }
+        }
+    }
 
-    return 0;
+    o.writeBinary("rust.bt");
+
+    return EXIT_SUCCESS;
 }
