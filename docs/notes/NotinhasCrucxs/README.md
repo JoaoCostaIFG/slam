@@ -61,3 +61,58 @@ P(o | S) = (P(S|o) \* P(o)) / P(S)
 ![Eq2](img/SLAMEq2.png)
 3. Que pode ser estimado com logs (mais eficiente)  
 ![Eq3](img/SLAMEq3.png)
+
+## Filter Methods
+Maximize signal to noise ratio
++ Keep most of detail while removing all the noise
++ Removing too much noise => Losing some detail
+
+Most are used for the localization problem
++ Probably won't look into this until 2nd part
+
+Temos algoritmos parecidos com Image processing
++ Median, Median, Gaussian filter, etc ...
+Tb há sensor fusion algorithms
++ Combinam sensory data de forma para reduzir uncertainty nos dados
+
+### Bayes Filter
+Estimates state based on measurements and previous state
+Modelo de probabilidade que está presente no sensor do sonar:
++ Se tamos a 5 metros então em algumas measures vamos ter 4.8 metros, 5.2, etc... => Assumimos que segue gaussian
++ Só util quando sistema está em movimento?
+
+We can use gaussian function to describe de state => If we multiply it we get another gaussian distribution
+TODO Verificar se esta parte é do kalman filter ou do kalman filter
+
+### Extended Kalman Filter
+
+Extend so that it works with non linear distribution
++ Use taylor series to estimate function into linear function
+  + Mas quando parar?
++ Compute jacobian em cada iteration do algoritmo (pq declive pode variar ao longo da funcao)
+
+X\_i = F\_i \* X\_i-1 + B\_i * U\_i
+
+We make a linear assumption in the state (F function)
+Every state follows a gaussian distribution - round the mean around covariance
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
