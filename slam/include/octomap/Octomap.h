@@ -1,28 +1,32 @@
 #ifndef SLAM_OCTOMAP_H
 #define SLAM_OCTOMAP_H
 
+#include <vector>
+
 #include "Ocnode.h"
 #include "Vector3.h"
 
 #define DFLT_MAX_DEPTH 16
-#define DFLT_RESOLUTION 0.01f
+#define DFLT_RESOLUTION 0.1
 
 namespace octomap {
     class Octomap {
     private:
-        const unsigned int maxDepth;
-        const float resolution; // in meters
+        const unsigned int depth;
+        const double resolution; // in meters
 
-        unsigned int size = 1;
+        Vector3 treeCenter;
+        std::vector<double> stepLookupTable;
 
         // number of nodes in the tree (starts with 1 root node)
+        unsigned int size = 1;
         Ocnode rootNode;
     public:
-        Octomap(unsigned int maxDepth, float resolution);
+        Octomap(unsigned int maxDepth, double resolution);
 
         Octomap();
 
-        unsigned int getSize() const {
+        [[nodiscard]] unsigned int getSize() const {
             return this->size;
         }
 

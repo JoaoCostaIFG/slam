@@ -2,6 +2,7 @@
 // Created by joao on 3/22/22.
 //
 
+#include <iostream>
 #include "../include/octomap/Ocnode.h"
 
 using namespace octomap;
@@ -66,6 +67,7 @@ void Ocnode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &child
             }
         } else {
             // 00 : child is unknown node
+            std::cout << "unknown" << std::endl;
             childBitset[i * 2] = 0;
             childBitset[i * 2 + 1] = 0;
         }

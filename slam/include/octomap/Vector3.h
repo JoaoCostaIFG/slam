@@ -13,11 +13,14 @@ namespace octomap {
     private:
         float d[3];
     public:
-        Vector3(float x, float y, float z) : d{x, y, z} {
-        }
+        Vector3(float x, float y, float z) : d{x, y, z} {}
 
-        Vector3(Vector3 &o) : Vector3(o.x(), o.y(), o.z()) {
-        }
+        Vector3() : d{0, 0, 0} {}
+
+        explicit Vector3(float n) : d{n, n, n} {}
+
+        // copy constructor
+        Vector3(Vector3 &o) : Vector3(o.x(), o.y(), o.z()) {}
 
         const float &operator[](unsigned int i) const {
             assert(i < 3);
@@ -49,7 +52,7 @@ namespace octomap {
         }
 
         [[nodiscard]] bool atLeft(const Vector3 &other) const {
-            return this->x() < other.x();
+            return this->x() <= other.x();
         }
 
         [[nodiscard]] bool atRight(const Vector3 &other) const {
@@ -57,7 +60,7 @@ namespace octomap {
         }
 
         [[nodiscard]] bool atBack(const Vector3 &other) const {
-            return this->z() < other.z();
+            return this->z() <= other.z();
         }
 
         [[nodiscard]] bool atFront(const Vector3 &other) const {
@@ -65,7 +68,7 @@ namespace octomap {
         }
 
         [[nodiscard]] bool atDown(const Vector3 &other) const {
-            return this->y() < other.y();
+            return this->y() <= other.y();
         }
 
         [[nodiscard]] bool atUp(const Vector3 &other) const {

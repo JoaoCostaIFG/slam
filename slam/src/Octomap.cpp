@@ -6,9 +6,18 @@
 
 using namespace octomap;
 
-Octomap::Octomap(const unsigned int maxDepth, const float resolution) :
-        maxDepth(maxDepth), resolution(resolution) {
+Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
+        depth(maxDepth), resolution(resolution) {
     this->rootNode = Ocnode();
+
+    // pre-calculate step sizes
+    this->stepLookupTable.reserve(this->depth);
+    for (unsigned int i = 0; i <= this->depth; ++i) {
+        // equivalent to: 2^depth * resolution
+        this->stepLookupTable[i] = this->resolution * double(1 << (this->depth - i));
+    }
+    // tree center for calculations
+    this->treeCenter = Vector3(this->stepLookupTable[1]);
 }
 
 Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {
@@ -16,16 +25,16 @@ Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {
 
 Ocnode *Octomap::updateNode(const Vector3 &location) {
     Ocnode *currNode = &this->rootNode;
-    Vector3 currPos = Vector3(0, 0, 0);
+    auto currPos = Vector3(this->treeCenter);
 
-    for (unsigned int i = 0; i < this->maxDepth; ++i) {
+    for (unsigned int i = 0; i < this->depth; ++i) {
         if (!currNode->hasChildren()) {
             currNode->splitNode();
             this->size += 8;
         }
 
         int pos = 0;
-        float step = (float) pow(2.0, this->maxDepth - i) * this->resolution;
+        double step = (float) this->stepLookupTable[i + 1];
         auto nextPos = Vector3(currPos);
         if (currPos.atLeft(location)) {
             pos += RIGHT;
@@ -48,9 +57,9 @@ Ocnode *Octomap::updateNode(const Vector3 &location) {
 
         currNode = currNode->getChild(pos);
         currPos = nextPos;
+        std::cout << currPos << std::endl;
     }
 
-    // std::cout << currPos << std::endl;
     return currNode;
 }
 
