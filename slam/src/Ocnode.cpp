@@ -10,6 +10,14 @@ Ocnode::Ocnode() {
     this->occupancy = OCCUP_UNKOWN;
 }
 
+Ocnode::~Ocnode() {
+    delete this->children;
+}
+
 float Ocnode::getOccupancy() const {
     return occupancy;
+}
+
+void Ocnode::splitnode() {
+    this->children = new Ocnode[8];
 }
