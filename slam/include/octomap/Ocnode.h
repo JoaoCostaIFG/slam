@@ -49,7 +49,7 @@ namespace octomap {
         }
 
         bool isFree() const {
-            return !this->isOccupied();
+            return this->occupancy < OCCUP_UNKOWN;
         }
 
         void splitNode();

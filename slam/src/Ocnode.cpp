@@ -89,9 +89,7 @@ void Ocnode::writeBinary(std::ostream &os) const {
     for (unsigned int i = 0; i < 8; i++) {
         if (this->childExists(i)) {
             const Ocnode *child = this->getChild(i);
-            if (child->hasChildren()) {
-                child->writeBinary(os);
-            }
+            if (child->hasChildren()) child->writeBinary(os);
         }
     }
 }

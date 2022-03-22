@@ -19,8 +19,6 @@ int main() {
         }
     }
 
-    cout << o.getSize() << endl;
-
     o.writeBinary("rust.bt");
 
     return EXIT_SUCCESS;
