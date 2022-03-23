@@ -24,11 +24,12 @@ Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {
 
 Ocnode *Octomap::updateNode(const Vector3 &location) {
     Ocnode *currNode = &this->rootNode;
-    auto currPos = Vector3(this->treeCenter);
+    //auto currPos = Vector3(this->treeCenter);
+    auto currPos = Vector3();
 
     for (unsigned int i = 0; i < this->depth; ++i) {
         int pos = 0;
-        double step = (float) this->stepLookupTable[i + 1];
+        auto step = (float) (this->stepLookupTable[i + 1]); // query 1 ahead = divide by 2
         auto nextPos = Vector3(currPos);
         if (currPos.atLeft(location)) {
             pos += RIGHT;
