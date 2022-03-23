@@ -28,15 +28,15 @@ namespace octomap {
         }
 
         [[nodiscard]] float x() const {
-            return this->operator[](0);
+            return (*this)[0];
         }
 
         [[nodiscard]] float y() const {
-            return this->operator[](1);
+            return (*this)[1];
         }
 
         [[nodiscard]] float z() const {
-            return this->operator[](2);
+            return (*this)[2];
         }
 
         void setX(float x) {
@@ -77,7 +77,7 @@ namespace octomap {
 
         bool operator==(const Vector3 &rhs) const {
             for (int i = 0; i < 3; ++i) {
-                if (this->operator[](i) != rhs[i])
+                if ((*this)[i] != rhs[i])
                     return false;
             }
             return true;
