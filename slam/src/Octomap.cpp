@@ -37,7 +37,7 @@ OcNode *Octomap::setOccupancy(const Vector3 &location, const float occ) {
 bool Octomap::writeBinary(std::ostream &os) {
     os << "# Octomap OcTree binary file\n";
     os << "id OcTree\n";
-    os << "size " << this->size << std::endl;
+    os << "size " << this->getSize() << std::endl;
     os << "res " << this->resolution << std::endl;
     os << "data" << std::endl;
     if (this->rootNode == nullptr) return false;

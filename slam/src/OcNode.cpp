@@ -21,6 +21,16 @@ OcNode::~OcNode() {
     delete[] this->children;
 }
 
+unsigned int OcNode::getChildCount() const {
+    if (this->children == nullptr) return 0;
+    unsigned int ret = 0;
+    for (int i = 0; i < 8; ++i) {
+        OcNode *child = this->children[i];
+        if (child != nullptr) ret += child->getChildCount() + 1;
+    }
+    return ret;
+}
+
 OcNode *OcNode::getChild(unsigned int pos) const {
     assert(pos < 8);
     if (this->children == nullptr) return nullptr;
@@ -85,7 +95,6 @@ OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, con
     // follow down to last level
     if (depth > 0) {
         unsigned int pos = key.getStep(d);
-        std::cout << pos << std::endl;
         if (!this->childExists(pos)) {
             // child does not exist, but maybe it's a pruned node?
             if (!this->hasChildren() && !justCreated) {
@@ -114,7 +123,6 @@ OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, con
         this->updateOccBasedOnChildren();
         return child;
     } else { // at last level, update node, end of recursion
-        std::cout << "pe" << std::endl;
         this->setOccupancy(occ);
         return this;
     }

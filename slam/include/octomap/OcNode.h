@@ -37,6 +37,8 @@ namespace octomap {
 
         ~OcNode();
 
+        [[nodiscard]] unsigned int getChildCount() const;
+
         [[nodiscard]] OcNode *getChild(unsigned int pos) const;
 
         OcNode *createChild(unsigned int pos);
