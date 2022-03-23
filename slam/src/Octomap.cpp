@@ -1,4 +1,3 @@
-#include <cmath>
 #include <iostream>
 #include <fstream>
 
@@ -17,7 +16,7 @@ Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
         this->stepLookupTable[i] = this->resolution * double(1 << (this->depth - i));
     }
     // tree center for calculations
-    this->treeCenter = Vector3(this->stepLookupTable[1]);
+    this->treeCenter = Vector3((float) (this->stepLookupTable[0] / 2.0));
 }
 
 Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {
@@ -28,11 +27,6 @@ Ocnode *Octomap::updateNode(const Vector3 &location) {
     auto currPos = Vector3(this->treeCenter);
 
     for (unsigned int i = 0; i < this->depth; ++i) {
-        if (!currNode->hasChildren()) {
-            currNode->splitNode();
-            this->size += 8;
-        }
-
         int pos = 0;
         double step = (float) this->stepLookupTable[i + 1];
         auto nextPos = Vector3(currPos);
@@ -55,6 +49,10 @@ Ocnode *Octomap::updateNode(const Vector3 &location) {
             nextPos.setY(nextPos.y() - step);
         }
 
+        if (!currNode->childExists(pos)) {
+            ++this->size;
+            currNode->createChild(pos);
+        }
         currNode = currNode->getChild(pos);
         currPos = nextPos;
         std::cout << currPos << std::endl;

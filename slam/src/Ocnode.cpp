@@ -12,35 +12,46 @@ Ocnode::Ocnode() {
 }
 
 Ocnode::~Ocnode() {
-    // TODO :)
-    delete [] this->children;
+    if (this->children != nullptr) {
+        for (int i = 0; i < 8; ++i) {
+            delete this->children[i];
+        }
+    }
+    delete[] this->children;
 }
 
 Ocnode *Ocnode::getChild(unsigned int pos) const {
     assert(pos < 8);
     if (this->children == nullptr) return nullptr;
-    return &this->children[pos];
+    return this->children[pos];
 }
 
-void Ocnode::splitNode() {
-    this->children = new Ocnode[8];
+bool Ocnode::createChild(unsigned int pos) {
+    assert(pos < 8);
+    if (this->children == nullptr) {
+        this->expandNode();
+    }
+
+    if (this->childExists(pos)) return false;
+    this->children[pos] = new Ocnode();
+    return true;
+}
+
+void Ocnode::expandNode() {
+    this->children = new Ocnode *[8]{nullptr};
 }
 
 bool Ocnode::hasChildren() const {
     if (this->children == nullptr) return false;
-    // TODO is there an interest to not alloc all children on node division
-    /*
     for (int i = 0; i < 8; ++i) {
         if (this->children[i] != nullptr) return true;
     }
-    */
-    return true;
+    return false;
 }
 
 bool Ocnode::childExists(unsigned int i) const {
     if (this->children == nullptr) return false;
-    // TODO is there an interest to not alloc all children on node division
-    return true;
+    return this->children[i] != nullptr;
 }
 
 void Ocnode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const {
@@ -67,7 +78,6 @@ void Ocnode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &child
             }
         } else {
             // 00 : child is unknown node
-            std::cout << "unknown" << std::endl;
             childBitset[i * 2] = 0;
             childBitset[i * 2 + 1] = 0;
         }

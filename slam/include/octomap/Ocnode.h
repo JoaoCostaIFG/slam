@@ -19,9 +19,11 @@
 namespace octomap {
     class Ocnode {
     private:
-        Ocnode *children = nullptr;
+        Ocnode **children = nullptr;
         // TODO store log-odds instead of probability (see funcs bellow)
         float occupancy;
+
+        void expandNode();
 
         void writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const;
 
@@ -31,6 +33,8 @@ namespace octomap {
         ~Ocnode();
 
         Ocnode *getChild(unsigned int pos) const;
+
+        bool createChild(unsigned int pos);
 
         bool hasChildren() const;
 
@@ -51,8 +55,6 @@ namespace octomap {
         bool isFree() const {
             return !this->isOccupied();
         }
-
-        void splitNode();
 
         static double prob2logodds(double prob) {
             return log(prob / (1 - prob));
