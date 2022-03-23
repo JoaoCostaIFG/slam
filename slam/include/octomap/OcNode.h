@@ -17,9 +17,9 @@
 #define OCCUP_UNKOWN 0.5f
 
 namespace octomap {
-    class Ocnode {
+    class OcNode {
     private:
-        Ocnode **children = nullptr;
+        OcNode **children = nullptr;
         // TODO store log-odds instead of probability (see funcs bellow)
         float occupancy;
 
@@ -28,17 +28,17 @@ namespace octomap {
         void writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const;
 
     public:
-        Ocnode();
+        OcNode();
 
-        ~Ocnode();
+        ~OcNode();
 
-        Ocnode *getChild(unsigned int pos) const;
+        [[nodiscard]] OcNode *getChild(unsigned int pos) const;
 
         bool createChild(unsigned int pos);
 
-        bool hasChildren() const;
+        [[nodiscard]] bool hasChildren() const;
 
-        bool childExists(unsigned int i) const;
+        [[nodiscard]] bool childExists(unsigned int i) const;
 
         [[nodiscard]] float getOccupancy() const {
             return this->occupancy;
@@ -48,11 +48,11 @@ namespace octomap {
             this->occupancy = occ;
         }
 
-        bool isOccupied() const {
+        [[nodiscard]] bool isOccupied() const {
             return this->occupancy > OCCUP_UNKOWN;
         }
 
-        bool isFree() const {
+        [[nodiscard]] bool isFree() const {
             return !this->isOccupied();
         }
 

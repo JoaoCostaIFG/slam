@@ -2,12 +2,16 @@
 #include <fstream>
 
 #include "../include/octomap/Octomap.h"
+#include "../include/octomap/OcNodeKey.h"
 
 using namespace octomap;
 
 Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
         depth(maxDepth), resolution(resolution) {
-    this->rootNode = Ocnode();
+    OcNodeKey::setMaxCoord((int) pow(2, maxDepth - 1));
+    OcNodeKey::setResolution(resolution);
+
+    this->rootNode = OcNode();
 
     // pre-calculate step sizes
     this->stepLookupTable.reserve(this->depth + 1);
@@ -19,13 +23,12 @@ Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
     this->treeCenter = Vector3((float) (this->stepLookupTable[0] / 2.0));
 }
 
-Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {
-}
+Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {}
 
-Ocnode *Octomap::updateNode(const Vector3 &location) {
-    Ocnode *currNode = &this->rootNode;
-    //auto currPos = Vector3(this->treeCenter);
+OcNode *Octomap::updateNode(const Vector3 &location) {
+    OcNode *currNode = &this->rootNode;
     auto currPos = Vector3();
+
 
     for (unsigned int i = 0; i < this->depth; ++i) {
         int pos = 0;

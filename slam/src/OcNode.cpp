@@ -3,15 +3,15 @@
 //
 
 #include <iostream>
-#include "../include/octomap/Ocnode.h"
+#include "../include/octomap/OcNode.h"
 
 using namespace octomap;
 
-Ocnode::Ocnode() {
+OcNode::OcNode() {
     this->occupancy = OCCUP_UNKOWN;
 }
 
-Ocnode::~Ocnode() {
+OcNode::~OcNode() {
     if (this->children != nullptr) {
         for (int i = 0; i < 8; ++i) {
             delete this->children[i];
@@ -20,28 +20,28 @@ Ocnode::~Ocnode() {
     delete[] this->children;
 }
 
-Ocnode *Ocnode::getChild(unsigned int pos) const {
+OcNode *OcNode::getChild(unsigned int pos) const {
     assert(pos < 8);
     if (this->children == nullptr) return nullptr;
     return this->children[pos];
 }
 
-bool Ocnode::createChild(unsigned int pos) {
+bool OcNode::createChild(unsigned int pos) {
     assert(pos < 8);
     if (this->children == nullptr) {
         this->expandNode();
     }
 
     if (this->childExists(pos)) return false;
-    this->children[pos] = new Ocnode();
+    this->children[pos] = new OcNode();
     return true;
 }
 
-void Ocnode::expandNode() {
-    this->children = new Ocnode *[8]{nullptr};
+void OcNode::expandNode() {
+    this->children = new OcNode *[8]{nullptr};
 }
 
-bool Ocnode::hasChildren() const {
+bool OcNode::hasChildren() const {
     if (this->children == nullptr) return false;
     for (int i = 0; i < 8; ++i) {
         if (this->children[i] != nullptr) return true;
@@ -49,12 +49,12 @@ bool Ocnode::hasChildren() const {
     return false;
 }
 
-bool Ocnode::childExists(unsigned int i) const {
+bool OcNode::childExists(unsigned int i) const {
     if (this->children == nullptr) return false;
     return this->children[i] != nullptr;
 }
 
-void Ocnode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const {
+void OcNode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const {
     // 00 : child is unknown node
     // 01 : child is occupied node
     // 10 : child is free node
@@ -62,7 +62,7 @@ void Ocnode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &child
 
     for (unsigned int i = 0; i < 4; ++i) {
         if (this->childExists(baseI + i)) {
-            const Ocnode *child = this->getChild(baseI + i);
+            const OcNode *child = this->getChild(baseI + i);
             if (child->hasChildren()) {
                 // 11 : child has children
                 childBitset[i * 2] = 1;
@@ -84,7 +84,7 @@ void Ocnode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &child
     }
 }
 
-void Ocnode::writeBinary(std::ostream &os) const {
+void OcNode::writeBinary(std::ostream &os) const {
     std::bitset<8> child1to4;
     std::bitset<8> child5to8;
 
@@ -100,7 +100,7 @@ void Ocnode::writeBinary(std::ostream &os) const {
     // write children
     for (unsigned int i = 0; i < 8; i++) {
         if (this->childExists(i)) {
-            const Ocnode *child = this->getChild(i);
+            const OcNode *child = this->getChild(i);
             if (child->hasChildren()) child->writeBinary(os);
         }
     }

@@ -1,4 +1,6 @@
+#include <bitset>
 #include <iostream>
+
 #include "../include/octomap/Octomap.h"
 
 using namespace std;
@@ -14,7 +16,7 @@ int main() {
             for (int z = -20; z < 20; z++) {
                 Vector3 endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
                 // integrate 'occupied' measurement
-                Ocnode *node = o.updateNode(endpoint);
+                OcNode *node = o.updateNode(endpoint);
                 node->setOccupancy(1.0);
             }
         }
@@ -22,7 +24,7 @@ int main() {
     */
 
     Vector3 endpoint(1.0, 2.0, 3.0);
-    Ocnode *node = o.updateNode(endpoint);
+    OcNode *node = o.updateNode(endpoint);
     node->setOccupancy(1.0);
 
     cout << o.getSize() << endl;
