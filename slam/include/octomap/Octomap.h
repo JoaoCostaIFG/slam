@@ -19,8 +19,8 @@ namespace octomap {
         std::vector<double> stepLookupTable;
 
         // number of nodes in the tree (starts with 1 root node)
-        unsigned int size = 1;
-        OcNode rootNode;
+        unsigned int size = 17; // TODO
+        OcNode *rootNode;
     public:
         Octomap(unsigned int maxDepth, double resolution);
 
@@ -34,7 +34,7 @@ namespace octomap {
 
         bool writeBinary(std::ostream &os);
 
-        bool writeBinary(const std::string& filename);
+        bool writeBinary(const std::string &filename);
     };
 }
 

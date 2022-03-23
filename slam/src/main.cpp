@@ -26,7 +26,7 @@ int main() {
     Vector3 endpoint(1.0, 2.0, 3.0);
     OcNode *node = o.setOccupancy(endpoint, 1.0);
 
-    cout << o.getSize() << endl;
+    cout << "Size: " << o.getSize() << endl;
     o.writeBinary("rust.bt");
 
     return EXIT_SUCCESS;

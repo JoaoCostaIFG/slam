@@ -83,7 +83,7 @@ OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, con
     OcNode *child;
 
     // follow down to last level
-    if (d > 0) { // depth - 1 > 0
+    if (depth > 0) {
         unsigned int pos = key.getStep(d);
         std::cout << pos << std::endl;
         if (!this->childExists(pos)) {
@@ -92,14 +92,14 @@ OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, con
                 // current node does not have children AND it is not a new node
                 // -> expand pruned node
                 this->expandNode();
-                child = this->getChild(pos);
             } else {
                 // not a pruned node, create requested child
-                child = this->createChild(pos);
+                this->createChild(pos);
                 createdChild = true;
             }
         }
 
+        child = this->getChild(pos);
         child->setOccupancy(key, d, occ, createdChild);
 
         // prune node if possible, otherwise set own probability
@@ -114,6 +114,7 @@ OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, con
         this->updateOccBasedOnChildren();
         return child;
     } else { // at last level, update node, end of recursion
+        std::cout << "pe" << std::endl;
         this->setOccupancy(occ);
         return this;
     }

@@ -2,7 +2,6 @@
 #include <fstream>
 
 #include "../include/octomap/Octomap.h"
-#include "../include/octomap/OcNodeKey.h"
 
 using namespace octomap;
 
@@ -11,7 +10,7 @@ Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
     OcNodeKey::setMaxCoord((int) pow(2, maxDepth - 1));
     OcNodeKey::setResolution(resolution);
 
-    this->rootNode = OcNode();
+    this->rootNode = nullptr;
 
     // pre-calculate step sizes
     this->stepLookupTable.reserve(this->depth + 1);
@@ -27,7 +26,12 @@ Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {}
 
 OcNode *Octomap::setOccupancy(const Vector3 &location, const float occ) {
     auto key = OcNodeKey(location);
-    return this->rootNode.setOccupancy(key, this->depth, occ);
+    bool createdRoot = false;
+    if (this->rootNode == nullptr) {
+        this->rootNode = new OcNode();
+        createdRoot = true;
+    }
+    return this->rootNode->setOccupancy(key, this->depth, occ, createdRoot);
 }
 
 bool Octomap::writeBinary(std::ostream &os) {
@@ -36,8 +40,8 @@ bool Octomap::writeBinary(std::ostream &os) {
     os << "size " << this->size << std::endl;
     os << "res " << this->resolution << std::endl;
     os << "data" << std::endl;
-    this->rootNode.writeBinary(os);
-
+    if (this->rootNode == nullptr) return false;
+    this->rootNode->writeBinary(os);
     return true;
 }
 
