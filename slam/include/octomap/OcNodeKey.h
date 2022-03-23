@@ -22,18 +22,18 @@ namespace octomap {
 
         static uint16_t coord2key(float coord);
 
-        double key2coord(unsigned int i);
+        [[nodiscard]] double key2coord(unsigned int i) const;
 
     public:
-        OcNodeKey(const Vector3 &p);
+        explicit OcNodeKey(const Vector3 &p);
 
         OcNodeKey();
 
         OcNodeKey(const OcNodeKey &other);
 
-        [[nodiscard]] uint8_t getStep(unsigned int i);
+        [[nodiscard]] uint8_t getStep(unsigned int i) const;
 
-        Vector3 toCoord();
+        [[nodiscard]] Vector3 toCoord() const;
 
         const key_type &operator[](unsigned int i) const {
             assert(i < 3);

@@ -30,7 +30,7 @@ namespace octomap {
             return this->size;
         }
 
-        OcNode *updateNode(const Vector3 &location);
+        OcNode *setOccupancy(const Vector3 &location, float occ);
 
         bool writeBinary(std::ostream &os);
 

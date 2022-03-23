@@ -10,9 +10,7 @@
 #include <cmath>
 #include <ostream>
 
-#define RIGHT 1
-#define FRONT 2
-#define UP    4
+#include "OcNodeKey.h"
 
 #define OCCUP_UNKOWN 0.5f
 
@@ -23,18 +21,25 @@ namespace octomap {
         // TODO store log-odds instead of probability (see funcs bellow)
         float occupancy;
 
+        void allocChildren();
+
         void expandNode();
+
+        // uses max occupancy from children
+        void updateOccBasedOnChildren();
 
         void writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const;
 
     public:
+        explicit OcNode(float occ);
+
         OcNode();
 
         ~OcNode();
 
         [[nodiscard]] OcNode *getChild(unsigned int pos) const;
 
-        bool createChild(unsigned int pos);
+        OcNode *createChild(unsigned int pos);
 
         [[nodiscard]] bool hasChildren() const;
 
@@ -42,10 +47,6 @@ namespace octomap {
 
         [[nodiscard]] float getOccupancy() const {
             return this->occupancy;
-        }
-
-        void setOccupancy(float occ) {
-            this->occupancy = occ;
         }
 
         [[nodiscard]] bool isOccupied() const {
@@ -56,6 +57,12 @@ namespace octomap {
             return !this->isOccupied();
         }
 
+        void setOccupancy(float occ) {
+            this->occupancy = occ;
+        }
+
+        OcNode* setOccupancy(const OcNodeKey &key, unsigned int depth, float occ, bool justCreated = false);
+
         static double prob2logodds(double prob) {
             return log(prob / (1 - prob));
         }
@@ -64,7 +71,7 @@ namespace octomap {
             return 1.0 - (1.0 / (1.0 + exp(logodds)));
         }
 
-        void writeBinary(std::ostream &os)const;
+        void writeBinary(std::ostream &os) const;
     };
 }
 

@@ -25,44 +25,9 @@ Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
 
 Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {}
 
-OcNode *Octomap::updateNode(const Vector3 &location) {
-    OcNode *currNode = &this->rootNode;
-    auto currPos = Vector3();
-
-
-    for (unsigned int i = 0; i < this->depth; ++i) {
-        int pos = 0;
-        auto step = (float) (this->stepLookupTable[i + 1]); // query 1 ahead = divide by 2
-        auto nextPos = Vector3(currPos);
-        if (currPos.atLeft(location)) {
-            pos += RIGHT;
-            nextPos.setX(nextPos.x() + step);
-        } else {
-            nextPos.setX(nextPos.x() - step);
-        }
-        if (currPos.atBack(location)) {
-            pos += FRONT;
-            nextPos.setZ(nextPos.z() + step);
-        } else {
-            nextPos.setZ(nextPos.z() - step);
-        }
-        if (currPos.atDown(location)) {
-            pos += UP;
-            nextPos.setY(nextPos.y() + step);
-        } else {
-            nextPos.setY(nextPos.y() - step);
-        }
-
-        if (!currNode->childExists(pos)) {
-            ++this->size;
-            currNode->createChild(pos);
-        }
-        currNode = currNode->getChild(pos);
-        currPos = nextPos;
-        std::cout << currPos << std::endl;
-    }
-
-    return currNode;
+OcNode *Octomap::setOccupancy(const Vector3 &location, const float occ) {
+    auto key = OcNodeKey(location);
+    return this->rootNode.setOccupancy(key, this->depth, occ);
 }
 
 bool Octomap::writeBinary(std::ostream &os) {

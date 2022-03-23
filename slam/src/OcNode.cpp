@@ -7,9 +7,10 @@
 
 using namespace octomap;
 
-OcNode::OcNode() {
-    this->occupancy = OCCUP_UNKOWN;
-}
+
+OcNode::OcNode(float occ) : occupancy(occ) {}
+
+OcNode::OcNode() : OcNode(OCCUP_UNKOWN) {}
 
 OcNode::~OcNode() {
     if (this->children != nullptr) {
@@ -26,19 +27,29 @@ OcNode *OcNode::getChild(unsigned int pos) const {
     return this->children[pos];
 }
 
-bool OcNode::createChild(unsigned int pos) {
+OcNode *OcNode::createChild(unsigned int pos) {
     assert(pos < 8);
     if (this->children == nullptr) {
-        this->expandNode();
+        this->allocChildren();
     }
 
-    if (this->childExists(pos)) return false;
-    this->children[pos] = new OcNode();
-    return true;
+    if (!this->childExists(pos)) this->children[pos] = new OcNode();
+    return this->children[pos];
+}
+
+void OcNode::allocChildren() {
+    this->children = new OcNode *[8]{nullptr};
 }
 
 void OcNode::expandNode() {
-    this->children = new OcNode *[8]{nullptr};
+    assert(!this->hasChildren());
+    if (this->children == nullptr) {
+        this->allocChildren();
+    }
+
+    for (int i = 0; i < 8; ++i) {
+        this->children[i] = new OcNode(this->occupancy);
+    }
 }
 
 bool OcNode::hasChildren() const {
@@ -52,6 +63,60 @@ bool OcNode::hasChildren() const {
 bool OcNode::childExists(unsigned int i) const {
     if (this->children == nullptr) return false;
     return this->children[i] != nullptr;
+}
+
+// Use the max of the children's occupancy
+void OcNode::updateOccBasedOnChildren() {
+    if (this->children == nullptr) return;
+    float max = std::numeric_limits<float>::min();
+    for (int i = 0; i < 8; ++i) {
+        OcNode *child = this->children[i];
+        if (child == nullptr) continue;
+        if (child->getOccupancy() > max) max = child->getOccupancy();
+    }
+    this->occupancy = max;
+}
+
+OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, const float occ, const bool justCreated) {
+    unsigned int d = depth - 1;
+    bool createdChild = false;
+    OcNode *child;
+
+    // follow down to last level
+    if (d > 0) { // depth - 1 > 0
+        unsigned int pos = key.getStep(d);
+        std::cout << pos << std::endl;
+        if (!this->childExists(pos)) {
+            // child does not exist, but maybe it's a pruned node?
+            if (!this->hasChildren() && !justCreated) {
+                // current node does not have children AND it is not a new node
+                // -> expand pruned node
+                this->expandNode();
+                child = this->getChild(pos);
+            } else {
+                // not a pruned node, create requested child
+                child = this->createChild(pos);
+                createdChild = true;
+            }
+        }
+
+        child->setOccupancy(key, d, occ, createdChild);
+
+        // prune node if possible, otherwise set own probability
+        // note: combining both did not lead to a speedup!
+        //if (this->pruneNode(node)) {
+        //    // return pointer to current parent (pruned), the just updated node no longer exists
+        //    retval = node;
+        //} else {
+        //    node->updateOccupancyChildren();
+        //}
+
+        this->updateOccBasedOnChildren();
+        return child;
+    } else { // at last level, update node, end of recursion
+        this->setOccupancy(occ);
+        return this;
+    }
 }
 
 void OcNode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const {
