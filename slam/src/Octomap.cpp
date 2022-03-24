@@ -26,11 +26,13 @@ Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {}
 
 OcNode *Octomap::setOccupancy(const Vector3 &location, const float occ) {
     auto key = OcNodeKey(location);
+
     bool createdRoot = false;
     if (this->rootNode == nullptr) {
         this->rootNode = new OcNode();
         createdRoot = true;
     }
+
     return this->rootNode->setOccupancy(key, this->depth, occ, createdRoot);
 }
 

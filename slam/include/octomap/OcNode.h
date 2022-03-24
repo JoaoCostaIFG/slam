@@ -14,7 +14,8 @@
 
 namespace octomap {
     class OcNode {
-    private:
+    public:
+        // Can return +/-infinite
         static double prob2logodds(double prob) {
             return log(prob / (1 - prob));
         }
@@ -23,6 +24,7 @@ namespace octomap {
             return 1.0 - (1.0 / (1.0 + exp(logodds)));
         }
 
+    private:
         inline static double occThreshold = prob2logodds(0.5);
         inline static double minThreshold = prob2logodds(0.1);
         inline static double maxThreshold = prob2logodds(0.9);
@@ -34,14 +36,18 @@ namespace octomap {
 
         void expandNode();
 
-        // node is prunable is all children exist and have the same occupancy
+        // Node is prunable is all children exist and have the same occupancy
         [[nodiscard]] bool isPrunable() const;
 
+        // Returns the max occupancy log-odds from the children.
+        // For internal use: presence of all children should be checked first.
         [[nodiscard]] float getMaxChildrenLogOdds() const;
 
+        // Returns the mean occupancy log-odds from the children.
+        // For internal use: presence of all children should be checked first.
         [[nodiscard]] float getMeanChildrenLogOdds() const;
 
-        // Use the max of the children's occupancy (conservative approach)
+        // Use the max of the children's occupancy (conservative approach).
         void updateBasedOnChildren();
 
         void writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const;
@@ -73,10 +79,14 @@ namespace octomap {
             return (float) logodds2prob(this->logOdds);
         }
 
-        void setLogOdds(float logOdds) {
-            if (logOdds > OcNode::maxThreshold) this->logOdds = (float) OcNode::maxThreshold;
-            else if (logOdds < OcNode::minThreshold) this->logOdds = (float) OcNode::minThreshold;
-            else this->logOdds = logOdds;
+        // Sets the node occupancy log-odds. Performs min/max clamping.
+        void setLogOdds(float lo) {
+            if (lo >= OcNode::maxThreshold)
+                this->logOdds = (float) OcNode::maxThreshold;
+            else if (lo <= OcNode::minThreshold)
+                this->logOdds = (float) OcNode::minThreshold;
+            else
+                this->logOdds = lo;
         }
 
         void setOccupancy(float occ) {

@@ -16,6 +16,7 @@ int main() {
                 Vector3 endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
                 // integrate 'occupied' measurement
                 OcNode *node = o.setOccupancy(endpoint, 1.0);
+                cout << node->getLogOdds() << " " << node->getOccupancy() << endl;
             }
         }
     }

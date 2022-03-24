@@ -32,6 +32,16 @@ namespace octomap {
 
         OcNode *setOccupancy(const Vector3 &location, float occ);
 
+        OcNode *setFull(const Vector3 &location) {
+            return this->setOccupancy(location, 1.0);
+        }
+
+        OcNode *setEmpty(const Vector3 &location) {
+            return this->setOccupancy(location, 0.0);
+        }
+
+        // The binary format is compatible with octoviz
+        // See: https://github.com/OctoMap/octomap/tree/devel/octovis
         bool writeBinary(std::ostream &os);
 
         bool writeBinary(const std::string &filename);
