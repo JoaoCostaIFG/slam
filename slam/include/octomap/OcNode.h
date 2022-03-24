@@ -25,6 +25,9 @@ namespace octomap {
 
         void expandNode();
 
+        // node is prunable is all children exist and have the same occupancy
+        [[nodiscard]] bool isPrunable() const;
+
         // uses max occupancy from children
         void updateOccBasedOnChildren();
 
@@ -47,6 +50,8 @@ namespace octomap {
 
         [[nodiscard]] bool childExists(unsigned int i) const;
 
+        bool prune();
+
         [[nodiscard]] float getOccupancy() const {
             return this->occupancy;
         }
@@ -64,6 +69,14 @@ namespace octomap {
         }
 
         OcNode* setOccupancy(const OcNodeKey &key, unsigned int depth, float occ, bool justCreated = false);
+
+        bool operator==(const OcNode &rhs) const {
+            return occupancy == rhs.occupancy;
+        }
+
+        bool operator!=(const OcNode &rhs) const {
+            return !(rhs == *this);
+        }
 
         static double prob2logodds(double prob) {
             return log(prob / (1 - prob));

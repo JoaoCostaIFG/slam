@@ -75,6 +75,34 @@ bool OcNode::childExists(unsigned int i) const {
     return this->children[i] != nullptr;
 }
 
+bool OcNode::isPrunable() const {
+    OcNode *firstChild = this->getChild(0);
+    if (firstChild == nullptr || firstChild->hasChildren()) return false;
+
+    for (int i = 1; i < 8; ++i) {
+        OcNode *child = this->getChild(i);
+        if (child == nullptr ||             // all children exist
+            child->hasChildren() ||         // they don't have children of their own
+            (*firstChild) != (*child)) {    // and have the same occupancy
+            return false;
+        }
+    }
+
+    return true;
+}
+
+bool OcNode::prune() {
+    if (!this->isPrunable()) return false;
+    // all children are equal so we take their value
+    this->occupancy = this->getChild(0)->getOccupancy();
+    // delete children
+    for (int i = 0; i < 8; ++i)
+        delete this->children[i];
+    delete[] this->children;
+    this->children = nullptr;
+    return true;
+}
+
 // Use the max of the children's occupancy
 void OcNode::updateOccBasedOnChildren() {
     if (this->children == nullptr) return;
@@ -111,15 +139,9 @@ OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, con
         child = this->getChild(pos);
         child->setOccupancy(key, d, occ, createdChild);
 
-        // prune node if possible, otherwise set own probability
-        // note: combining both did not lead to a speedup!
-        //if (this->pruneNode(node)) {
-        //    // return pointer to current parent (pruned), the just updated node no longer exists
-        //    retval = node;
-        //} else {
-        //    node->updateOccupancyChildren();
-        //}
-
+        // prune if possible (return self is pruned)
+        if (this->prune()) return this;
+        // updated occupancy if not pruned
         this->updateOccBasedOnChildren();
         return child;
     } else { // at last level, update node, end of recursion
