@@ -20,6 +20,12 @@ int main() {
         }
     }
 
+    OcNode* n;
+    n = o.search(Vector3(1000, 1000, 1000));
+    cout << ((n != nullptr) ? "findei\n" : "n encontralhei\n");
+    n = o.search(Vector3(0, 0, 0));
+    cout << ((n != nullptr) ? "findei\n" : "n encontralhei\n");
+
     cout << "Size: " << o.getSize() << endl;
     o.writeBinary("rust.bt");
 

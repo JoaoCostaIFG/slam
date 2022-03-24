@@ -115,6 +115,8 @@ namespace octomap {
 
         OcNode *updateOccupancy(const OcNodeKey &key, unsigned int depth, float occ, bool justCreated = false);
 
+        OcNode *search(const OcNodeKey &key, unsigned int depth);
+
         bool operator==(const OcNode &rhs) const {
             return this->logOdds == rhs.logOdds;
         }

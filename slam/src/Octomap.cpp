@@ -41,6 +41,13 @@ OcNode *Octomap::setOccupancy(const Vector3 &location, const float occ) {
     return this->rootNode->setOccupancy(key, this->depth, occ, createdRoot);
 }
 
+OcNode *Octomap::search(const Vector3 &location) {
+    if (this->rootNode == nullptr) return nullptr;
+
+    auto key = OcNodeKey(location);
+    this->rootNode->search(key, this->depth);
+}
+
 bool Octomap::writeBinary(std::ostream &os) {
     os << "# Octomap OcTree binary file\n";
     os << "id OcTree\n";

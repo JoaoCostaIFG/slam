@@ -42,6 +42,8 @@ namespace octomap {
             return this->setOccupancy(location, 0.0);
         }
 
+        OcNode *search(const Vector3 &location);
+
         // The binary format is compatible with octoviz
         // See: https://github.com/OctoMap/octomap/tree/devel/octovis
         bool writeBinary(std::ostream &os);

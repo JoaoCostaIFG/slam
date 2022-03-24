@@ -131,13 +131,14 @@ void OcNode::updateBasedOnChildren() {
 }
 
 OcNode *
-OcNode::setOrUpdateLogOdds(const OcNodeKey &key, unsigned int depth, float lo, bool isUpdate, bool justCreated) {
-    unsigned int d = depth - 1;
+OcNode::setOrUpdateLogOdds(const OcNodeKey &key, const unsigned int depth, const float lo,
+                           const bool isUpdate, const bool justCreated) {
     bool createdChild = false;
     OcNode *child;
 
     // follow down to last level
     if (depth > 0) {
+        unsigned int d = depth - 1;
         unsigned int pos = key.getStep(d);
         if (!this->childExists(pos)) {
             // child does not exist, but maybe it's a pruned node?
@@ -183,6 +184,22 @@ OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, con
 OcNode *
 OcNode::updateOccupancy(const OcNodeKey &key, const unsigned int depth, const float occ, const bool justCreated) {
     return this->updateLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
+}
+
+OcNode *OcNode::search(const OcNodeKey &key, const unsigned int depth) {
+    if (depth > 0) {
+        unsigned int d = depth - 1;
+        unsigned int pos = key.getStep(d);
+        OcNode *child = this->getChild(pos);
+        if (child != nullptr) // child exists
+            return child->search(key, d);
+        else if (!this->hasChildren()) // we're a leaf (children pruned)
+            return this;
+        else // search failed
+            return nullptr;
+    } else {
+        return this;
+    }
 }
 
 void OcNode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const {
