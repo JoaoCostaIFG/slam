@@ -20,7 +20,7 @@ int main() {
         }
     }
 
-    OcNode* n;
+    OcNode *n;
     n = o.search(Vector3(1000, 1000, 1000));
     cout << ((n != nullptr) ? "findei\n" : "n encontralhei\n");
     n = o.search(Vector3(0, 0, 0));

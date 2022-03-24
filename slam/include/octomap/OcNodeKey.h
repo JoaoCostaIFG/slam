@@ -7,6 +7,8 @@
 
 #include <cassert>
 #include <cinttypes>
+#include <bitset>
+
 #include "Vector3.h"
 
 namespace octomap {
@@ -55,6 +57,12 @@ namespace octomap {
         static void setResolution(double r) {
             OcNodeKey::resolution = r;
             OcNodeKey::resolution_factor = 1.0 / r;
+        }
+
+        friend std::ostream &operator<<(std::ostream &out, OcNodeKey const &key) {
+            return out << "(" << std::bitset<16>(key[0]) <<
+                       " " << std::bitset<16>(key[1]) <<
+                       " " << std::bitset<16>(key[2]) << ")";
         }
     };
 }
