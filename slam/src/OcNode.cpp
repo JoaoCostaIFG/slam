@@ -105,16 +105,31 @@ bool OcNode::prune() {
     return true;
 }
 
-// Use the max of the children's occupancy
-void OcNode::updateBasedOnChildren() {
-    if (this->children == nullptr) return;
+float OcNode::getMaxChildrenLogOdds() const {
     float max = std::numeric_limits<float>::min();
     for (int i = 0; i < 8; ++i) {
         OcNode *child = this->children[i];
         if (child == nullptr) continue;
         if (child->getLogOdds() > max) max = child->getLogOdds();
     }
-    this->setLogOdds(max);
+    return max;
+}
+
+float OcNode::getMeanChildrenLogOdds() const {
+    unsigned int cnt = 0;
+    float ret = 0;
+    for (int i = 0; i < 8; ++i) {
+        OcNode *child = this->children[i];
+        if (child == nullptr) continue;
+        ret += child->getLogOdds();
+        ++cnt;
+    }
+    return ret / (float) cnt;
+}
+
+void OcNode::updateBasedOnChildren() {
+    if (this->children == nullptr) return;
+    this->setLogOdds(this->getMaxChildrenLogOdds());
 }
 
 OcNode * // suckless

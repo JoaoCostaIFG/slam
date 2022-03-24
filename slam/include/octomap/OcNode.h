@@ -37,7 +37,11 @@ namespace octomap {
         // node is prunable is all children exist and have the same occupancy
         [[nodiscard]] bool isPrunable() const;
 
-        // uses max occupancy from children
+        [[nodiscard]] float getMaxChildrenLogOdds() const;
+
+        [[nodiscard]] float getMeanChildrenLogOdds() const;
+
+        // Use the max of the children's occupancy (conservative approach)
         void updateBasedOnChildren();
 
         void writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const;
