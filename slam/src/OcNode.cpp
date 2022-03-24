@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "modernize-use-bool-literals"
 //
 // Created by joao on 3/22/22.
 //
@@ -8,9 +10,9 @@
 using namespace octomap;
 
 
-OcNode::OcNode(float occ) : occupancy(occ) {}
+OcNode::OcNode(float logOdds) : logOdds(logOdds) {}
 
-OcNode::OcNode() : OcNode(OCCUP_UNKOWN) {}
+OcNode::OcNode() : OcNode((float) OcNode::occThreshold) {}
 
 OcNode::~OcNode() {
     if (this->children != nullptr) {
@@ -58,7 +60,7 @@ void OcNode::expandNode() {
     }
 
     for (int i = 0; i < 8; ++i) {
-        this->children[i] = new OcNode(this->occupancy);
+        this->children[i] = new OcNode(this->getLogOdds());
     }
 }
 
@@ -94,7 +96,7 @@ bool OcNode::isPrunable() const {
 bool OcNode::prune() {
     if (!this->isPrunable()) return false;
     // all children are equal so we take their value
-    this->occupancy = this->getChild(0)->getOccupancy();
+    this->setLogOdds(this->getChild(0)->getLogOdds());
     // delete children
     for (int i = 0; i < 8; ++i)
         delete this->children[i];
@@ -104,18 +106,19 @@ bool OcNode::prune() {
 }
 
 // Use the max of the children's occupancy
-void OcNode::updateOccBasedOnChildren() {
+void OcNode::updateBasedOnChildren() {
     if (this->children == nullptr) return;
     float max = std::numeric_limits<float>::min();
     for (int i = 0; i < 8; ++i) {
         OcNode *child = this->children[i];
         if (child == nullptr) continue;
-        if (child->getOccupancy() > max) max = child->getOccupancy();
+        if (child->getLogOdds() > max) max = child->getLogOdds();
     }
-    this->occupancy = max;
+    this->setLogOdds(max);
 }
 
-OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, const float occ, const bool justCreated) {
+OcNode * // suckless
+OcNode::setLogOdds(const OcNodeKey &key, const unsigned int depth, const float logOdds, const bool justCreated) {
     unsigned int d = depth - 1;
     bool createdChild = false;
     OcNode *child;
@@ -137,17 +140,21 @@ OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, con
         }
 
         child = this->getChild(pos);
-        child->setOccupancy(key, d, occ, createdChild);
+        child->setLogOdds(key, d, logOdds, createdChild);
 
         // prune if possible (return self is pruned)
         if (this->prune()) return this;
         // updated occupancy if not pruned
-        this->updateOccBasedOnChildren();
+        this->updateBasedOnChildren();
         return child;
     } else { // at last level, update node, end of recursion
-        this->setOccupancy(occ);
+        this->setLogOdds(logOdds);
         return this;
     }
+}
+
+OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, const float occ, const bool justCreated) {
+    return this->setLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
 }
 
 void OcNode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const {
@@ -201,3 +208,5 @@ void OcNode::writeBinary(std::ostream &os) const {
         }
     }
 }
+
+#pragma clang diagnostic pop

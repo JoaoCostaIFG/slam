@@ -12,14 +12,23 @@
 
 #include "OcNodeKey.h"
 
-#define OCCUP_UNKOWN 0.5f
-
 namespace octomap {
     class OcNode {
     private:
+        static double prob2logodds(double prob) {
+            return log(prob / (1 - prob));
+        }
+
+        static double logodds2prob(double logodds) {
+            return 1.0 - (1.0 / (1.0 + exp(logodds)));
+        }
+
+        inline static double occThreshold = prob2logodds(0.5);
+        inline static double minThreshold = prob2logodds(0.1);
+        inline static double maxThreshold = prob2logodds(0.9);
+
         OcNode **children = nullptr;
-        // TODO store log-odds instead of probability (see funcs bellow)
-        float occupancy;
+        float logOdds;
 
         void allocChildren();
 
@@ -29,12 +38,12 @@ namespace octomap {
         [[nodiscard]] bool isPrunable() const;
 
         // uses max occupancy from children
-        void updateOccBasedOnChildren();
+        void updateBasedOnChildren();
 
         void writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const;
 
     public:
-        explicit OcNode(float occ);
+        explicit OcNode(float logOdds);
 
         OcNode();
 
@@ -52,38 +61,42 @@ namespace octomap {
 
         bool prune();
 
+        [[nodiscard]] float getLogOdds() const {
+            return this->logOdds;
+        }
+
         [[nodiscard]] float getOccupancy() const {
-            return this->occupancy;
+            return (float) logodds2prob(this->logOdds);
+        }
+
+        void setLogOdds(float logOdds) {
+            if (logOdds > OcNode::maxThreshold) this->logOdds = (float) OcNode::maxThreshold;
+            else if (logOdds < OcNode::minThreshold) this->logOdds = (float) OcNode::minThreshold;
+            else this->logOdds = logOdds;
+        }
+
+        void setOccupancy(float occ) {
+            this->setLogOdds((float) prob2logodds(occ));
         }
 
         [[nodiscard]] bool isOccupied() const {
-            return this->occupancy > OCCUP_UNKOWN;
+            return this->logOdds >= OcNode::occThreshold;
         }
 
         [[nodiscard]] bool isFree() const {
             return !this->isOccupied();
         }
 
-        void setOccupancy(float occ) {
-            this->occupancy = occ;
-        }
+        OcNode *setLogOdds(const OcNodeKey &key, unsigned int depth, float logOdds, bool justCreated = false);
 
-        OcNode* setOccupancy(const OcNodeKey &key, unsigned int depth, float occ, bool justCreated = false);
+        OcNode *setOccupancy(const OcNodeKey &key, unsigned int depth, float occ, bool justCreated = false);
 
         bool operator==(const OcNode &rhs) const {
-            return occupancy == rhs.occupancy;
+            return this->logOdds == rhs.logOdds;
         }
 
         bool operator!=(const OcNode &rhs) const {
             return !(rhs == *this);
-        }
-
-        static double prob2logodds(double prob) {
-            return log(prob / (1 - prob));
-        }
-
-        static double logodds2prob2(double logodds) {
-            return 1.0 - (1.0 / (1.0 + exp(logodds)));
         }
 
         void writeBinary(std::ostream &os) const;
