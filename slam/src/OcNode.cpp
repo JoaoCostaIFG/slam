@@ -132,8 +132,7 @@ void OcNode::updateBasedOnChildren() {
     this->setLogOdds(this->getMaxChildrenLogOdds());
 }
 
-OcNode * // suckless
-OcNode::setLogOdds(const OcNodeKey &key, const unsigned int depth, const float logOdds, const bool justCreated) {
+OcNode *OcNode::setLogUpdateOdds(const OcNodeKey &key, unsigned int depth, float lo, bool isUpdate, bool justCreated) {
     unsigned int d = depth - 1;
     bool createdChild = false;
     OcNode *child;
@@ -155,7 +154,7 @@ OcNode::setLogOdds(const OcNodeKey &key, const unsigned int depth, const float l
         }
 
         child = this->getChild(pos);
-        child->setLogOdds(key, d, logOdds, createdChild);
+        child->setLogUpdateOdds(key, d, lo, isUpdate, createdChild);
 
         // prune if possible (return self is pruned)
         if (this->prune()) return this;
@@ -163,13 +162,27 @@ OcNode::setLogOdds(const OcNodeKey &key, const unsigned int depth, const float l
         this->updateBasedOnChildren();
         return child;
     } else { // at last level, update node, end of recursion
-        this->setLogOdds(logOdds);
+        if (isUpdate) this->updateLogOdds(lo);
+        else this->setLogOdds(lo);
         return this;
     }
 }
 
+OcNode * // suckless
+OcNode::setLogOdds(const OcNodeKey &key, const unsigned int depth, const float lo, const bool justCreated) {
+    return this->setLogUpdateOdds(key, depth, lo, false, justCreated);
+}
+
+OcNode *OcNode::updateLogOdds(const OcNodeKey &key, unsigned int depth, float lo, bool justCreated) {
+    return this->setLogUpdateOdds(key, depth, lo, true, justCreated);
+}
+
 OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, const float occ, const bool justCreated) {
     return this->setLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
+}
+
+OcNode *OcNode::updateOccupancy(const OcNodeKey &key, const unsigned int depth, const float occ, const bool justCreated) {
+    return this->updateLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
 }
 
 void OcNode::writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const {

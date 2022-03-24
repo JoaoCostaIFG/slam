@@ -50,6 +50,8 @@ namespace octomap {
         // Use the max of the children's occupancy (conservative approach).
         void updateBasedOnChildren();
 
+        OcNode *setLogUpdateOdds(const OcNodeKey &key, unsigned int depth, float lo, bool isUpdate, bool justCreated = false);
+
         void writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const;
 
     public:
@@ -93,6 +95,10 @@ namespace octomap {
             this->setLogOdds((float) prob2logodds(occ));
         }
 
+        void updateLogOdds(float newLogOdds) {
+            this->setLogOdds(this->logOdds + newLogOdds);
+        }
+
         [[nodiscard]] bool isOccupied() const {
             return this->logOdds >= OcNode::occThreshold;
         }
@@ -101,9 +107,13 @@ namespace octomap {
             return !this->isOccupied();
         }
 
-        OcNode *setLogOdds(const OcNodeKey &key, unsigned int depth, float logOdds, bool justCreated = false);
+        OcNode *setLogOdds(const OcNodeKey &key, unsigned int depth, float lo, bool justCreated = false);
+
+        OcNode *updateLogOdds(const OcNodeKey &key, unsigned int depth, float lo, bool justCreated = false);
 
         OcNode *setOccupancy(const OcNodeKey &key, unsigned int depth, float occ, bool justCreated = false);
+
+        OcNode *updateOccupancy(const OcNodeKey &key, unsigned int depth, float occ, bool justCreated = false);
 
         bool operator==(const OcNode &rhs) const {
             return this->logOdds == rhs.logOdds;
