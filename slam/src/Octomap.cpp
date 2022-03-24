@@ -24,6 +24,11 @@ Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
 
 Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {}
 
+
+Octomap::~Octomap() {
+    delete this->rootNode;
+}
+
 OcNode *Octomap::setOccupancy(const Vector3 &location, const float occ) {
     auto key = OcNodeKey(location);
 

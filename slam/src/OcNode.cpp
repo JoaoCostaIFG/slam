@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "modernize-use-bool-literals"
 //
 // Created by joao on 3/22/22.
 //
@@ -132,7 +130,8 @@ void OcNode::updateBasedOnChildren() {
     this->setLogOdds(this->getMaxChildrenLogOdds());
 }
 
-OcNode *OcNode::setLogUpdateOdds(const OcNodeKey &key, unsigned int depth, float lo, bool isUpdate, bool justCreated) {
+OcNode *
+OcNode::setOrUpdateLogOdds(const OcNodeKey &key, unsigned int depth, float lo, bool isUpdate, bool justCreated) {
     unsigned int d = depth - 1;
     bool createdChild = false;
     OcNode *child;
@@ -154,7 +153,7 @@ OcNode *OcNode::setLogUpdateOdds(const OcNodeKey &key, unsigned int depth, float
         }
 
         child = this->getChild(pos);
-        child->setLogUpdateOdds(key, d, lo, isUpdate, createdChild);
+        child->setOrUpdateLogOdds(key, d, lo, isUpdate, createdChild);
 
         // prune if possible (return self is pruned)
         if (this->prune()) return this;
@@ -170,18 +169,19 @@ OcNode *OcNode::setLogUpdateOdds(const OcNodeKey &key, unsigned int depth, float
 
 OcNode * // suckless
 OcNode::setLogOdds(const OcNodeKey &key, const unsigned int depth, const float lo, const bool justCreated) {
-    return this->setLogUpdateOdds(key, depth, lo, false, justCreated);
+    return this->setOrUpdateLogOdds(key, depth, lo, false, justCreated);
 }
 
 OcNode *OcNode::updateLogOdds(const OcNodeKey &key, unsigned int depth, float lo, bool justCreated) {
-    return this->setLogUpdateOdds(key, depth, lo, true, justCreated);
+    return this->setOrUpdateLogOdds(key, depth, lo, true, justCreated);
 }
 
 OcNode *OcNode::setOccupancy(const OcNodeKey &key, const unsigned int depth, const float occ, const bool justCreated) {
     return this->setLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
 }
 
-OcNode *OcNode::updateOccupancy(const OcNodeKey &key, const unsigned int depth, const float occ, const bool justCreated) {
+OcNode *
+OcNode::updateOccupancy(const OcNodeKey &key, const unsigned int depth, const float occ, const bool justCreated) {
     return this->updateLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
 }
 
@@ -236,5 +236,3 @@ void OcNode::writeBinary(std::ostream &os) const {
         }
     }
 }
-
-#pragma clang diagnostic pop

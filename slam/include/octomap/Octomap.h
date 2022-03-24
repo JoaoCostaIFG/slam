@@ -25,6 +25,8 @@ namespace octomap {
 
         Octomap();
 
+        ~Octomap();
+
         [[nodiscard]] unsigned int getSize() const {
             if (this->rootNode == nullptr) return 0;
             return this->rootNode->getChildCount() + 1;
