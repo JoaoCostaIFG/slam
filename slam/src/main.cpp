@@ -10,12 +10,35 @@ using namespace octomap;
 int main() {
     Octomap o = Octomap();
 
-    for (int x = -20; x < 20; x++) {
-        for (int y = -20; y < 20; y++) {
-            for (int z = -20; z < 20; z++) {
+    int base = 0;
+    for (int x = base + -20; x < base + 20; x++) {
+        for (int y = base + -20; y < base + 20; y++) {
+            for (int z = base + -20; z < base + 20; z++) {
                 Vector3 endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
                 // integrate 'occupied' measurement
-                OcNode *node = o.setOccupancy(endpoint, 1.0);
+                o.setFull(endpoint);
+            }
+        }
+    }
+
+    base = -20;
+    for (int x = base + -20; x < base + 20; x++) {
+        for (int y = base + -20; y < base + 20; y++) {
+            for (int z = base + -20; z < base + 20; z++) {
+                Vector3 endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
+                // integrate 'occupied' measurement
+                o.setFull(endpoint);
+            }
+        }
+    }
+
+    base = 20;
+    for (int x = base + -20; x < base + 20; x++) {
+        for (int y = base + -20; y < base + 20; y++) {
+            for (int z = base + -20; z < base + 20; z++) {
+                Vector3 endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
+                // integrate 'occupied' measurement
+                o.setFull(endpoint);
             }
         }
     }
