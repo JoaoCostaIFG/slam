@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <fstream>
 
@@ -7,6 +8,7 @@ using namespace octomap;
 
 Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
         depth(maxDepth), resolution(resolution) {
+    assert(this->depth >= 1);
     OcNodeKey::setMaxCoord((int) pow(2, maxDepth - 1));
     OcNodeKey::setResolution(resolution);
 
@@ -54,22 +56,33 @@ void Octomap::rayCast(const Vector3 &orig, const Vector3 &end) {
     auto endKey = OcNodeKey(end);
 
     // Initialization phase
-    auto coord = Vector3(orig.x(), orig.y(), 0);
-    auto step = Vector3(orig.x() > end.x() ? -1 : 1,
-                        orig.y() > end.y() ? -1 : 1,
-                        0);
+    auto coord = OcNodeKey(orig);
+    auto step = Vector3();
+    auto tMax = Vector3();
+    auto tDelta = Vector3();
 
-    auto tMax = Vector3(); // TODO
-    auto tDelta = Vector3(); // TODO
+    auto direction = (end - orig);
+    direction.normalize();
+
+    for (int i = 0; i < 3; ++i) {
+        if (direction[i] > 0) step[i] = 1.0;
+        else step[i] = -1.0;
+
+        float voxelBorder = coord.toCoord(i) +
+                            step[i] * (float) this->stepLookupTable[this->depth + 1];
+
+        tMax[i] = (voxelBorder - orig[i]) / direction[i];
+        tDelta[i] = (float) this->resolution / abs(direction[i]);
+    }
 
     // Incremental phase
     while (true) { // TODO
         if (tMax.x() < tMax.y()) {
-            tMax[0] = tMax.x() + tDelta.x();
-            coord[0] = coord.x() + step.x();
+            tMax[0] += tDelta.x();
+            coord[0] += step.x();
         } else {
-            tMax[1] = tMax.y() + tDelta.y();
-            coord[1] = coord.y() + step.y();
+            tMax[1] += tDelta.y();
+            coord[1] += step.y();
         }
     }
 }

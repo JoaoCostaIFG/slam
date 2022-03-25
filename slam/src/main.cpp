@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <bitset>
 #include <iostream>
 
@@ -8,6 +9,9 @@ using namespace std;
 using namespace octomap;
 
 int main() {
+    //Vector3 vv = Vector3(1, 2, 3);
+    //auto it = std::min_element(std::begin(vv), std::end(vv));
+
     Octomap o = Octomap();
 
     for (int x = -20; x < 20; x++) {

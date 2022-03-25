@@ -7,6 +7,7 @@
 
 #include <ostream>
 #include <cassert>
+#include <cmath>
 
 namespace octomap {
     class Vector3 {
@@ -20,14 +21,14 @@ namespace octomap {
         explicit Vector3(float n) : d{n, n, n} {}
 
         // copy constructor
-        Vector3(Vector3 &o) : Vector3(o.x(), o.y(), o.z()) {}
+        Vector3(const Vector3 &o) : Vector3(o.x(), o.y(), o.z()) {}
 
         const float &operator[](unsigned int i) const {
             assert(i < 3);
             return this->d[i];
         }
 
-        float& operator[](unsigned int i) {
+        float &operator[](unsigned int i) {
             assert(i < 3);
             return this->d[i];
         }
@@ -81,7 +82,18 @@ namespace octomap {
             return !this->atDown(other);
         }
 
-        Vector3 operator+(const Vector3 &rhs) {
+        [[nodiscard]] float norm() const {
+            return (float) sqrt(pow(this->x(), 2) + pow(this->y(), 2) + pow(this->z(), 2))
+        }
+
+        void normalize() {
+            float norm = this->norm();
+            this->d[0] /= norm;
+            this->d[1] /= norm;
+            this->d[2] /= norm;
+        }
+
+        Vector3 operator+(const Vector3 &rhs) const {
             auto ret = Vector3(*this);
             ret[0] += rhs[0];
             ret[1] += rhs[1];
@@ -89,12 +101,24 @@ namespace octomap {
             return ret;
         }
 
-        Vector3 operator-(const Vector3 &rhs) {
+        Vector3 operator-(const Vector3 &rhs) const {
             auto ret = Vector3(*this);
             ret[0] -= rhs[0];
             ret[1] -= rhs[1];
             ret[2] -= rhs[2];
             return ret;
+        }
+
+        Vector3 operator*(const float factor) const {
+            auto ret = Vector3(*this);
+            ret[0] *= factor;
+            ret[1] *= factor;
+            ret[2] *= factor;
+            return ret;
+        }
+
+        Vector3 operator/(const float factor) const {
+            return *this * float(1.0 / factor);
         }
 
         bool operator==(const Vector3 &rhs) const {

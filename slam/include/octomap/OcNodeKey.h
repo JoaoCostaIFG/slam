@@ -22,9 +22,13 @@ namespace octomap {
         inline static double resolution = 0.1;
         inline static double resolution_factor = 10.0; // 1.0 / resolution
 
-        static uint16_t coord2key(float coord);
+        static uint16_t coord2key(float coord) {
+            return (uint16_t) ((int) floor(resolution_factor * coord) + maxCoord);
+        }
 
-        [[nodiscard]] double key2coord(unsigned int i) const;
+        [[nodiscard]] static float key2coord(uint16_t key) {
+            return float((key - maxCoord + 0.5) * resolution);
+        }
 
     public:
         explicit OcNodeKey(const Vector3 &p);
@@ -35,9 +39,16 @@ namespace octomap {
 
         [[nodiscard]] uint8_t getStep(unsigned int i) const;
 
+        [[nodiscard]] float toCoord(unsigned int i) const;
+
         [[nodiscard]] Vector3 toCoord() const;
 
         const key_type &operator[](unsigned int i) const {
+            assert(i < 3);
+            return k[i];
+        }
+
+        key_type &operator[](unsigned int i) {
             assert(i < 3);
             return k[i];
         }
