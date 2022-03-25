@@ -83,12 +83,7 @@ namespace octomap {
 
         // Sets the node occupancy log-odds. Performs min/max clamping.
         void setLogOdds(float lo) {
-            if (lo >= OcNode::maxThreshold)
-                this->logOdds = (float) OcNode::maxThreshold;
-            else if (lo <= OcNode::minThreshold)
-                this->logOdds = (float) OcNode::minThreshold;
-            else
-                this->logOdds = lo;
+            this->logOdds = std::clamp(lo, (float) OcNode::minThreshold, (float) OcNode::maxThreshold);
         }
 
         void setOccupancy(float occ) {

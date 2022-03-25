@@ -24,8 +24,14 @@ namespace octomap {
 
         const float &operator[](unsigned int i) const {
             assert(i < 3);
-            return d[i];
+            return this->d[i];
         }
+
+        float& operator[](unsigned int i) {
+            assert(i < 3);
+            return this->d[i];
+        }
+
 
         [[nodiscard]] float x() const {
             return (*this)[0];
@@ -73,6 +79,22 @@ namespace octomap {
 
         [[nodiscard]] bool atUp(const Vector3 &other) const {
             return !this->atDown(other);
+        }
+
+        Vector3 operator+(const Vector3 &rhs) {
+            auto ret = Vector3(*this);
+            ret[0] += rhs[0];
+            ret[1] += rhs[1];
+            ret[2] += rhs[2];
+            return ret;
+        }
+
+        Vector3 operator-(const Vector3 &rhs) {
+            auto ret = Vector3(*this);
+            ret[0] -= rhs[0];
+            ret[1] -= rhs[1];
+            ret[2] -= rhs[2];
+            return ret;
         }
 
         bool operator==(const Vector3 &rhs) const {
