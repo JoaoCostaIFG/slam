@@ -83,7 +83,11 @@ namespace octomap {
         }
 
         [[nodiscard]] float norm() const {
-            return (float) sqrt(pow(this->x(), 2) + pow(this->y(), 2) + pow(this->z(), 2))
+            return (float) sqrt(
+                    pow(this->x(), 2) +
+                    pow(this->y(), 2) +
+                    pow(this->z(), 2)
+            );
         }
 
         void normalize() {
@@ -136,6 +140,25 @@ namespace octomap {
         friend std::ostream &operator<<(std::ostream &out, Vector3 const &v) {
             return out <<
                        "(" << v.x() << " " << v.y() << " " << v.z() << ")";
+        }
+
+        typedef float *iterator;
+        typedef const float *const_iterator;
+
+        iterator begin() {
+            return std::begin(this->d);
+        }
+
+        iterator end() {
+            return std::end(this->d);
+        }
+
+        [[nodiscard]] const_iterator begin() const {
+            return std::begin(this->d);
+        }
+
+        [[nodiscard]] const_iterator end() const {
+            return std::end(this->d);
         }
     };
 }

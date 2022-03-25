@@ -76,14 +76,13 @@ void Octomap::rayCast(const Vector3 &orig, const Vector3 &end) {
     }
 
     // Incremental phase
+    //https://github.com/OctoMap/octomap/blob/devel/octomap/include/octomap/OcTreeBaseImpl.hxx
     while (true) { // TODO
-        if (tMax.x() < tMax.y()) {
-            tMax[0] += tDelta.x();
-            coord[0] += step.x();
-        } else {
-            tMax[1] += tDelta.y();
-            coord[1] += step.y();
-        }
+        auto it = std::min_element(std::begin(tMax), std::end(tMax));
+        int coordInd = int(it - std::begin(tMax));
+
+        tMax[coordInd] += tDelta[coordInd];
+        coord[coordInd] += step[coordInd];
     }
 }
 

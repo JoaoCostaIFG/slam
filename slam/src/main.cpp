@@ -9,8 +9,9 @@ using namespace std;
 using namespace octomap;
 
 int main() {
-    //Vector3 vv = Vector3(1, 2, 3);
-    //auto it = std::min_element(std::begin(vv), std::end(vv));
+    Vector3 vv = Vector3(1, 2, 3);
+    auto it = std::min_element(std::begin(vv), std::end(vv));
+    cout << it - std::begin(vv) << endl;
 
     Octomap o = Octomap();
 
