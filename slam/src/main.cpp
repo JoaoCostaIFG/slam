@@ -31,7 +31,6 @@ int main() {
     Octomap o = Octomap();
 
     for (const auto& point : importOff("../datasets/airplane_0119.off")) {
-        //o.rayCastUpdate(Vector3<>(), point, 1.0);
         o.setFull(point);
     }
 

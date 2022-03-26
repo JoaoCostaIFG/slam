@@ -12,7 +12,6 @@ Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
     assert(this->depth >= 1);
     OcNodeKey::setMaxCoord((int) pow(2, maxDepth - 1));
     OcNodeKey::setResolution(resolution);
-    OcNodeKey::setBitCnt(maxDepth);
 
     this->rootNode = nullptr;
 
@@ -104,7 +103,7 @@ std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &
         int coordInd = int(min - std::begin(tMax));
 
         tMax[coordInd] += tDelta[coordInd];
-        coord.set(coordInd, coord[coordInd] + step[coordInd]);
+        coord[coordInd] += step[coordInd];
     }
 
     return ray;
