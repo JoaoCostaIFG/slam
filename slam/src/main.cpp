@@ -36,8 +36,8 @@ int main() {
 
     //auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1.0, 1.0, 1.0));
     //for (auto & it : ray) {
-    //    cout << it.toCoord() << endl;
-    //    o.setOccupancy(it, 1.0);
+    //    cout << it->toCoord() << endl;
+    //    o.setOccupancy(*it, 1.0);
     //}
     //o.setFull(Vector3f(1.0, 1.0, 1.0));
 

@@ -2,6 +2,7 @@
 #define SLAM_OCTOMAP_H
 
 #include <vector>
+#include <memory>
 
 #include "OcNode.h"
 #include "Vector3.h"
@@ -58,7 +59,7 @@ namespace octomap {
 
         // Algorithm from "A Fast Voxel Traversal Algorithm for Ray Tracing" by John Amanatides & Andrew Woo.
         // Based on DDA ray casting algorithm for 3D.
-        std::vector<OcNodeKey> rayCast(const Vector3<> &orig, const Vector3<> &end);
+        std::vector<std::unique_ptr<OcNodeKey>> rayCast(const Vector3<> &orig, const Vector3<> &end);
 
         OcNode* rayCastUpdate(const Vector3<> &orig, const Vector3<> &end, float occ);
 

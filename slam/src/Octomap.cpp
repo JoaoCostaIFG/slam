@@ -44,7 +44,7 @@ OcNode *Octomap::setOccupancy(const OcNodeKey &key, float occ) {
 }
 
 OcNode *Octomap::setOccupancy(const Vector3<> &location, const float occ) {
-    return this->setOccupancy(OcNodeKey(location), occ);
+    return this->setOccupancy(*newOcNodeKey(this->depth, location), occ);
 }
 
 OcNode *Octomap::updateOccupancy(const OcNodeKey &key, float occ) {
@@ -58,25 +58,22 @@ OcNode *Octomap::updateOccupancy(const OcNodeKey &key, float occ) {
 }
 
 OcNode *Octomap::updateOccupancy(const Vector3<> &location, const float occ) {
-    return this->updateOccupancy(OcNodeKey(location), occ);
+    return this->updateOccupancy(*newOcNodeKey(this->depth, location), occ);
 }
 
 OcNode *Octomap::search(const Vector3<> &location) {
     if (this->rootNode == nullptr) return nullptr;
-
-    auto key = OcNodeKey(location);
-    return this->rootNode->search(key, this->depth);
+    return this->rootNode->search(*newOcNodeKey(this->depth, location), this->depth);
 }
 
-std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &end) {
-    std::vector ray = std::vector<OcNodeKey>();
+std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &end) {
+    std::vector ray = std::vector<std::unique_ptr<OcNodeKey>>();
 
-    auto origKey = OcNodeKey(orig);
-    auto endKey = OcNodeKey(end);
-    if (origKey == endKey) return ray;
+    auto coord = newOcNodeKey(this->depth, orig);
+    auto endKey = newOcNodeKey(this->depth, end);
+    if (coord == endKey) return ray;
 
     // Initialization phase
-    auto coord = origKey;
     auto step = Vector3<int>();
     auto tMax = Vector3<double>();
     auto tDelta = Vector3<double>();
@@ -88,7 +85,7 @@ std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &
         if (direction[i] > 0) step[i] = 1.0;
         else step[i] = -1.0;
 
-        double voxelBorder = coord.toCoord(i) +
+        double voxelBorder = coord->toCoord(i) +
                              step[i] * this->stepLookupTable[this->depth + 1];
 
         tMax[i] = (voxelBorder - orig[i]) / direction[i];
@@ -97,13 +94,14 @@ std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &
 
     // Incremental phase
     double *min;
-    while (coord != endKey) {
-        ray.push_back(coord);
+    while (*coord != *endKey) {
+        ray.push_back(std::move(coord));
         min = std::min_element(std::begin(tMax), std::end(tMax));
         int coordInd = int(min - std::begin(tMax));
 
         tMax[coordInd] += tDelta[coordInd];
-        coord[coordInd] += step[coordInd];
+        coord = newOcNodeKey(this->depth, **(ray.end() - 1));
+        coord->set(coordInd, coord->get(coordInd) + step[coordInd]);
     }
 
     return ray;
@@ -112,7 +110,7 @@ std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &
 OcNode *Octomap::rayCastUpdate(const Vector3<> &orig, const Vector3<> &end, float occ) {
     auto ray = this->rayCast(orig, end);
     for (auto &it: ray)
-        this->setEmpty(it);
+        this->setEmpty(*it);
     return this->updateOccupancy(end, occ);
 }
 
