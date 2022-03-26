@@ -31,7 +31,7 @@ namespace octomap {
         }
 
     public:
-        explicit OcNodeKey(const Vector3 &p);
+        explicit OcNodeKey(const Vector3<> &p);
 
         OcNodeKey();
 
@@ -41,7 +41,7 @@ namespace octomap {
 
         [[nodiscard]] float toCoord(unsigned int i) const;
 
-        [[nodiscard]] Vector3 toCoord() const;
+        [[nodiscard]] Vector3<> toCoord() const;
 
         const key_type &operator[](unsigned int i) const {
             assert(i < 3);

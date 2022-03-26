@@ -15,9 +15,7 @@ namespace octomap {
         const unsigned int depth;
         const double resolution; // in meters
 
-        Vector3 treeCenter;
         std::vector<double> stepLookupTable;
-
         // number of nodes in the tree (starts with 1 root node)
         OcNode *rootNode;
     public:
@@ -32,19 +30,21 @@ namespace octomap {
             return this->rootNode->getChildCount() + 1;
         }
 
-        OcNode *setOccupancy(const Vector3 &location, float occ);
+        OcNode *setOccupancy(const Vector3<> &location, float occ);
 
-        OcNode *setFull(const Vector3 &location) {
+        OcNode *setFull(const Vector3<> &location) {
             return this->setOccupancy(location, 1.0);
         }
 
-        OcNode *setEmpty(const Vector3 &location) {
+        OcNode *setEmpty(const Vector3<> &location) {
             return this->setOccupancy(location, 0.0);
         }
 
-        OcNode *search(const Vector3 &location);
+        OcNode *search(const Vector3<> &location);
 
-        void rayCast(const Vector3 &orig, const Vector3 &end);
+        // Algorithm from "A Fast Voxel Traversal Algorithm for Ray Tracing" by John Amanatides & Andrew Woo.
+        // Based on DDA ray casting algorithm for 3D.
+        std::vector<OcNodeKey> rayCast(const Vector3<> &orig, const Vector3<> &end);
 
         // The binary format is compatible with octoviz
         // See: https://github.com/OctoMap/octomap/tree/devel/octovis

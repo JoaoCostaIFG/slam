@@ -1,4 +1,3 @@
-#include <algorithm>
 #include <bitset>
 #include <iostream>
 
@@ -9,11 +8,12 @@ using namespace std;
 using namespace octomap;
 
 int main() {
-    Vector3 vv = Vector3(1, 2, 3);
-    auto it = std::min_element(std::begin(vv), std::end(vv));
-    cout << it - std::begin(vv) << endl;
-
     Octomap o = Octomap();
+
+    auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1, 1, 1));
+    for (auto it = ray.begin(); it != ray.end(); ++it) {
+        cout << *it << " " << (*it).toCoord() << endl;
+    }
 
     for (int x = -20; x < 20; x++) {
         for (int y = -20; y < 20; y++) {
@@ -26,9 +26,9 @@ int main() {
     }
 
     OcNode *n;
-    n = o.search(Vector3(1000, 1000, 1000));
+    n = o.search(Vector3<>(1000, 1000, 1000));
     cout << ((n != nullptr) ? "findei\n" : "n encontralhei\n");
-    n = o.search(Vector3(0, 0, 0));
+    n = o.search(Vector3<>(0, 0, 0));
     cout << ((n != nullptr) ? "findei\n" : "n encontralhei\n");
 
     cout << "Size: " << o.getSize() << endl;

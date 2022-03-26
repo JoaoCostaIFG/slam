@@ -8,7 +8,7 @@
 
 using namespace octomap;
 
-OcNodeKey::OcNodeKey(const Vector3 &p) {
+OcNodeKey::OcNodeKey(const Vector3<> &p) {
     k[0] = coord2key(p[0]);
     k[1] = coord2key(p[1]);
     k[2] = coord2key(p[2]);
@@ -29,7 +29,7 @@ float OcNodeKey::toCoord(unsigned int i) const {
     return OcNodeKey::key2coord((*this)[i]);
 }
 
-Vector3 OcNodeKey::toCoord() const {
+Vector3<> OcNodeKey::toCoord() const {
     return {
             OcNodeKey::key2coord((*this)[0]),
             OcNodeKey::key2coord((*this)[1]),
