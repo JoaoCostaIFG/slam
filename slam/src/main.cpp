@@ -30,7 +30,7 @@ vector<Vector3f> importOff(const string &filename) {
 int main() {
     Octomap o = Octomap();
 
-    for (const auto& point : importOff("toilet_0398.off")) {
+    for (const auto& point : importOff("../datasets/airplane_0119.off")) {
         o.setFull(point);
     }
 
