@@ -8,26 +8,26 @@
 #include <cassert>
 #include <cinttypes>
 #include <bitset>
+#include <boost/dynamic_bitset.hpp>
 
 #include "Vector3.h"
 
 namespace octomap {
-    typedef uint16_t key_type;
-
     class OcNodeKey {
     private:
-        key_type k[3]{};
+        boost::dynamic_bitset<> k[3];
 
         inline static unsigned int maxCoord = 32768;
         inline static double resolution = 0.1;
         inline static double resolution_factor = 10.0; // 1.0 / resolution
+        inline static unsigned int bitCnt = 16;
 
-        static uint16_t coord2key(float coord) {
-            return (uint16_t) ((int) floor(resolution_factor * coord) + maxCoord);
+        static unsigned int coord2key(float coord) {
+            return (unsigned int) (floor(resolution_factor * coord) + maxCoord);
         }
 
-        [[nodiscard]] static float key2coord(uint16_t key) {
-            return float((key - maxCoord + 0.5) * resolution);
+        [[nodiscard]] static float key2coord(const boost::dynamic_bitset<> &key) {
+            return float((key.to_ulong() - maxCoord + 0.5) * resolution);
         }
 
     public:
@@ -35,22 +35,20 @@ namespace octomap {
 
         OcNodeKey();
 
-        OcNodeKey(const OcNodeKey &other);
-
         [[nodiscard]] uint8_t getStep(unsigned int i) const;
 
         [[nodiscard]] float toCoord(unsigned int i) const;
 
         [[nodiscard]] Vector3<> toCoord() const;
 
-        const key_type &operator[](unsigned int i) const {
+        void set(unsigned int i, unsigned int val) {
             assert(i < 3);
-            return k[i];
+            this->k[i] = boost::dynamic_bitset(OcNodeKey::bitCnt, val);
         }
 
-        key_type &operator[](unsigned int i) {
+        unsigned int operator[](unsigned int i) const {
             assert(i < 3);
-            return k[i];
+            return (unsigned int) k[i].to_ulong();
         }
 
         bool operator==(const OcNodeKey &rhs) const {
@@ -68,6 +66,10 @@ namespace octomap {
         static void setResolution(double r) {
             OcNodeKey::resolution = r;
             OcNodeKey::resolution_factor = 1.0 / r;
+        }
+
+        static void setBitCnt(unsigned int bc) {
+            OcNodeKey::bitCnt = bc;
         }
 
         friend std::ostream &operator<<(std::ostream &out, OcNodeKey const &key) {
