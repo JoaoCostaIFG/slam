@@ -10,11 +10,12 @@ using namespace octomap;
 int main() {
     Octomap o = Octomap();
 
-    auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1, 1, 1));
+    auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1.0, 1.0, 1.0));
     for (auto & it : ray) {
         cout << it.toCoord() << endl;
-        o.setFull(it.toCoord());
+        o.setOccupancy(it, 1.0);
     }
+    o.setFull(Vector3f(1.0, 1.0, 1.0));
 
     //int base = 0;
     //for (int x = base + -20; x < base + 20; x++) {

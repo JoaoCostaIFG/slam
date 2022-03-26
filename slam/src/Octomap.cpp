@@ -47,6 +47,20 @@ OcNode *Octomap::setOccupancy(const Vector3<> &location, const float occ) {
     return this->setOccupancy(OcNodeKey(location), occ);
 }
 
+OcNode *Octomap::updateOccupancy(const OcNodeKey &key, float occ) {
+    bool createdRoot = false;
+    if (this->rootNode == nullptr) {
+        this->rootNode = new OcNode();
+        createdRoot = true;
+    }
+
+    return this->rootNode->updateOccupancy(key, this->depth, occ, createdRoot);
+}
+
+OcNode *Octomap::updateOccupancy(const Vector3<> &location, const float occ) {
+    return this->updateOccupancy(OcNodeKey(location), occ);
+}
+
 OcNode *Octomap::search(const Vector3<> &location) {
     if (this->rootNode == nullptr) return nullptr;
 
@@ -68,7 +82,6 @@ std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &
     auto tDelta = Vector3<double>();
 
     auto direction = (end - orig);
-    float length = direction.norm();
     direction.normalize();
 
     for (int i = 0; i < 3; ++i) {
@@ -84,9 +97,9 @@ std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &
 
     // Incremental phase
     double *min;
-    while (coord != endKey &&
-           *(min = std::min_element(std::begin(tMax), std::end(tMax))) <= length) {
+    while (coord != endKey) {
         ray.push_back(coord);
+        min = std::min_element(std::begin(tMax), std::end(tMax));
         int coordInd = int(min - std::begin(tMax));
 
         tMax[coordInd] += tDelta[coordInd];
@@ -99,8 +112,8 @@ std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &
 OcNode *Octomap::rayCastUpdate(const Vector3<> &orig, const Vector3<> &end, float occ) {
     auto ray = this->rayCast(orig, end);
     for (auto &it: ray)
-        this->setOccupancy(it, 0.0);
-    return this->setOccupancy(end, occ);
+        this->setEmpty(it);
+    return this->updateOccupancy(end, occ);
 }
 
 bool Octomap::writeBinary(std::ostream &os) {
