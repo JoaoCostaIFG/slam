@@ -44,6 +44,8 @@ namespace octomap {
 
         OcNode *search(const Vector3 &location);
 
+        void rayCast(const Vector3 &orig, const Vector3 &end);
+
         // The binary format is compatible with octoviz
         // See: https://github.com/OctoMap/octomap/tree/devel/octovis
         bool writeBinary(std::ostream &os);
