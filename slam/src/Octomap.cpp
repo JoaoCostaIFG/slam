@@ -33,9 +33,7 @@ Octomap::~Octomap() {
     delete this->rootNode;
 }
 
-OcNode *Octomap::setOccupancy(const Vector3<> &location, const float occ) {
-    auto key = OcNodeKey(location);
-
+OcNode *Octomap::setOccupancy(const OcNodeKey &key, float occ) {
     bool createdRoot = false;
     if (this->rootNode == nullptr) {
         this->rootNode = new OcNode();
@@ -43,6 +41,10 @@ OcNode *Octomap::setOccupancy(const Vector3<> &location, const float occ) {
     }
 
     return this->rootNode->setOccupancy(key, this->depth, occ, createdRoot);
+}
+
+OcNode *Octomap::setOccupancy(const Vector3<> &location, const float occ) {
+    return this->setOccupancy(OcNodeKey(location), occ);
 }
 
 OcNode *Octomap::search(const Vector3<> &location) {
@@ -58,7 +60,6 @@ std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &
     auto origKey = OcNodeKey(orig);
     auto endKey = OcNodeKey(end);
     if (origKey == endKey) return ray;
-    ray.push_back(origKey);
 
     // Initialization phase
     auto coord = origKey;
@@ -67,6 +68,7 @@ std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &
     auto tDelta = Vector3<double>();
 
     auto direction = (end - orig);
+    float length = direction.norm();
     direction.normalize();
 
     for (int i = 0; i < 3; ++i) {
@@ -81,17 +83,24 @@ std::vector<OcNodeKey> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &
     }
 
     // Incremental phase
-    while (true) {
-        auto it = std::min_element(std::begin(tMax), std::end(tMax));
-        int coordInd = int(it - std::begin(tMax));
+    double *min;
+    while (coord != endKey &&
+           *(min = std::min_element(std::begin(tMax), std::end(tMax))) <= length) {
+        ray.push_back(coord);
+        int coordInd = int(min - std::begin(tMax));
 
         tMax[coordInd] += tDelta[coordInd];
         coord[coordInd] += step[coordInd];
-        if (coord == endKey) break;
-        ray.push_back(coord);
     }
 
     return ray;
+}
+
+OcNode *Octomap::rayCastUpdate(const Vector3<> &orig, const Vector3<> &end, float occ) {
+    auto ray = this->rayCast(orig, end);
+    for (auto &it: ray)
+        this->setOccupancy(it, 0.0);
+    return this->setOccupancy(end, occ);
 }
 
 bool Octomap::writeBinary(std::ostream &os) {

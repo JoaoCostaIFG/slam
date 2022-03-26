@@ -11,25 +11,26 @@ int main() {
     Octomap o = Octomap();
 
     auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1, 1, 1));
-    for (auto it = ray.begin(); it != ray.end(); ++it) {
-        cout << *it << " " << (*it).toCoord() << endl;
+    for (auto & it : ray) {
+        cout << it.toCoord() << endl;
+        o.setFull(it.toCoord());
     }
 
-    for (int x = -20; x < 20; x++) {
-        for (int y = -20; y < 20; y++) {
-            for (int z = -20; z < 20; z++) {
-                Vector3 endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
-                // integrate 'occupied' measurement
-                OcNode *node = o.setOccupancy(endpoint, 1.0);
-            }
-        }
-    }
+    //for (int x = -20; x < 20; x++) {
+    //    for (int y = -20; y < 20; y++) {
+    //        for (int z = -20; z < 20; z++) {
+    //            Vector3 endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
+    //            // integrate 'occupied' measurement
+    //            OcNode *node = o.setOccupancy(endpoint, 1.0);
+    //        }
+    //    }
+    //}
 
-    OcNode *n;
-    n = o.search(Vector3<>(1000, 1000, 1000));
-    cout << ((n != nullptr) ? "findei\n" : "n encontralhei\n");
-    n = o.search(Vector3<>(0, 0, 0));
-    cout << ((n != nullptr) ? "findei\n" : "n encontralhei\n");
+    //OcNode *n;
+    //n = o.search(Vector3<>(1000, 1000, 1000));
+    //cout << ((n != nullptr) ? "findei\n" : "n encontralhei\n");
+    //n = o.search(Vector3<>(0, 0, 0));
+    //cout << ((n != nullptr) ? "findei\n" : "n encontralhei\n");
 
     cout << "Size: " << o.getSize() << endl;
     o.writeBinary("rust.bt");
