@@ -132,4 +132,4 @@ dmypy.json
 cmake-build-debug/
 
 papers/*
-
+datasets/ModelNet40/
