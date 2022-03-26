@@ -8,7 +8,7 @@
 
 using namespace octomap;
 
-OcNodeKey::OcNodeKey(const Vector3 &p) {
+OcNodeKey::OcNodeKey(const Vector3<> &p) {
     k[0] = coord2key(p[0]);
     k[1] = coord2key(p[1]);
     k[2] = coord2key(p[2]);
@@ -19,25 +19,20 @@ OcNodeKey::OcNodeKey() : OcNodeKey(Vector3()) {}
 OcNodeKey::OcNodeKey(const octomap::OcNodeKey &other) :
         k{other[0], other[1], other[2]} {}
 
-uint16_t OcNodeKey::coord2key(float coord) {
-    return (uint16_t)((int) floor(resolution_factor * coord) + maxCoord);
-}
-
-double OcNodeKey::key2coord(unsigned int i) const {
-    return (double((int) (*this)[i] - (int) OcNodeKey::maxCoord) + 0.5) * OcNodeKey::resolution;
-}
-
 uint8_t OcNodeKey::getStep(unsigned int i) const {
     assert(i <= 15);
     uint16_t mask = (1 << i);
     return bool((*this)[0] & mask) * 1 + bool((*this)[1] & mask) * 2 + bool((*this)[2] & mask) * 4;
 }
 
+float OcNodeKey::toCoord(unsigned int i) const {
+    return OcNodeKey::key2coord((*this)[i]);
+}
 
-Vector3 OcNodeKey::toCoord() const {
+Vector3<> OcNodeKey::toCoord() const {
     return {
-            static_cast<float>(this->key2coord(0)),
-            static_cast<float>(this->key2coord(1)),
-            static_cast<float>(this->key2coord(2))
+            OcNodeKey::key2coord((*this)[0]),
+            OcNodeKey::key2coord((*this)[1]),
+            OcNodeKey::key2coord((*this)[2])
     };
 }
