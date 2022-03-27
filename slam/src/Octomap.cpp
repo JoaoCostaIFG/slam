@@ -47,7 +47,7 @@ OcNode *Octomap::setOccupancy(const Vector3<> &location, const float occ) {
     return this->setOccupancy(*newOcNodeKey(this->depth, location), occ);
 }
 
-OcNode *Octomap::updateOccupancy(const OcNodeKey &key, float occ) {
+OcNode *Octomap::updateOccupancy(const OcNodeKey &key, const float occ) {
     bool createdRoot = false;
     if (this->rootNode == nullptr) {
         this->rootNode = new OcNode();
