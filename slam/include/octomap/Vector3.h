@@ -83,8 +83,8 @@ namespace octomap {
             return !this->atDown(other);
         }
 
-        [[nodiscard]] T norm() const {
-            return (T) sqrt(
+        [[nodiscard]] double norm() const {
+            return sqrt(
                     pow(this->x(), 2) +
                     pow(this->y(), 2) +
                     pow(this->z(), 2)

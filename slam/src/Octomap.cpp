@@ -79,6 +79,7 @@ std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCast(const Vector3<> &orig, 
     auto tDelta = Vector3<double>();
 
     auto direction = (end - orig);
+    double length = direction.norm();
     direction.normalize();
 
     for (int i = 0; i < 3; ++i) {
@@ -94,9 +95,9 @@ std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCast(const Vector3<> &orig, 
 
     // Incremental phase
     double *min;
-    while (*coord != *endKey) {
+    while (*coord != *endKey && *(min = std::min_element(tMax.begin(), tMax.end())) <= length) {
+        std::cout << coord->toCoord() << std::endl;
         ray.push_back(std::move(coord));
-        min = std::min_element(std::begin(tMax), std::end(tMax));
         int coordInd = int(min - std::begin(tMax));
 
         tMax[coordInd] += tDelta[coordInd];
