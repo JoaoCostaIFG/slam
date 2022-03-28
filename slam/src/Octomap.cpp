@@ -33,13 +33,16 @@ Octomap::~Octomap() {
     delete this->rootNode;
 }
 
-OcNode *Octomap::setOccupancy(const OcNodeKey &key, float occ) {
-    bool createdRoot = false;
+bool Octomap::createRootIfNeeded() {
     if (this->rootNode == nullptr) {
         this->rootNode = new OcNode();
-        createdRoot = true;
+        return true;
     }
+    return false;
+}
 
+OcNode *Octomap::setOccupancy(const OcNodeKey &key, float occ) {
+    bool createdRoot = this->createRootIfNeeded();
     return this->rootNode->setOccupancy(key, this->depth, occ, createdRoot);
 }
 
@@ -47,23 +50,35 @@ OcNode *Octomap::setOccupancy(const Vector3<> &location, const float occ) {
     return this->setOccupancy(*newOcNodeKey(this->depth, location), occ);
 }
 
-OcNode *Octomap::updateOccupancy(const OcNodeKey &key, const float occ) {
-    bool createdRoot = false;
-    if (this->rootNode == nullptr) {
-        this->rootNode = new OcNode();
-        createdRoot = true;
-    }
+OcNode *Octomap::updateLogOdds(const OcNodeKey &key, const float logOdds) {
+    // We do a search before updating the target node. This small overhead can save a lot
+    // of time in the long-run. Note: the search takes O(l) time, where l is the max depth, which is constant.
+    // If the node already exists, we can see if the update would change its log-odds. If the node is stable
+    // (+/- 0 affected) or the log-odds is 0, the update wouldn't change anything, but we would still need to
+    // perform the intermediate node updates: the intermediate nodes wouldn't change, but the check would be performed.
+    auto s = this->search(key);
+    if (s && !s->wouldChange(logOdds)) return s;
 
-    return this->rootNode->updateOccupancy(key, this->depth, occ, createdRoot);
+    bool createdRoot = this->createRootIfNeeded();
+    return this->rootNode->updateLogOdds(key, this->depth, logOdds, createdRoot);
+}
+
+OcNode *Octomap::updateOccupancy(const OcNodeKey &key, const float occ) {
+    return this->updateLogOdds(key, (float) OcNode::prob2logodds(occ));
 }
 
 OcNode *Octomap::updateOccupancy(const Vector3<> &location, const float occ) {
     return this->updateOccupancy(*newOcNodeKey(this->depth, location), occ);
 }
 
+OcNode *Octomap::search(const OcNodeKey &key) {
+    if (this->rootNode == nullptr) return nullptr;
+    return this->rootNode->search(key, this->depth);
+}
+
 OcNode *Octomap::search(const Vector3<> &location) {
     if (this->rootNode == nullptr) return nullptr;
-    return this->rootNode->search(*newOcNodeKey(this->depth, location), this->depth);
+    return this->search(*newOcNodeKey(this->depth, location));
 }
 
 std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &end) {
