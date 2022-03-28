@@ -19,6 +19,8 @@ namespace octomap {
         std::vector<double> stepLookupTable;
         // number of nodes in the tree (starts with 1 root node)
         OcNode *rootNode;
+
+        bool createRootIfNeeded();
     public:
         Octomap(unsigned int maxDepth, double resolution);
 
@@ -51,9 +53,13 @@ namespace octomap {
             return this->setOccupancy(location, 0.0);
         }
 
+        OcNode *updateLogOdds(const OcNodeKey &key, float logOdds);
+
         OcNode *updateOccupancy(const OcNodeKey &key, float occ);
 
         OcNode *updateOccupancy(const Vector3<> &location, float occ);
+
+        OcNode *search(const OcNodeKey &key);
 
         OcNode *search(const Vector3<> &location);
 

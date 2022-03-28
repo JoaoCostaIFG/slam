@@ -50,7 +50,8 @@ namespace octomap {
         // Use the max of the children's occupancy (conservative approach).
         void updateBasedOnChildren();
 
-        OcNode *setOrUpdateLogOdds(const OcNodeKey &key, unsigned int depth, float lo, bool isUpdate, bool justCreated = false);
+        OcNode *
+        setOrUpdateLogOdds(const OcNodeKey &key, unsigned int depth, float lo, bool isUpdate, bool justCreated = false);
 
         void writeBinaryInner(std::ostream &os, int baseI, std::bitset<8> &childBitset) const;
 
@@ -98,8 +99,26 @@ namespace octomap {
             return this->logOdds >= OcNode::occThreshold;
         }
 
+        [[nodiscard]] bool isOccupiedStable() const {
+            return this->logOdds == OcNode::maxThreshold;
+        }
+
         [[nodiscard]] bool isFree() const {
             return !this->isOccupied();
+        }
+
+        [[nodiscard]] bool isFreeStable() const {
+            return this->logOdds == OcNode::minThreshold;
+        }
+
+        [[nodiscard]] bool wouldChange(float lo) const {
+            if (lo == OcNode::occThreshold) return false;
+            if (lo < 0) {
+                if (this->isFreeStable()) return false;
+            } else if (lo > 0) {
+                if (this->isOccupiedStable()) return false;
+            }
+            return true;
         }
 
         OcNode *setLogOdds(const OcNodeKey &key, unsigned int depth, float lo, bool justCreated = false);
