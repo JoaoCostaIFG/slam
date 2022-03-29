@@ -27,6 +27,7 @@ in off format.
   num set de frees e ocupados~~;
 - Descretizar endpoints? Basicamente so guardar o primeiro raio para cada endpoint
   na point cloud => menos raycasts mas resultado diferente;
+- Tratar range de valores à volta do 0.5 (e.g. [0.45, 0.55]) como unknown tmb;
 - Documentar coisas;
 - Explicar keys;
 - Bounds check on points;
