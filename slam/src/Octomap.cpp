@@ -2,7 +2,9 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#ifdef _OPENMP
 #include <omp.h>
+#endif
 
 #include "../include/octomap/Octomap.h"
 
@@ -142,16 +144,22 @@ OcNode *Octomap::rayCastUpdate(const Vector3<> &orig, const Vector3<> &end, floa
 void Octomap::pointcloudUpdate(const std::vector<Vector3f> &pointcloud, const Vector3f &origin) {
     std::unordered_set<std::unique_ptr<OcNodeKey>, OcNodeKey::Hash, OcNodeKey::Cmp> freeNodes, occupiedNodes;
 
+#ifdef _OPENMP
 #pragma omp parallel for schedule(guided) default(none) shared(pointcloud, origin, freeNodes, occupiedNodes)
+#endif
     for (const auto &endpoint: pointcloud) {
         auto ray = this->rayCast(origin, endpoint);
+#ifdef _OPENMP
 #pragma omp critical (freeNodes_insert)
+#endif
         {
             for (auto &rayPoint: ray) {
                 freeNodes.insert(std::move(rayPoint));
             }
         }
+#ifdef _OPENMP
 #pragma omp critical (occupiedNodes_insert)
+#endif
         {
             occupiedNodes.insert(newOcNodeKey(this->depth, endpoint));
         }
