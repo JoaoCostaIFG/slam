@@ -13,46 +13,52 @@ using namespace boost::property_tree;
 
 class Beam {
 private:
-    uint8_t *intensities;
-    double time;
-    double angle;
+  uint8_t* intensities;
+  double time;
+  double angle;
 
 public:
-    ~Beam() {
-        delete [] intensities;
-        intensities = nullptr;
-    }
+  ~Beam() {
+    delete[] intensities;
+    intensities = nullptr;
+  }
 
-    Beam(uint8_t *intensities, double time, double angle) : intensities(intensities), time(time), angle(angle) {}
+  Beam(uint8_t* intensities, double time, double angle) : intensities(intensities), time(time), angle(angle) {}
 
-    [[nodiscard]] uint8_t* getIntensities() const { return intensities; }
-    [[nodiscard]] double getTime() const { return time; }
-    [[nodiscard]] double getAngle() const { return angle; }
+  [[nodiscard]] uint8_t* getIntensities() const { return intensities; }
 
-    friend std::ostream &operator<<(std::ostream &os, const Beam &beam);
-    static Beam* importJson(const ptree &p);
+  [[nodiscard]] double getTime() const { return time; }
+
+  [[nodiscard]] double getAngle() const { return angle; }
+
+  friend std::ostream& operator<<(std::ostream& os, const Beam& beam);
+
+  static Beam* importJson(const ptree& p);
 };
 
 class Scan {
 private:
-    double step_dist;
-    std::vector<const Beam*> beams;
+  double step_dist;
+  std::vector<const Beam*> beams;
 
 public:
-    ~Scan() {
-        for (const Beam* beam: beams)
-            delete beam;
-    }
+  ~Scan() {
+    for (const Beam* beam: beams)
+      delete beam;
+  }
 
-    explicit Scan(double step_dist) : step_dist(step_dist), beams() {}
-    [[nodiscard]] std::vector<const Beam*> getBeams() const { return beams; }
-    [[nodiscard]] double getStepDist() const { return step_dist; }
+  explicit Scan(double step_dist) : step_dist(step_dist), beams() {}
 
-    static Scan* importJson(std::istream &stream);
-    void addBeam(const Beam *beam) { beams.push_back(beam); }
-    friend std::ostream &operator<<(std::ostream &os, const Scan &scan);
+  [[nodiscard]] std::vector<const Beam*> getBeams() const { return beams; }
+
+  [[nodiscard]] double getStepDist() const { return step_dist; }
+
+  static Scan* importJson(std::istream& stream);
+
+  void addBeam(const Beam* beam) { beams.push_back(beam); }
+
+  friend std::ostream& operator<<(std::ostream& os, const Scan& scan);
 };
-
 
 
 #endif //SLAM_PROJECT_SCAN_H
