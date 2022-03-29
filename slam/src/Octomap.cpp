@@ -142,7 +142,7 @@ OcNode *Octomap::rayCastUpdate(const Vector3<> &orig, const Vector3<> &end, floa
 void Octomap::pointcloudUpdate(const std::vector<Vector3f> &pointcloud, const Vector3f &origin) {
     std::unordered_set<std::unique_ptr<OcNodeKey>, OcNodeKey::Hash, OcNodeKey::Cmp> freeNodes, occupiedNodes;
 
-#pragma omp parallel for schedule(auto) default(none) shared(pointcloud, origin, freeNodes, occupiedNodes)
+#pragma omp parallel for schedule(guided) default(none) shared(pointcloud, origin, freeNodes, occupiedNodes)
     for (const auto &endpoint: pointcloud) {
         auto ray = this->rayCast(origin, endpoint);
 #pragma omp critical (freeNodes_insert)
