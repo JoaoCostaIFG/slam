@@ -23,8 +23,8 @@ in off format.
   seguidas;
 - ~~Antes de dar update a nó, ver se o novo valor pode afetar o atual (nó já
   estável) => tem overhead em search mas deve ajudar em muitos casos~~;
-- Pointcloud insert pode ser paralelizado => calcular rays em paralelo e inserir
-  num set de frees e ocupados;
+- ~~Pointcloud insert pode ser paralelizado => calcular rays em paralelo e inserir
+  num set de frees e ocupados~~;
 - Descretizar endpoints? Basicamente so guardar o primeiro raio para cada endpoint
   na point cloud => menos raycasts mas resultado diferente;
 - Documentar coisas;
