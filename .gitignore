@@ -135,3 +135,6 @@ build/
 papers/*
 datasets/ModelNet40/
 
+# exported map json data
+
+data.json
