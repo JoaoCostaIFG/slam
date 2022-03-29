@@ -4,6 +4,7 @@
 #include <ctime>
 
 #include "../include/octomap/Octomap.h"
+#include "../include/Scan.h"
 
 using namespace std;
 using namespace octomap;
@@ -29,7 +30,7 @@ vector<Vector3f> importOff(const string &filename) {
 }
 
 int main() {
-    Octomap o = Octomap();
+    //Octomap o = Octomap();
 
     //o.rayCast(Vector3(), Vector3f(1, 1, 1));
     //o.rayCast(Vector3(), Vector3f(1267.09998, 2835.5, 272.221985));
@@ -38,12 +39,12 @@ int main() {
     //}
     //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
-    for (int i = 0; i < 3; ++i) {
-        clock_t start = clock();
-        //o.pointcloudUpdate(vector<Vector3f>({Vector3f(67.09998, 35.5, 2.221985)}), Vector3f());
-        o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-        cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
-    }
+    //for (int i = 0; i < 3; ++i) {
+    //    clock_t start = clock();
+    //    //o.pointcloudUpdate(vector<Vector3f>({Vector3f(67.09998, 35.5, 2.221985)}), Vector3f());
+    //    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+    //    cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
+    //}
 
     //for (const auto& point : importOff("../datasets/airplane_small.off")) {
     //    o.setFull(point);
@@ -58,6 +59,12 @@ int main() {
 
     //cout << "Size: " << o.getSize() << endl;
     //o.writeBinary("rust.bt");
+
+    ifstream ss("deletethis.json");
+    Scan *s = Scan::importJson(ss);
+    cout << "Scan: " << *s << endl;
+    for (auto beam: s->getBeams())
+        cout << *beam << endl;
 
     return EXIT_SUCCESS;
 }
