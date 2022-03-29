@@ -25,6 +25,8 @@ in off format.
   estável) => tem overhead em search mas deve ajudar em muitos casos~~;
 - Pointcloud insert pode ser paralelizado => calcular rays em paralelo e inserir
   num set de frees e ocupados;
+- Descretizar endpoints? Basicamente so guardar o primeiro raio para cada endpoint
+  na point cloud => menos raycasts mas resultado diferente;
 - Documentar coisas;
 - Explicar keys;
 - Bounds check on points;

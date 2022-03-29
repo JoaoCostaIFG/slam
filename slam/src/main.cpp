@@ -37,9 +37,12 @@ int main() {
     //}
     //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
-    for (const auto& point : importOff("../datasets/airplane_small.off")) {
-        o.setFull(point);
-    }
+    o.pointcloudUpdate(vector<Vector3f>({Vector3f(67.09998, 35.5, 2.221985)}), Vector3f());
+    //o.pointcloudUpdate(importOff("../datasets/airplane_small.off"), Vector3f());
+
+    //for (const auto& point : importOff("../datasets/airplane_small.off")) {
+    //    o.setFull(point);
+    //}
 
     //auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1.0, 1.0, 1.0));
     //for (auto & it : ray) {

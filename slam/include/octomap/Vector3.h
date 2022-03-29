@@ -163,7 +163,9 @@ namespace octomap {
         }
     };
 
+    using Vector3d = Vector3<double>;
     using Vector3f = Vector3<float>;
+    using Vector3i = Vector3<int>;
 }
 
 #endif //SLAM_VECTOR3_H

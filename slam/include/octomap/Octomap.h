@@ -1,8 +1,9 @@
 #ifndef SLAM_OCTOMAP_H
 #define SLAM_OCTOMAP_H
 
-#include <vector>
 #include <memory>
+#include <unordered_set>
+#include <vector>
 
 #include "OcNode.h"
 #include "Vector3.h"
@@ -21,6 +22,7 @@ namespace octomap {
         OcNode *rootNode;
 
         bool createRootIfNeeded();
+
     public:
         Octomap(unsigned int maxDepth, double resolution);
 
@@ -67,7 +69,13 @@ namespace octomap {
         // Based on DDA ray casting algorithm for 3D.
         std::vector<std::unique_ptr<OcNodeKey>> rayCast(const Vector3<> &orig, const Vector3<> &end);
 
-        OcNode* rayCastUpdate(const Vector3<> &orig, const Vector3<> &end, float occ);
+        OcNode *rayCastUpdate(const Vector3<> &orig, const Vector3<> &end, float occ);
+
+        // Calculates a ray for each endpoint in pointcloud (with origin in origin).
+        // The rays are calculated in parallel and the reported free and occupied nodes for
+        // each ray are joint in 2 sets.
+        // These sets are processed so each node is only updated once and occupied nodes have priority.
+        void pointcloudUpdate(const std::vector<Vector3f> &pointcloud, const Vector3f &origin);
 
         // The binary format is compatible with octoviz
         // See: https://github.com/OctoMap/octomap/tree/devel/octovis

@@ -49,6 +49,28 @@ namespace octomap {
             OcNodeKey::resolution = r;
             OcNodeKey::resolution_factor = 1.0 / r;
         }
+
+        struct Cmp {
+            bool operator()(const OcNodeKey &a, const OcNodeKey &b) const {
+                return a == b;
+            }
+
+            bool operator()(const std::unique_ptr<OcNodeKey> &a, const std::unique_ptr<OcNodeKey> &b) const {
+                return this->operator()(*a, *b);
+            }
+        };
+
+        struct Hash {
+            size_t operator()(const OcNodeKey &key) const {
+                return (size_t) key.get(0) +
+                       2287 * (size_t) key.get(1) +
+                       104729 * (size_t) key.get(2);
+            }
+
+            size_t operator()(const std::unique_ptr<OcNodeKey> &key) const {
+                return this->operator()(*key);
+            }
+        };
     };
 
     template<typename T = uint16_t>

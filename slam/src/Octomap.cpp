@@ -2,6 +2,7 @@
 #include <cmath>
 #include <iostream>
 #include <fstream>
+#include <omp.h>
 
 #include "../include/octomap/Octomap.h"
 
@@ -82,16 +83,16 @@ OcNode *Octomap::search(const Vector3<> &location) {
 }
 
 std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCast(const Vector3<> &orig, const Vector3<> &end) {
-    std::vector ray = std::vector<std::unique_ptr<OcNodeKey>>();
+    auto ray = std::vector<std::unique_ptr<OcNodeKey>>();
 
     auto coord = newOcNodeKey(this->depth, orig);
     auto endKey = newOcNodeKey(this->depth, end);
     if (coord == endKey) return ray;
 
     // Initialization phase
-    auto step = Vector3<int>();
-    auto tMax = Vector3<double>();
-    auto tDelta = Vector3<double>();
+    auto step = Vector3i();
+    auto tMax = Vector3d();
+    auto tDelta = Vector3d();
 
     auto direction = (end - orig);
     direction.normalize();
@@ -119,11 +120,12 @@ std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCast(const Vector3<> &orig, 
         //std::cout << coord->get(0) << " " << coord->get(1) << " " << coord->get(2) <<
         //          " " << coord->toCoord()
         //          << std::endl;
+        auto newCoord = newOcNodeKey(this->depth, *coord);
         ray.push_back(std::move(coord));
         int coordInd = int(min - std::begin(tMax));
 
         tMax[coordInd] += tDelta[coordInd];
-        coord = newOcNodeKey(this->depth, **(ray.end() - 1));
+        coord = std::move(newCoord);
         coord->set(coordInd, coord->get(coordInd) + step[coordInd]);
     }
 
@@ -135,6 +137,42 @@ OcNode *Octomap::rayCastUpdate(const Vector3<> &orig, const Vector3<> &end, floa
     for (auto &it: ray)
         this->setEmpty(*it);
     return this->updateOccupancy(end, occ);
+}
+
+void Octomap::pointcloudUpdate(const std::vector<Vector3f> &pointcloud, const Vector3f &origin) {
+    std::unordered_set<std::unique_ptr<OcNodeKey>, OcNodeKey::Hash, OcNodeKey::Cmp> freeNodes, occupiedNodes;
+
+#pragma omp parallel for schedule(auto) default(none) shared(pointcloud, origin, freeNodes, occupiedNodes)
+    for (const auto &endpoint: pointcloud) {
+        auto ray = this->rayCast(origin, endpoint);
+#pragma omp critical (freeNodes_insert)
+        {
+            for (auto &rayPoint: ray) {
+                freeNodes.insert(std::move(rayPoint));
+            }
+        }
+#pragma omp critical (occupiedNodes_insert)
+        {
+            occupiedNodes.insert(newOcNodeKey(this->depth, endpoint));
+        }
+    }
+
+    // remove updates on freenodes that will be set as occupied
+    for (auto it = freeNodes.begin(); it != freeNodes.end();) {
+        if (occupiedNodes.find(*it) != occupiedNodes.end()) {
+            it = freeNodes.erase(it);
+        } else {
+            ++it;
+        }
+    }
+
+    // update nodes
+    for (auto &endpoint: freeNodes) {
+        this->updateOccupancy(*endpoint, 0);
+    }
+    for (auto &endpoint: occupiedNodes) {
+        this->updateOccupancy(*endpoint, 1);
+    }
 }
 
 bool Octomap::writeBinary(std::ostream &os) {
