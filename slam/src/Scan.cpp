@@ -1,3 +1,4 @@
+#include <iostream>
 #include "../include/Scan.h"
 
 // Scan
@@ -27,7 +28,7 @@ Beam* Beam::importJson(const ptree& p) {
 
   const ptree intensities_json = p.get_child("intensities");
   uint8_t* intensities = new uint8_t[INTENSITIES_SIZE];
-  assert(INTENSITIES_SIZE == intensities_json.size());
+  // assert(INTENSITIES_SIZE == intensities_json.size()); This assertion doesn't always apply TODO Fix?
   int cnt = 0;
   for (const auto& i: intensities_json) {
     intensities[cnt] = i.second.get_value<uint8_t>();

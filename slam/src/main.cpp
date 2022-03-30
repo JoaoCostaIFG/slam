@@ -60,11 +60,11 @@ int main() {
   //cout << "Size: " << o.getSize() << endl;
   //o.writeBinary("rust.bt");
 
-  ifstream ss("deletethis.json");
-  Scan* s = Scan::importJson(ss);
+  ifstream ss("../data.json");
+  Scan *s = Scan::importJson(ss);
   cout << "Scan: " << *s << endl;
   for (auto beam: s->getBeams())
-    cout << *beam << endl;
+      cout << *beam << endl;
 
   return EXIT_SUCCESS;
 }
