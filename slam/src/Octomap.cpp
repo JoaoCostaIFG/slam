@@ -122,6 +122,7 @@ std::vector<OcNodeKeyPtr> Octomap::rayCast(const Vector3<>& orig, const Vector3<
 
   // Incremental phase
   double length = (endCoord - origCoord).norm();
+  ray.reserve((size_t) length);
   double* min;
   while (*coord != *endKey &&
          (
@@ -169,6 +170,7 @@ std::vector<OcNodeKeyPtr> Octomap::rayCastBresenham(const Vector3<>& orig, const
   p1 = d2[idx1] - d[idx];
   p2 = d2[idx2] - d[idx];
 
+  ray.reserve(d[0] + d[1] + d[2]);
   while (coord->get(idx) != endKey->get(idx)) {
     // save coord
     auto newCoord = newOcNodeKey(this->depth, *coord);
