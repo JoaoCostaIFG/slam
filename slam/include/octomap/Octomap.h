@@ -7,6 +7,7 @@
 
 #include "OcNode.h"
 #include "Vector3.h"
+#include "OctomapIterator.h"
 
 #define DFLT_MAX_DEPTH 16
 #define DFLT_RESOLUTION 0.1
@@ -84,6 +85,25 @@ namespace octomap {
     bool writeBinary(std::ostream& os);
 
     bool writeBinary(const std::string& filename);
+
+    typedef OctomapIterator iterator;
+    typedef const OctomapIterator const_iterator;
+
+    iterator begin() {
+      return OctomapIterator(this->rootNode);
+    }
+
+    iterator end() {
+      return OctomapIterator(nullptr);
+    }
+
+    [[nodiscard]] const_iterator begin() const {
+      return OctomapIterator(this->rootNode);
+    }
+
+    [[nodiscard]] const_iterator end() const {
+      return OctomapIterator(nullptr);
+    }
   };
 }
 
