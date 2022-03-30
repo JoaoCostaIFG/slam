@@ -82,10 +82,9 @@ int main() {
 //  o.writeBinary("rust.bt");
 
   ifstream ss("../data.json");
-  Scan *s = Scan::importJson(ss);
-  cout << "Scan: " << *s << endl;
-  for (auto beam: s->getBeams())
-      cout << *beam << endl;
+  Scan s = Scan::importJson(ss);
+  cout << s;
+
 
 //  uint8_t  v1[] = {1, 2, 3};
 //  uint8_t  v2[] = {4, 255, 6};
@@ -94,15 +93,15 @@ int main() {
 //
 
 //  std::string image_path = "../cartesian.png";
-  cv::Mat img = cv::Mat(s->getBeamNo(), s->getBeamLen(), CV_8U, s->getIntensities().data());
-
-  cv::namedWindow("Display Image", cv::WINDOW_AUTOSIZE);
-  cv::imshow("Display window", img);
-
-  int k;
-  do {
-    k = cv::waitKey(0); // Wait for a keystroke in the window
-  } while (k != 'q');
+//  cv::Mat img = cv::Mat(s->getBeamNo(), s->getBeamLen(), CV_8U, s->getIntensities().data());
+//
+//  cv::namedWindow("Display Image", cv::WINDOW_AUTOSIZE);
+//  cv::imshow("Display window", img);
+//
+//  int k;
+//  do {
+//    k = cv::waitKey(0); // Wait for a keystroke in the window
+//  } while (k != 'q');
 
   return EXIT_SUCCESS;
 }
