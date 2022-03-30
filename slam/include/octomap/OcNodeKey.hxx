@@ -15,6 +15,11 @@
 #include "Vector3.h"
 
 namespace octomap {
+  class OcNodeKey;
+
+  typedef std::unique_ptr<OcNodeKey> OcNodeKeyPtr;
+  //typedef OcNodeKey* OcNodeKeyPtr;
+
   class OcNodeKey {
   protected:
     inline static unsigned int maxCoord = 32768;
@@ -56,25 +61,28 @@ namespace octomap {
         return a == b;
       }
 
-      bool operator()(const std::unique_ptr<OcNodeKey>& a, const std::unique_ptr<OcNodeKey>& b) const {
+      bool operator()(const OcNodeKeyPtr& a, const OcNodeKeyPtr& b) const {
         return this->operator()(*a, *b);
       }
     };
 
     struct Hash {
       size_t operator()(const OcNodeKey& key) const {
-        return (size_t) key.get(0) +
-               2287 * (size_t) key.get(1) +
-               104729 * (size_t) key.get(2);
+        // TODO fix the 16
+        size_t ret = key.get(0);
+        ret *= 37;
+        ret += key.get(1);
+        ret *= 37;
+        ret += key.get(2);
+        return ret;
       }
 
-      size_t operator()(const std::unique_ptr<OcNodeKey>& key) const {
+      size_t operator()(const OcNodeKeyPtr& key) const {
         return this->operator()(*key);
       }
     };
   };
 
-  typedef std::unique_ptr<OcNodeKey> OcNodeKeyPtr;
   typedef std::unordered_set<OcNodeKeyPtr, OcNodeKey::Hash, OcNodeKey::Cmp> KeySet;
 
   template<typename T = uint16_t>
@@ -222,7 +230,7 @@ namespace octomap {
     }
   };
 
-  inline std::unique_ptr<OcNodeKey> newOcNodeKey(unsigned int maxDepth, const Vector3f& initializer = Vector3()) {
+  inline OcNodeKeyPtr newOcNodeKey(unsigned int maxDepth, const Vector3f& initializer = Vector3()) {
     if (maxDepth <= 8) {
       return std::make_unique<OcNodeKeyInt<uint8_t>>(initializer);
     } else if (maxDepth <= 16) {
@@ -236,7 +244,7 @@ namespace octomap {
     }
   }
 
-  inline std::unique_ptr<OcNodeKey> newOcNodeKey(unsigned int maxDepth, const OcNodeKey& other) {
+  inline OcNodeKeyPtr newOcNodeKey(unsigned int maxDepth, const OcNodeKey& other) {
     if (maxDepth <= 8) {
       return std::make_unique<OcNodeKeyInt<uint8_t>>(other);
     } else if (maxDepth <= 16) {
