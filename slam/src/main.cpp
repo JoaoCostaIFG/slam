@@ -62,7 +62,7 @@ int main() {
   //}
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
-  for (int i = 0; i < 1; ++i) {
+  for (int i = 0; i < 3; ++i) {
     clock_t start = clock();
     o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
     cout << float(clock() - start) / CLOCKS_PER_SEC << endl;

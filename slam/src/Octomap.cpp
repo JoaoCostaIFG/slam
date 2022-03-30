@@ -227,10 +227,13 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
     //auto ray = this->rayCast(origin, endpoint);
     auto ray = this->rayCastBresenham(origin, endpoint);
     // store the ray info
-    freeNodesList.at(idx).insert(ray.begin(), ray.end());
-    occupiedNodesList.at(idx).insert(newOcNodeKey(this->depth, endpoint));
+    //for (auto it = ray.begin(); it != ray.end(); ++it) {
+    //  freeNodesList.at(idx).insert();
+    //}
+    //occupiedNodesList.at(idx).insert(newOcNodeKey(this->depth, endpoint));
   }
 
+  /*
   // join measurements
   KeySet occupiedNodes;
   for (auto& occupiedNodesI: occupiedNodesList) {
@@ -240,8 +243,9 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
   for (auto& freeNodesI: freeNodesList) {
     freeNodes.merge(freeNodesI);
   }
+
   // remove updates on freenodes that will be set as occupied
-  for (auto occupiedNode: occupiedNodes) {
+  for (const auto& occupiedNode: occupiedNodes) {
     freeNodes.erase(occupiedNode);
   }
 
@@ -253,6 +257,7 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
   for (auto& endpoint: occupiedNodes) {
     this->setFull(*endpoint);
   }
+  */
 }
 
 bool Octomap::writeBinary(std::ostream& os) {

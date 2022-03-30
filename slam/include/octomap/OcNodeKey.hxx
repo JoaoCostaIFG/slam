@@ -17,7 +17,7 @@
 namespace octomap {
   class OcNodeKey;
 
-  typedef OcNodeKey* OcNodeKeyPtr;
+  typedef std::unique_ptr<OcNodeKey> OcNodeKeyPtr;
 
   class OcNodeKey {
   protected:
@@ -227,35 +227,6 @@ namespace octomap {
 
   inline OcNodeKeyPtr newOcNodeKey(unsigned int maxDepth, const Vector3f& initializer = Vector3()) {
     if (maxDepth <= 8) {
-      return new OcNodeKeyInt<uint8_t>(initializer);
-    } else if (maxDepth <= 16) {
-      return new OcNodeKeyInt<uint16_t>(initializer);
-    } else if (maxDepth <= 32) {
-      return new OcNodeKeyInt<uint32_t>(initializer);
-    } else if (maxDepth <= 64) {
-      return new OcNodeKeyInt<uint64_t>(initializer);
-    } else {
-      return new OcNodeKeyBitSet(maxDepth, initializer);
-    }
-  }
-
-  inline OcNodeKeyPtr newOcNodeKey(unsigned int maxDepth, const OcNodeKey& other) {
-    if (maxDepth <= 8) {
-      return new OcNodeKeyInt<uint8_t>(other);
-    } else if (maxDepth <= 16) {
-      return new OcNodeKeyInt<uint16_t>(other);
-    } else if (maxDepth <= 32) {
-      return new OcNodeKeyInt<uint32_t>(other);
-    } else if (maxDepth <= 64) {
-      return new OcNodeKeyInt<uint64_t>(other);
-    } else {
-      return new OcNodeKeyBitSet(maxDepth, other);
-    }
-  }
-
-  /*
-  inline OcNodeKeyPtr newOcNodeKey(unsigned int maxDepth, const Vector3f& initializer = Vector3()) {
-    if (maxDepth <= 8) {
       return std::make_unique<OcNodeKeyInt<uint8_t>>(initializer);
     } else if (maxDepth <= 16) {
       return std::make_unique<OcNodeKeyInt<uint16_t>>(initializer);
@@ -281,7 +252,6 @@ namespace octomap {
       return std::make_unique<OcNodeKeyBitSet>(maxDepth, other);
     }
   }
-   */
 }
 
 #endif //SLAM_OCNODEKEY_HXX
