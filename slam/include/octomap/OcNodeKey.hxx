@@ -18,6 +18,7 @@ namespace octomap {
   class OcNodeKey;
 
   typedef std::unique_ptr<OcNodeKey> OcNodeKeyPtr;
+  //typedef OcNodeKey* OcNodeKeyPtr;
 
   class OcNodeKey {
   protected:
@@ -67,9 +68,13 @@ namespace octomap {
 
     struct Hash {
       size_t operator()(const OcNodeKey& key) const {
-        return (size_t) key.get(0) +
-               2287 * (size_t) key.get(1) +
-               104729 * (size_t) key.get(2);
+        // TODO fix the 16
+        size_t ret = key.get(0);
+        ret *= 37;
+        ret += key.get(1);
+        ret *= 37;
+        ret += key.get(2);
+        return ret;
       }
 
       size_t operator()(const OcNodeKeyPtr& key) const {

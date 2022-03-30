@@ -88,7 +88,7 @@ OcNode* Octomap::search(const Vector3<>& location) {
 }
 
 std::vector<OcNodeKeyPtr> Octomap::rayCast(const Vector3<>& orig, const Vector3<>& end) const {
-  auto ray = std::vector<OcNodeKeyPtr>();
+  std::vector<OcNodeKeyPtr> ray;
 
   auto coord = newOcNodeKey(this->depth, orig);
   auto endKey = newOcNodeKey(this->depth, end);
@@ -144,7 +144,7 @@ std::vector<OcNodeKeyPtr> Octomap::rayCast(const Vector3<>& orig, const Vector3<
 
 
 std::vector<OcNodeKeyPtr> Octomap::rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) const {
-  auto ray = std::vector<OcNodeKeyPtr>();
+  std::vector<OcNodeKeyPtr> ray;
 
   auto coord = newOcNodeKey(this->depth, orig);
   auto endKey = newOcNodeKey(this->depth, end);
@@ -205,12 +205,17 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
 
   // small hack to alloc 2 containers for each simultaneous thread
 #ifdef _OPENMP
-#pragma omp parallel default(none) shared(freeNodesList, occupiedNodesList)
+#pragma omp parallel default(none) shared(pointcloud, freeNodesList, occupiedNodesList)
 #pragma omp critical
   {
     if (omp_get_thread_num() == 0) {
-      freeNodesList.resize(omp_get_num_threads());
-      occupiedNodesList.resize(omp_get_num_threads());
+      int threadCnt = omp_get_num_threads();
+      freeNodesList.resize(threadCnt);
+      occupiedNodesList.resize(threadCnt);
+      for (int i = 0; i < threadCnt; ++i) {
+        freeNodesList.at(i).reserve(pointcloud.size() * 50);
+        occupiedNodesList.at(i).reserve(pointcloud.size());
+      }
     }
   }
 #endif
@@ -227,13 +232,12 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
     //auto ray = this->rayCast(origin, endpoint);
     auto ray = this->rayCastBresenham(origin, endpoint);
     // store the ray info
-    //for (auto it = ray.begin(); it != ray.end(); ++it) {
-    //  freeNodesList.at(idx).insert();
-    //}
-    //occupiedNodesList.at(idx).insert(newOcNodeKey(this->depth, endpoint));
+    for (auto& rayPoint: ray) {
+      freeNodesList.at(idx).insert(std::move(rayPoint));
+    }
+    occupiedNodesList.at(idx).insert(newOcNodeKey(this->depth, endpoint));
   }
 
-  /*
   // join measurements
   KeySet occupiedNodes;
   for (auto& occupiedNodesI: occupiedNodesList) {
@@ -244,20 +248,16 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
     freeNodes.merge(freeNodesI);
   }
 
-  // remove updates on freenodes that will be set as occupied
-  for (const auto& occupiedNode: occupiedNodes) {
-    freeNodes.erase(occupiedNode);
-  }
-
   // TODO these loops could benefit from lazy eval!
-  // update nodes
-  for (auto& endpoint: freeNodes) {
-    this->setEmpty(*endpoint);
+  // update nodes, discarding updates on freenodes that will be set as occupied
+  for (const auto& freeNode: freeNodes) {
+    if (!occupiedNodes.contains(freeNode)) {
+      this->setEmpty(*freeNode);
+    }
   }
   for (auto& endpoint: occupiedNodes) {
     this->setFull(*endpoint);
   }
-  */
 }
 
 bool Octomap::writeBinary(std::ostream& os) {
