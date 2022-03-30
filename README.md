@@ -18,15 +18,13 @@ in off format.
 - ~~Update prob (em contraste com set prob): probably default arg na func~~;
 - ~~Ray casting na tree~~;
 - ~~Investigar dynamic bitset para keys~~;
-- Lazy eval => n fazer o update das occupancy e pruning no insert. No final,
-  chamar método que da sync aos nos intermedios. Bom para muitas inserções
-  seguidas;
-- ~~Antes de dar update a nó, ver se o novo valor pode afetar o atual (nó já
-  estável) => tem overhead em search mas deve ajudar em muitos casos~~;
-- ~~Pointcloud insert pode ser paralelizado => calcular rays em paralelo e inserir
-  num set de frees e ocupados~~;
-- Descretizar endpoints? Basicamente so guardar o primeiro raio para cada endpoint
-  na point cloud => menos raycasts mas resultado diferente;
+- ~~Antes de dar update a nó, ver se o novo valor pode afetar o atual (nó já estável) => tem overhead em search mas deve
+  ajudar em muitos casos~~;
+- ~~Pointcloud insert pode ser paralelizado => calcular rays em paralelo e inserir num set de frees e ocupados~~;
+- Lazy eval => n fazer o update das occupancy e pruning no insert. No final, chamar método que da sync aos nos
+  intermedios. Bom para muitas inserções seguidas;
+- Descretizar endpoints? Basicamente so guardar o primeiro raio para cada endpoint na point cloud => menos raycasts mas
+  resultado diferente;
 - Tratar range de valores à volta do 0.5 (e.g. [0.45, 0.55]) como unknown tmb;
 - Documentar coisas;
 - Explicar keys;

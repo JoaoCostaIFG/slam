@@ -2,8 +2,8 @@
 // Created by joao on 3/23/22.
 //
 
-#ifndef SLAM_OCNODEKEY_H
-#define SLAM_OCNODEKEY_H
+#ifndef SLAM_OCNODEKEY_HXX
+#define SLAM_OCNODEKEY_HXX
 
 #include <bitset>
 #include <boost/dynamic_bitset.hpp>
@@ -251,4 +251,4 @@ namespace octomap {
   }
 }
 
-#endif //SLAM_OCNODEKEY_H
+#endif //SLAM_OCNODEKEY_HXX
