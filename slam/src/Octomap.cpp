@@ -201,46 +201,57 @@ OcNode* Octomap::rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, floa
 }
 
 void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
-  KeySet freeNodes, occupiedNodes;
+  std::vector<KeySet> freeNodesList, occupiedNodesList;
+
+  // small hack to alloc 2 containers for each simultaneous thread
+#ifdef _OPENMP
+#pragma omp parallel default(none) shared(freeNodesList, occupiedNodesList)
+#pragma omp critical
+  {
+    if (omp_get_thread_num() == 0) {
+      freeNodesList.resize(omp_get_num_threads());
+      occupiedNodesList.resize(omp_get_num_threads());
+    }
+  }
+#endif
 
 #ifdef _OPENMP
-#pragma omp parallel for schedule(guided) default(none) shared(pointcloud, origin, freeNodes, occupiedNodes)
+#pragma omp parallel for schedule(auto) default(none) shared(pointcloud, origin, freeNodesList, occupiedNodesList)
 #endif
   for (const auto& endpoint: pointcloud) {
-    auto ray = this->rayCast(origin, endpoint);
-    //auto ray = this->rayCastBresenham(origin, endpoint);
+    int idx = 0;
 #ifdef _OPENMP
-#pragma omp critical (freeNodes_insert)
+    idx = omp_get_thread_num();
 #endif
-    {
-      for (auto& rayPoint: ray) {
-        freeNodes.insert(std::move(rayPoint));
-      }
-    }
-#ifdef _OPENMP
-#pragma omp critical (occupiedNodes_insert)
-#endif
-    {
-      occupiedNodes.insert(newOcNodeKey(this->depth, endpoint));
-    }
+    // cast the ray
+    //auto ray = this->rayCast(origin, endpoint);
+    auto ray = this->rayCastBresenham(origin, endpoint);
+    // store the ray info
+    freeNodesList.at(idx).insert(ray.begin(), ray.end());
+    occupiedNodesList.at(idx).insert(newOcNodeKey(this->depth, endpoint));
   }
 
+  // join measurements
+  KeySet occupiedNodes;
+  for (auto& occupiedNodesI: occupiedNodesList) {
+    occupiedNodes.merge(occupiedNodesI);
+  }
+  KeySet freeNodes;
+  for (auto& freeNodesI: freeNodesList) {
+    freeNodes.merge(freeNodesI);
+  }
   // remove updates on freenodes that will be set as occupied
-  for (auto it = freeNodes.begin(); it != freeNodes.end();) {
-    if (occupiedNodes.find(*it) != occupiedNodes.end()) {
-      it = freeNodes.erase(it);
-    } else {
-      ++it;
-    }
+  for (auto occupiedNode: occupiedNodes) {
+    freeNodes.erase(occupiedNode);
   }
 
-  // TODO these 2 loops could benefit from lazy eval!
+  // TODO these loops could benefit from lazy eval!
   // update nodes
   for (auto& endpoint: freeNodes) {
-    this->updateOccupancy(*endpoint, 0);
+    this->setEmpty(*endpoint);
   }
   for (auto& endpoint: occupiedNodes) {
-    this->updateOccupancy(*endpoint, 1);
+    this->setFull(*endpoint);
   }
 }
 
