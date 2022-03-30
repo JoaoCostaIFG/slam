@@ -6,6 +6,8 @@
 #include "../include/octomap/Octomap.h"
 #include "../include/Scan.h"
 
+#include <opencv2/opencv.hpp>
+
 using namespace std;
 using namespace octomap;
 
@@ -33,15 +35,15 @@ int main() {
   Octomap o = Octomap();
   //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
 
-  for (int x = -100; x < 100; x++) {
-    for (int y = -100; y < 100; y++) {
-      for (int z = -100; z < 100; z++) {
-        Vector3f endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
-        //cout << endpoint << endl;
-        o.setFull(endpoint); // integrate 'occupied' measurement
-      }
-    }
-  }
+//  for (int x = -100; x < 100; x++) {
+//    for (int y = -100; y < 100; y++) {
+//      for (int z = -100; z < 100; z++) {
+//        Vector3f endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
+//        //cout << endpoint << endl;
+//        o.setFull(endpoint); // integrate 'occupied' measurement
+//      }
+//    }
+//  }
 
   //for (int i = -1; i < 2; i += 2) {
   //  for (int j = -1; j < 2; j += 2) {
@@ -76,14 +78,23 @@ int main() {
   //}
   //o.setFull(Vector3f(1.0, 1.0, 1.0));
 
-  cout << "Size: " << o.getSize() << endl;
-  o.writeBinary("rust.bt");
+//  cout << "Size: " << o.getSize() << endl;
+//  o.writeBinary("rust.bt");
 
-  //ifstream ss("../data.json");
-  //Scan *s = Scan::importJson(ss);
-  //cout << "Scan: " << *s << endl;
-  //for (auto beam: s->getBeams())
-  //    cout << *beam << endl;
+//  ifstream ss("../data.json");
+//  Scan *s = Scan::importJson(ss);
+//  cout << "Scan: " << *s << endl;
+//  for (auto beam: s->getBeams())
+//      cout << *beam << endl;
+
+//  uint8_t  v1[] = {1, 2, 3};
+//  uint8_t  v2[] = {4, 5, 6};
+//  uint8_t  v3[] = {7, 8, 9};
+
+  std::string image_path = "cartesian.png";
+  cv::Mat img = cv::imread(image_path, cv::IMREAD_COLOR);
+  cv::imshow("Display window", img);
+  int k = cv::waitKey(0); // Wait for a keystroke in the window
 
   return EXIT_SUCCESS;
 }

@@ -1,10 +1,24 @@
 # slam-project
 
+We use our notebook to import, export and visualize data.
+Our main implementation has octrees, probabilistic mapping, data preprocessing.
+
 ## Dependencies
+
+### Jupyter Notebook
 
 - Matplotlib
 - Scipy
 - Pypng
+
+### C++ 
+
+- OpenCV and its dependencies:
+  - glew
+  - vtk
+  - hdf5
+- Boost
+- OpenMP (**Optional** - Improves performance)
 
 ## Point-cloud dataset
 
