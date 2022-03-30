@@ -235,8 +235,9 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
     //auto ray = this->rayCast(origin, endpoint);
     auto ray = this->rayCastBresenham(origin, endpoint);
     // store the ray info
+    auto& freeNodes = freeNodesList.at(idx);
     for (auto& rayPoint: ray) {
-      freeNodesList.at(idx).insert(std::move(rayPoint));
+      freeNodes.insert(std::move(rayPoint));
     }
     occupiedNodesList.at(idx).insert(newOcNodeKey(this->depth, endpoint));
   }

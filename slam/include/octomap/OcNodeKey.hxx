@@ -68,9 +68,7 @@ namespace octomap {
 
     struct Hash {
       size_t operator()(const OcNodeKey& key) const {
-        // TODO fix the 16
-        size_t ret = key.get(0);
-        ret *= 37;
+        size_t ret = key.get(0) * 37;
         ret += key.get(1);
         ret *= 37;
         ret += key.get(2);
