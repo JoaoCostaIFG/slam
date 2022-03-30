@@ -207,8 +207,8 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
 #pragma omp parallel for schedule(guided) default(none) shared(pointcloud, origin, freeNodes, occupiedNodes)
 #endif
   for (const auto& endpoint: pointcloud) {
-    auto ray = this->rayCast(origin, endpoint);
-    //auto ray = this->rayCastBresenham(origin, endpoint);
+    //auto ray = this->rayCast(origin, endpoint);
+    auto ray = this->rayCastBresenham(origin, endpoint);
 #ifdef _OPENMP
 #pragma omp critical (freeNodes_insert)
 #endif

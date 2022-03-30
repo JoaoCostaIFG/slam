@@ -33,15 +33,15 @@ int main() {
   Octomap o = Octomap();
   //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
 
-  for (int x = -100; x < 100; x++) {
-    for (int y = -100; y < 100; y++) {
-      for (int z = -100; z < 100; z++) {
-        Vector3f endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
-        //cout << endpoint << endl;
-        o.setFull(endpoint); // integrate 'occupied' measurement
-      }
-    }
-  }
+  //for (int x = -100; x < 100; x++) {
+  //  for (int y = -100; y < 100; y++) {
+  //    for (int z = -100; z < 100; z++) {
+  //      Vector3f endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
+  //      //cout << endpoint << endl;
+  //      o.setFull(endpoint); // integrate 'occupied' measurement
+  //    }
+  //  }
+  //}
 
   //for (int i = -1; i < 2; i += 2) {
   //  for (int j = -1; j < 2; j += 2) {
@@ -62,12 +62,11 @@ int main() {
   //}
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
-  //for (int i = 0; i < 3; ++i) {
-  //  clock_t start = clock();
-  //  //o.pointcloudUpdate(vector<Vector3f>({Vector3f(67.09998, 35.5, 2.221985)}), Vector3f());
-  //  o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-  //  cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
-  //}
+  for (int i = 0; i < 3; ++i) {
+    clock_t start = clock();
+    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+    cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
+  }
 
   //auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1.0, 1.0, 1.0));
   //for (auto & it : ray) {
