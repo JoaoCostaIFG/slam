@@ -74,7 +74,8 @@ namespace octomap {
     };
   };
 
-  typedef std::unordered_set<std::unique_ptr<OcNodeKey>, OcNodeKey::Hash, OcNodeKey::Cmp> KeySet;
+  typedef std::unique_ptr<OcNodeKey> OcNodeKeyPtr;
+  typedef std::unordered_set<OcNodeKeyPtr, OcNodeKey::Hash, OcNodeKey::Cmp> KeySet;
 
   template<typename T = uint16_t>
   class OcNodeKeyInt : public OcNodeKey {

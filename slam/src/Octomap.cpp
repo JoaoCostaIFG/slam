@@ -87,8 +87,8 @@ OcNode* Octomap::search(const Vector3<>& location) {
   return this->search(*newOcNodeKey(this->depth, location));
 }
 
-std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCast(const Vector3<>& orig, const Vector3<>& end) {
-  auto ray = std::vector<std::unique_ptr<OcNodeKey>>();
+std::vector<OcNodeKeyPtr> Octomap::rayCast(const Vector3<>& orig, const Vector3<>& end) const {
+  auto ray = std::vector<OcNodeKeyPtr>();
 
   auto coord = newOcNodeKey(this->depth, orig);
   auto endKey = newOcNodeKey(this->depth, end);
@@ -142,18 +142,19 @@ std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCast(const Vector3<>& orig, 
 }
 
 
-std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) {
-  auto ray = std::vector<std::unique_ptr<OcNodeKey>>();
+std::vector<OcNodeKeyPtr> Octomap::rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) const {
+  auto ray = std::vector<OcNodeKeyPtr>();
 
   auto coord = newOcNodeKey(this->depth, orig);
   auto endKey = newOcNodeKey(this->depth, end);
   if (coord == endKey) return ray;
 
-  auto d = Vector3<int>(); // TODO (should be int?)
-  auto d2 = Vector3<int>(); // TODO (should be int?)
+  auto d = Vector3<int>();
+  auto d2 = Vector3<int>();
   auto step = Vector3i();
   for (int i = 0; i < 3; ++i) {
-    d[i] = (int) endKey->get(i) - (int) coord->get(i); // TODO don't like these casts
+    // TODO I don't like these casts to int, but it shouldn't matter unless we're using giant keys
+    d[i] = (int) endKey->get(i) - (int) coord->get(i);
     step[i] = (d[i] > 0) ? 1 : -1;
     d[i] = abs(d[i]);
     d2[i] = 2 * d[i];
@@ -205,6 +206,7 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
 #endif
   for (const auto& endpoint: pointcloud) {
     auto ray = this->rayCast(origin, endpoint);
+    //auto ray = this->rayCastBresenham(origin, endpoint);
 #ifdef _OPENMP
 #pragma omp critical (freeNodes_insert)
 #endif

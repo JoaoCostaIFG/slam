@@ -32,7 +32,6 @@ vector<Vector3f> importOff(const string& filename) {
 int main() {
   Octomap o = Octomap();
 
-
   for (int i = -1; i < 2; i += 2) {
     for (int j = -1; j < 2; j += 2) {
       for (int k = -1; k < 2; k += 2) {
@@ -53,10 +52,10 @@ int main() {
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
   //for (int i = 0; i < 3; ++i) {
-  //    clock_t start = clock();
-  //    //o.pointcloudUpdate(vector<Vector3f>({Vector3f(67.09998, 35.5, 2.221985)}), Vector3f());
-  //    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-  //    cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
+  //  clock_t start = clock();
+  //  //o.pointcloudUpdate(vector<Vector3f>({Vector3f(67.09998, 35.5, 2.221985)}), Vector3f());
+  //  o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+  //  cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
   //}
 
   //for (const auto& point : importOff("../datasets/airplane_small.off")) {

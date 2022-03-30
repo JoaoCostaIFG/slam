@@ -67,9 +67,9 @@ namespace octomap {
 
     // Algorithm from "A Fast Voxel Traversal Algorithm for Ray Tracing" by John Amanatides & Andrew Woo.
     // Based on DDA ray casting algorithm for 3D.
-    std::vector<std::unique_ptr<OcNodeKey>> rayCast(const Vector3<>& orig, const Vector3<>& end);
+    [[nodiscard]] std::vector<OcNodeKeyPtr> rayCast(const Vector3<>& orig, const Vector3<>& end) const;
 
-    std::vector<std::unique_ptr<OcNodeKey>> rayCastBresenham(const Vector3<>& orig, const Vector3<>& end);
+    [[nodiscard]] std::vector<OcNodeKeyPtr> rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) const;
 
     OcNode* rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, float occ);
 
