@@ -65,6 +65,7 @@ int main() {
   for (int i = 0; i < 3; ++i) {
     clock_t start = clock();
     o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+    //o.discretizedPointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
     cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
   }
 
@@ -75,8 +76,8 @@ int main() {
   //}
   //o.setFull(Vector3f(1.0, 1.0, 1.0));
 
-  //cout << "Size: " << o.getSize() << endl;
-  //o.writeBinary("rust.bt");
+  cout << "Size: " << o.getSize() << endl;
+  o.writeBinary("rust.bt");
 
   //ifstream ss("../data.json");
   //Scan *s = Scan::importJson(ss);

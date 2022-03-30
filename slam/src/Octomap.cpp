@@ -265,6 +265,20 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
   }
 }
 
+void Octomap::discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
+  std::vector<Vector3f> discretizedPc;
+  KeySet endpoints;
+  for (const auto& endpointCoord: pointcloud) {
+    OcNodeKeyPtr endpoint = newOcNodeKey(this->depth, endpointCoord);
+    auto succ = endpoints.insert(std::move(endpoint));
+    if (succ.second) {
+      discretizedPc.push_back(endpointCoord);
+    }
+  }
+
+  this->pointcloudUpdate(discretizedPc, origin);
+}
+
 bool Octomap::writeBinary(std::ostream& os) {
   os << "# Octomap OcTree binary file\n";
   os << "id OcTree\n";

@@ -80,6 +80,11 @@ namespace octomap {
     // These sets are processed so each node is only updated once and occupied nodes have priority.
     void pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin);
 
+    // The same as pointcloudUpdate but first it discretizes the point cloud. This means that
+    // if 2 rays would end up on the same end-point (cell), only the first one is inserted into the tree.
+    // In some cases, this can improve performance, but can lead to diferente results.
+    void discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin);
+
     // The binary format is compatible with octoviz
     // See: https://github.com/OctoMap/octomap/tree/devel/octovis
     bool writeBinary(std::ostream& os);
