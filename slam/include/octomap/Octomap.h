@@ -69,6 +69,8 @@ namespace octomap {
     // Based on DDA ray casting algorithm for 3D.
     std::vector<std::unique_ptr<OcNodeKey>> rayCast(const Vector3<>& orig, const Vector3<>& end);
 
+    std::vector<std::unique_ptr<OcNodeKey>> rayCastBresenham(const Vector3<>& orig, const Vector3<>& end);
+
     OcNode* rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, float occ);
 
     // Calculates a ray for each endpoint in pointcloud (with origin in origin).

@@ -94,6 +94,9 @@ std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCast(const Vector3<>& orig, 
   auto endKey = newOcNodeKey(this->depth, end);
   if (coord == endKey) return ray;
 
+  Vector3 origCoord = coord->toCoord();
+  Vector3 endCoord = endKey->toCoord();
+
   // Initialization phase
   auto step = Vector3i();
   auto tMax = Vector3d();
@@ -103,35 +106,85 @@ std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCast(const Vector3<>& orig, 
   direction.normalize();
 
   for (int i = 0; i < 3; ++i) {
-    if (direction[i] > 0) step[i] = 1.0;
-    else step[i] = -1.0;
+    if (direction[i] > 0) step[i] = 1;
+    else step[i] = -1;
 
-    double voxelBorder = coord->toCoord(i) +
-                         step[i] * this->stepLookupTable[this->depth + 1];
-
-    tMax[i] = (voxelBorder - orig[i]) / direction[i];
+    // It should be 1/abs(direction[i]) from the paper, but out cell size varies by *resolution*
+    // so we multiply it.
     tDelta[i] = this->resolution / fabs(direction[i]);
+    if (std::isinf(tDelta[i])) {
+      tMax[i] = std::numeric_limits<double>::max(); // infinity
+    } else {
+      double voxelBorder = origCoord[i] + step[i] * this->stepLookupTable[this->depth + 1];
+      tMax[i] = (voxelBorder - orig[i]) / direction[i];
+    }
   }
 
   // Incremental phase
-  Vector3 origCord = coord->toCoord();
-  double length = (endKey->toCoord() - origCord).norm();
+  double length = (endCoord - origCoord).norm();
   double* min;
   while (*coord != *endKey &&
          (
              *(min = std::min_element(tMax.begin(), tMax.end())) <= length ||
-             (coord->toCoord() - origCord).norm() <= length
+             (coord->toCoord() - origCoord).norm() <= length
          )) {
-    //std::cout << coord->get(0) << " " << coord->get(1) << " " << coord->get(2) <<
-    //          " " << coord->toCoord()
-    //          << std::endl;
+    int idx = int(min - tMax.begin());
+    // save key
     auto newCoord = newOcNodeKey(this->depth, *coord);
     ray.push_back(std::move(coord));
-    int coordInd = int(min - std::begin(tMax));
-
-    tMax[coordInd] += tDelta[coordInd];
+    // gen next key
+    tMax[idx] += tDelta[idx];
     coord = std::move(newCoord);
-    coord->set(coordInd, coord->get(coordInd) + step[coordInd]);
+    coord->set(idx, coord->get(idx) + step[idx]);
+  }
+
+  return ray;
+}
+
+
+std::vector<std::unique_ptr<OcNodeKey>> Octomap::rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) {
+  auto ray = std::vector<std::unique_ptr<OcNodeKey>>();
+
+  auto coord = newOcNodeKey(this->depth, orig);
+  auto endKey = newOcNodeKey(this->depth, end);
+  if (coord == endKey) return ray;
+
+  auto d = Vector3<int>(); // TODO (should be int?)
+  auto d2 = Vector3<int>(); // TODO (should be int?)
+  auto step = Vector3i();
+  for (int i = 0; i < 3; ++i) {
+    d[i] = (int) endKey->get(i) - (int) coord->get(i); // TODO don't like these casts
+    step[i] = (d[i] > 0) ? 1 : -1;
+    d[i] = abs(d[i]);
+    d2[i] = 2 * d[i];
+  }
+
+  int p1, p2;
+  int* max = std::max_element(d.begin(), d.end());
+  int idx = int(max - d.begin());
+  int idx1 = (idx + 1) % 3;
+  int idx2 = (idx + 2) % 3;
+
+  p1 = d2[idx1] - d[idx];
+  p2 = d2[idx2] - d[idx];
+
+  while (coord->get(idx) != endKey->get(idx)) {
+    // save coord
+    auto newCoord = newOcNodeKey(this->depth, *coord);
+    ray.push_back(std::move(coord));
+    coord = std::move(newCoord);
+    // new coord
+    coord->set(idx, coord->get(idx) + step[idx]);
+    if (p1 >= 0) {
+      coord->set(idx1, coord->get(idx1) + step[idx1]);
+      p1 -= d2[idx];
+    }
+    if (p2 >= 0) {
+      coord->set(idx2, coord->get(idx2) + step[idx2]);
+      p2 -= d2[idx];
+    }
+    p1 += d2[idx1];
+    p2 += d2[idx2];
   }
 
   return ray;
@@ -177,6 +230,7 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
     }
   }
 
+  // TODO these 2 loops could benefit from lazy eval!
   // update nodes
   for (auto& endpoint: freeNodes) {
     this->updateOccupancy(*endpoint, 0);

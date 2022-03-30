@@ -30,7 +30,20 @@ vector<Vector3f> importOff(const string& filename) {
 }
 
 int main() {
-  //Octomap o = Octomap();
+  Octomap o = Octomap();
+
+
+  for (int i = -1; i < 2; i += 2) {
+    for (int j = -1; j < 2; j += 2) {
+      for (int k = -1; k < 2; k += 2) {
+        auto endpointCoord = Vector3f(i, j, k);
+        for (auto& point: o.rayCastBresenham(Vector3(), endpointCoord)) {
+          o.setEmpty(*point);
+          o.setFull(endpointCoord);
+        }
+      }
+    }
+  }
 
   //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
   //o.rayCast(Vector3(), Vector3f(1267.09998, 2835.5, 272.221985));
@@ -57,14 +70,14 @@ int main() {
   //}
   //o.setFull(Vector3f(1.0, 1.0, 1.0));
 
-  //cout << "Size: " << o.getSize() << endl;
-  //o.writeBinary("rust.bt");
+  cout << "Size: " << o.getSize() << endl;
+  o.writeBinary("rust.bt");
 
-  ifstream ss("../data.json");
-  Scan *s = Scan::importJson(ss);
-  cout << "Scan: " << *s << endl;
-  for (auto beam: s->getBeams())
-      cout << *beam << endl;
+  //ifstream ss("../data.json");
+  //Scan *s = Scan::importJson(ss);
+  //cout << "Scan: " << *s << endl;
+  //for (auto beam: s->getBeams())
+  //    cout << *beam << endl;
 
   return EXIT_SUCCESS;
 }
