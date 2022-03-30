@@ -213,11 +213,16 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
       freeNodesList.resize(threadCnt);
       occupiedNodesList.resize(threadCnt);
       for (int i = 0; i < threadCnt; ++i) {
-        freeNodesList.at(i).reserve(pointcloud.size() * 50);
-        occupiedNodesList.at(i).reserve(pointcloud.size());
+        freeNodesList.at(i).reserve((pointcloud.size() / threadCnt) * 50);
+        occupiedNodesList.at(i).reserve(pointcloud.size() / threadCnt);
       }
     }
   }
+#else
+  freeNodesList.resize(1);
+  occupiedNodesList.resize(1);
+  freeNodesList.at(0).reserve(pointcloud.size() * 50);
+  occupiedNodesList.at(0).reserve(pointcloud.size());
 #endif
 
 #ifdef _OPENMP
