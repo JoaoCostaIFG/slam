@@ -10,6 +10,7 @@
 #include <cassert>
 #include <cinttypes>
 #include <memory>
+#include <unordered_set>
 
 #include "Vector3.h"
 

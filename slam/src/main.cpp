@@ -32,7 +32,7 @@ vector<Vector3f> importOff(const string& filename) {
 int main() {
   //Octomap o = Octomap();
 
-  //o.rayCast(Vector3(), Vector3f(1, 1, 1));
+  //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
   //o.rayCast(Vector3(), Vector3f(1267.09998, 2835.5, 272.221985));
   //for (auto &point: o.rayCast(Vector3(), Vector3f(67.09998, 35.5, 2.221985))) {
   //    o.setFull(*point);
