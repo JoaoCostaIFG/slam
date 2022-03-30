@@ -28,8 +28,6 @@ Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
     this->stepLookupTable[i] = this->resolution * double(1 << (this->depth - i));
   }
   this->stepLookupTable[this->depth + 1] = this->resolution / 2.0;
-  // tree center for calculations
-  //this->treeCenter = Vector3((float) (this->stepLookupTable[0] / 2.0));
 }
 
 Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {}
@@ -88,7 +86,7 @@ OcNode* Octomap::search(const Vector3<>& location) {
 }
 
 std::vector<OcNodeKeyPtr> Octomap::rayCast(const Vector3<>& orig, const Vector3<>& end) const {
-  auto ray = std::vector<OcNodeKeyPtr>();
+  std::vector<OcNodeKeyPtr> ray;
 
   auto coord = newOcNodeKey(this->depth, orig);
   auto endKey = newOcNodeKey(this->depth, end);
@@ -144,7 +142,7 @@ std::vector<OcNodeKeyPtr> Octomap::rayCast(const Vector3<>& orig, const Vector3<
 
 
 std::vector<OcNodeKeyPtr> Octomap::rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) const {
-  auto ray = std::vector<OcNodeKeyPtr>();
+  std::vector<OcNodeKeyPtr> ray;
 
   auto coord = newOcNodeKey(this->depth, orig);
   auto endKey = newOcNodeKey(this->depth, end);
@@ -201,47 +199,83 @@ OcNode* Octomap::rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, floa
 }
 
 void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
-  KeySet freeNodes, occupiedNodes;
+  std::vector<KeySet> freeNodesList, occupiedNodesList;
 
+  // small hack to alloc 2 containers for each simultaneous thread
 #ifdef _OPENMP
-#pragma omp parallel for schedule(guided) default(none) shared(pointcloud, origin, freeNodes, occupiedNodes)
-#endif
-  for (const auto& endpoint: pointcloud) {
-    auto ray = this->rayCast(origin, endpoint);
-    //auto ray = this->rayCastBresenham(origin, endpoint);
-#ifdef _OPENMP
-#pragma omp critical (freeNodes_insert)
-#endif
-    {
-      for (auto& rayPoint: ray) {
-        freeNodes.insert(std::move(rayPoint));
+#pragma omp parallel default(none) shared(pointcloud, freeNodesList, occupiedNodesList)
+#pragma omp critical
+  {
+    if (omp_get_thread_num() == 0) {
+      int threadCnt = omp_get_num_threads();
+      freeNodesList.resize(threadCnt);
+      occupiedNodesList.resize(threadCnt);
+      for (int i = 0; i < threadCnt; ++i) {
+        freeNodesList.at(i).reserve((pointcloud.size() / threadCnt) * 50);
+        occupiedNodesList.at(i).reserve(pointcloud.size() / threadCnt);
       }
     }
-#ifdef _OPENMP
-#pragma omp critical (occupiedNodes_insert)
+  }
+#else
+  freeNodesList.resize(1);
+  occupiedNodesList.resize(1);
+  freeNodesList.at(0).reserve(pointcloud.size() * 50);
+  occupiedNodesList.at(0).reserve(pointcloud.size());
 #endif
-    {
-      occupiedNodes.insert(newOcNodeKey(this->depth, endpoint));
+
+#ifdef _OPENMP
+#pragma omp parallel for schedule(auto) default(none) shared(pointcloud, origin, freeNodesList, occupiedNodesList)
+#endif
+  for (const auto& endpoint: pointcloud) {
+    int idx = 0;
+#ifdef _OPENMP
+    idx = omp_get_thread_num();
+#endif
+    // cast the ray
+    //auto ray = this->rayCast(origin, endpoint);
+    auto ray = this->rayCastBresenham(origin, endpoint);
+    // store the ray info
+    auto& freeNodes = freeNodesList.at(idx);
+    for (auto& rayPoint: ray) {
+      freeNodes.insert(std::move(rayPoint));
     }
+    occupiedNodesList.at(idx).insert(newOcNodeKey(this->depth, endpoint));
   }
 
-  // remove updates on freenodes that will be set as occupied
-  for (auto it = freeNodes.begin(); it != freeNodes.end();) {
-    if (occupiedNodes.find(*it) != occupiedNodes.end()) {
-      it = freeNodes.erase(it);
-    } else {
-      ++it;
-    }
+  // join measurements
+  KeySet occupiedNodes;
+  for (auto& occupiedNodesI: occupiedNodesList) {
+    occupiedNodes.merge(occupiedNodesI);
+  }
+  KeySet freeNodes;
+  for (auto& freeNodesI: freeNodesList) {
+    freeNodes.merge(freeNodesI);
   }
 
-  // TODO these 2 loops could benefit from lazy eval!
-  // update nodes
-  for (auto& endpoint: freeNodes) {
-    this->updateOccupancy(*endpoint, 0);
+  // TODO these loops could benefit from lazy eval!
+  // update nodes, discarding updates on freenodes that will be set as occupied
+  for (const auto& freeNode: freeNodes) {
+    if (!occupiedNodes.contains(freeNode)) {
+      this->setEmpty(*freeNode);
+    }
   }
   for (auto& endpoint: occupiedNodes) {
-    this->updateOccupancy(*endpoint, 1);
+    this->setFull(*endpoint);
   }
+}
+
+void Octomap::discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
+  std::vector<Vector3f> discretizedPc;
+  KeySet endpoints;
+  for (const auto& endpointCoord: pointcloud) {
+    OcNodeKeyPtr endpoint = newOcNodeKey(this->depth, endpointCoord);
+    auto succ = endpoints.insert(std::move(endpoint));
+    if (succ.second) {
+      discretizedPc.push_back(endpointCoord);
+    }
+  }
+
+  this->pointcloudUpdate(discretizedPc, origin);
 }
 
 bool Octomap::writeBinary(std::ostream& os) {
