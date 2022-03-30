@@ -96,11 +96,11 @@ namespace octomap {
     }
 
     [[nodiscard]] bool isOccupied() const {
-      return this->logOdds >= OcNode::occThreshold;
+      return this->logOdds >= (float) OcNode::occThreshold;
     }
 
     [[nodiscard]] bool isOccupiedStable() const {
-      return this->logOdds == OcNode::maxThreshold;
+      return this->logOdds == (float) OcNode::maxThreshold;
     }
 
     [[nodiscard]] bool isFree() const {
@@ -108,11 +108,11 @@ namespace octomap {
     }
 
     [[nodiscard]] bool isFreeStable() const {
-      return this->logOdds == OcNode::minThreshold;
+      return this->logOdds == (float) OcNode::minThreshold;
     }
 
     [[nodiscard]] bool wouldChange(float lo) const {
-      if (lo == OcNode::occThreshold) return false;
+      if (lo == (float) OcNode::occThreshold) return false;
       if (lo < 0) {
         if (this->isFreeStable()) return false;
       } else if (lo > 0) {

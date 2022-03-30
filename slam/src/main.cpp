@@ -62,10 +62,20 @@ int main() {
   //}
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
-  for (int i = 0; i < 3; ++i) {
+  //for (int i = 0; i < 3; ++i) {
+  //  clock_t start = clock();
+  //  o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+  //  //o.discretizedPointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+  //  cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
+  //}
+
+  Vector3f endpoint(1, 1, 1);
+  o.setFull(endpoint);
+  for (int j = 0; j < 3; ++j) {
     clock_t start = clock();
-    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-    //o.discretizedPointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+    for (unsigned int i = 0; i < 10000000; ++i) {
+      o.updateOccupancy(endpoint, 1.0);
+    }
     cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
   }
 

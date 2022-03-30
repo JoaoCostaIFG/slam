@@ -28,8 +28,6 @@ Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
     this->stepLookupTable[i] = this->resolution * double(1 << (this->depth - i));
   }
   this->stepLookupTable[this->depth + 1] = this->resolution / 2.0;
-  // tree center for calculations
-  //this->treeCenter = Vector3((float) (this->stepLookupTable[0] / 2.0));
 }
 
 Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {}
