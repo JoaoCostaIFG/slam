@@ -1,10 +1,10 @@
 #include <bitset>
 #include <iostream>
 #include <fstream>
-#include <ctime>
+#include <chrono>
 
 #include "../include/octomap/Octomap.h"
-#include "../include/Scan.h"
+#include "../include/octomap/Scan.h"
 
 using namespace std;
 using namespace octomap;
@@ -30,6 +30,10 @@ vector<Vector3f> importOff(const string& filename) {
 }
 
 int main() {
+  using chrono::high_resolution_clock;
+  using chrono::milliseconds;
+  using chrono::duration_cast;
+
   Octomap o = Octomap();
   //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
 
@@ -63,10 +67,10 @@ int main() {
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
   for (int i = 0; i < 3; ++i) {
-    clock_t start = clock();
+    auto startTime = high_resolution_clock::now();
     o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-    //o.discretizedPointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-    cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
+    auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
+    cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
   }
 
   //auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1.0, 1.0, 1.0));

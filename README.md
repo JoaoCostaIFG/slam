@@ -5,6 +5,8 @@
 - Matplotlib
 - Scipy
 - Pypng
+- [Parallel Hashmap](https://github.com/greg7mdp/parallel-hashmap) -
+  See [License](./slam/include/parallel_hashmap/LICENSE).
 
 ## Point-cloud dataset
 

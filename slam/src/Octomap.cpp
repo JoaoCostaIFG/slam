@@ -242,26 +242,26 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
     occupiedNodesList.at(idx).insert(newOcNodeKey(this->depth, endpoint));
   }
 
-  // join measurements
-  KeySet occupiedNodes;
-  for (auto& occupiedNodesI: occupiedNodesList) {
-    occupiedNodes.merge(occupiedNodesI);
-  }
-  KeySet freeNodes;
-  for (auto& freeNodesI: freeNodesList) {
-    freeNodes.merge(freeNodesI);
-  }
+  //// join measurements
+  //KeySet occupiedNodes;
+  //for (auto& occupiedNodesI: occupiedNodesList) {
+  //  occupiedNodes.merge(occupiedNodesI);
+  //}
+  //KeySet freeNodes;
+  //for (auto& freeNodesI: freeNodesList) {
+  //  freeNodes.merge(freeNodesI);
+  //}
 
-  // TODO these loops could benefit from lazy eval!
-  // update nodes, discarding updates on freenodes that will be set as occupied
-  for (const auto& freeNode: freeNodes) {
-    if (!occupiedNodes.contains(freeNode)) {
-      this->setEmpty(*freeNode);
-    }
-  }
-  for (auto& endpoint: occupiedNodes) {
-    this->setFull(*endpoint);
-  }
+  //// TODO these loops could benefit from lazy eval!
+  //// update nodes, discarding updates on freenodes that will be set as occupied
+  //for (const auto& freeNode: freeNodes) {
+  //  if (!occupiedNodes.contains(freeNode)) {
+  //    this->setEmpty(*freeNode);
+  //  }
+  //}
+  //for (auto& endpoint: occupiedNodes) {
+  //  this->setFull(*endpoint);
+  //}
 }
 
 void Octomap::discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {

@@ -1,5 +1,5 @@
 #include <iostream>
-#include "../include/Scan.h"
+#include "../include/octomap/Scan.h"
 
 // Scan
 Scan* Scan::importJson(std::istream& istream) {
