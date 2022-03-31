@@ -4,11 +4,11 @@
 #include <rapidjson/document.h>
 #include <opencv2/opencv.hpp>
 
-#include "../include/scan/Scan.h"
+#include "../include/sonar/Scan.h"
 
-using namespace scan;
+using namespace sonar;
 
-namespace scan {
+namespace sonar {
   // Beam
   Beam* Beam::importJson(const rapidjson::Value &beam_json, cv::Mat &row) {
     double time = beam_json["time"].GetDouble();
@@ -26,6 +26,15 @@ namespace scan {
 
     Beam *beam = new Beam(row.ptr(), intensities_json.Size(), time, angle);
     return beam;
+  }
+
+  size_t Beam::getObstacleST() const {
+    for (size_t i=0; i + 1<this->beam_len; ++i) {
+      int dev = (int) this->at(i + 1) - this->at(i);
+      if (dev > 0 && dev > OBSTACLE_THRESHOLD)
+        return i + 1;
+    }
+    return this->beam_len - 1;
   }
 
   std::ostream& operator<<(std::ostream& os, const Beam& beam) {
