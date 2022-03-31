@@ -8,11 +8,14 @@
 using namespace octomap;
 
 
-OcNode::OcNode(float logOdds) : logOdds(logOdds) {}
+template<class KEY>
+OcNode<KEY>::OcNode(float logOdds) : logOdds(logOdds) {}
 
-OcNode::OcNode() : OcNode((float) OcNode::occThreshold) {}
+template<class KEY>
+OcNode<KEY>::OcNode() : OcNode<KEY>(OcNode::occThreshold) {}
 
-OcNode::~OcNode() {
+template<class KEY>
+OcNode<KEY>::~OcNode() {
   if (this->children != nullptr) {
     for (int i = 0; i < 8; ++i) {
       delete this->children[i];
@@ -21,7 +24,8 @@ OcNode::~OcNode() {
   delete[] this->children;
 }
 
-unsigned int OcNode::getChildCount() const {
+template<class KEY>
+unsigned int OcNode<KEY>::getChildCount() const {
   if (this->children == nullptr) return 0;
   unsigned int ret = 0;
   for (int i = 0; i < 8; ++i) {
@@ -31,13 +35,15 @@ unsigned int OcNode::getChildCount() const {
   return ret;
 }
 
-OcNode* OcNode::getChild(unsigned int pos) const {
+template<class KEY>
+OcNode<KEY>* OcNode<KEY>::getChild(unsigned int pos) const {
   assert(pos < 8);
   if (this->children == nullptr) return nullptr;
   return this->children[pos];
 }
 
-OcNode* OcNode::createChild(unsigned int pos) {
+template<class KEY>
+OcNode<KEY>* OcNode<KEY>::createChild(unsigned int pos) {
   assert(pos < 8);
   if (this->children == nullptr) {
     this->allocChildren();
@@ -47,11 +53,13 @@ OcNode* OcNode::createChild(unsigned int pos) {
   return this->children[pos];
 }
 
-void OcNode::allocChildren() {
+template<class KEY>
+void OcNode<KEY>::allocChildren() {
   this->children = new OcNode* [8]{nullptr};
 }
 
-void OcNode::expandNode() {
+template<class KEY>
+void OcNode<KEY>::expandNode() {
   assert(!this->hasChildren());
   if (this->children == nullptr) {
     this->allocChildren();
@@ -62,7 +70,8 @@ void OcNode::expandNode() {
   }
 }
 
-bool OcNode::hasChildren() const {
+template<class KEY>
+bool OcNode<KEY>::hasChildren() const {
   if (this->children == nullptr) return false;
   for (int i = 0; i < 8; ++i) {
     if (this->children[i] != nullptr) return true;
@@ -70,12 +79,14 @@ bool OcNode::hasChildren() const {
   return false;
 }
 
-bool OcNode::childExists(unsigned int i) const {
+template<class KEY>
+bool OcNode<KEY>::childExists(unsigned int i) const {
   if (this->children == nullptr) return false;
   return this->children[i] != nullptr;
 }
 
-bool OcNode::isPrunable() const {
+template<class KEY>
+bool OcNode<KEY>::isPrunable() const {
   OcNode* firstChild = this->getChild(0);
   if (firstChild == nullptr || firstChild->hasChildren()) return false;
 
@@ -91,7 +102,8 @@ bool OcNode::isPrunable() const {
   return true;
 }
 
-bool OcNode::prune() {
+template<class KEY>
+bool OcNode<KEY>::prune() {
   if (!this->isPrunable()) return false;
   // all children are equal so we take their value
   this->setLogOdds(this->getChild(0)->getLogOdds());
@@ -103,7 +115,8 @@ bool OcNode::prune() {
   return true;
 }
 
-float OcNode::getMaxChildrenLogOdds() const {
+template<class KEY>
+float OcNode<KEY>::getMaxChildrenLogOdds() const {
   float max = std::numeric_limits<float>::min();
   for (int i = 0; i < 8; ++i) {
     OcNode* child = this->children[i];
@@ -113,7 +126,8 @@ float OcNode::getMaxChildrenLogOdds() const {
   return max;
 }
 
-float OcNode::getMeanChildrenLogOdds() const {
+template<class KEY>
+float OcNode<KEY>::getMeanChildrenLogOdds() const {
   unsigned int cnt = 0;
   float ret = 0;
   for (int i = 0; i < 8; ++i) {
@@ -125,14 +139,16 @@ float OcNode::getMeanChildrenLogOdds() const {
   return ret / (float) cnt;
 }
 
-void OcNode::updateBasedOnChildren() {
+template<class KEY>
+void OcNode<KEY>::updateBasedOnChildren() {
   if (this->children == nullptr) return;
   this->setLogOdds(this->getMaxChildrenLogOdds());
 }
 
-OcNode*
-OcNode::setOrUpdateLogOdds(const OcNodeKey& key, const unsigned int depth, const float lo,
-                           const bool isUpdate, const bool justCreated) {
+template<class KEY>
+OcNode<KEY>*
+OcNode<KEY>::setOrUpdateLogOdds(const KEY& key, const unsigned int depth, const float lo,
+                                const bool isUpdate, const bool justCreated) {
   bool createdChild = false;
   OcNode* child;
 
@@ -168,25 +184,31 @@ OcNode::setOrUpdateLogOdds(const OcNodeKey& key, const unsigned int depth, const
   }
 }
 
-OcNode* // suckless
-OcNode::setLogOdds(const OcNodeKey& key, const unsigned int depth, const float lo, const bool justCreated) {
+template<class KEY>
+OcNode<KEY>* // suckless
+OcNode<KEY>::setLogOdds(const KEY& key, const unsigned int depth, const float lo, const bool justCreated) {
   return this->setOrUpdateLogOdds(key, depth, lo, false, justCreated);
 }
 
-OcNode* OcNode::updateLogOdds(const OcNodeKey& key, unsigned int depth, float lo, bool justCreated) {
+template<class KEY>
+OcNode<KEY>* OcNode<KEY>::updateLogOdds(const KEY& key, unsigned int depth, float lo, bool justCreated) {
   return this->setOrUpdateLogOdds(key, depth, lo, true, justCreated);
 }
 
-OcNode* OcNode::setOccupancy(const OcNodeKey& key, const unsigned int depth, const float occ, const bool justCreated) {
+template<class KEY>
+OcNode<KEY>*
+OcNode<KEY>::setOccupancy(const KEY& key, const unsigned int depth, const float occ, const bool justCreated) {
   return this->setLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
 }
 
-OcNode*
-OcNode::updateOccupancy(const OcNodeKey& key, const unsigned int depth, const float occ, const bool justCreated) {
+template<class KEY>
+OcNode<KEY>*
+OcNode<KEY>::updateOccupancy(const KEY& key, const unsigned int depth, const float occ, const bool justCreated) {
   return this->updateLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
 }
 
-OcNode* OcNode::search(const OcNodeKey& key, const unsigned int depth) {
+template<class KEY>
+OcNode<KEY>* OcNode<KEY>::search(const KEY& key, const unsigned int depth) {
   if (depth > 0) {
     unsigned int d = depth - 1;
     unsigned int pos = key.getStep(d);
@@ -202,7 +224,8 @@ OcNode* OcNode::search(const OcNodeKey& key, const unsigned int depth) {
   }
 }
 
-void OcNode::writeBinaryInner(std::ostream& os, int baseI, std::bitset<8>& childBitset) const {
+template<class KEY>
+void OcNode<KEY>::writeBinaryInner(std::ostream& os, int baseI, std::bitset<8>& childBitset) const {
   // 00 : child is unknown node
   // 01 : child is occupied node
   // 10 : child is free node
@@ -232,7 +255,8 @@ void OcNode::writeBinaryInner(std::ostream& os, int baseI, std::bitset<8>& child
   }
 }
 
-void OcNode::writeBinary(std::ostream& os) const {
+template<class KEY>
+void OcNode<KEY>::writeBinary(std::ostream& os) const {
   std::bitset<8> child1to4;
   std::bitset<8> child5to8;
 

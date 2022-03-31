@@ -1,4 +1,3 @@
-#include <cassert>
 #include <cmath>
 #include <iostream>
 #include <fstream>
@@ -13,48 +12,28 @@
 
 using namespace octomap;
 
-Octomap::Octomap(const unsigned int maxDepth, const double resolution) :
-    depth(maxDepth), resolution(resolution) {
-  assert(this->depth >= 1);
-  OcNodeKey::setMaxCoord((int) pow(2, maxDepth - 1));
-  OcNodeKey::setResolution(resolution);
-
-  this->rootNode = nullptr;
-
-  // pre-calculate step sizes
-  this->stepLookupTable.reserve(this->depth + 2);
-  for (unsigned int i = 0; i <= this->depth; ++i) {
-    // equivalent to: 2^depth * resolution
-    this->stepLookupTable[i] = this->resolution * double(1 << (this->depth - i));
-  }
-  this->stepLookupTable[this->depth + 1] = this->resolution / 2.0;
-}
-
-Octomap::Octomap() : Octomap(DFLT_MAX_DEPTH, DFLT_RESOLUTION) {}
-
-
-Octomap::~Octomap() {
-  delete this->rootNode;
-}
-
-bool Octomap::createRootIfNeeded() {
+template<class KEY>
+bool Octomap<KEY>::createRootIfNeeded() {
   if (this->rootNode == nullptr) {
-    this->rootNode = new OcNode();
+    this->rootNode = new Node();
     return true;
   }
   return false;
 }
 
-OcNode* Octomap::setOccupancy(const OcNodeKey& key, float occ) {
+template<class KEY>
+OcNode<KEY>* Octomap<KEY>::setOccupancy(const KEY& key, float occ) {
   bool createdRoot = this->createRootIfNeeded();
   return this->rootNode->setOccupancy(key, this->depth, occ, createdRoot);
 }
 
-OcNode* Octomap::setOccupancy(const Vector3<>& location, const float occ) {
-  return this->setOccupancy(*newOcNodeKey(this->depth, location), occ);
+template<class KEY>
+OcNode<KEY>* Octomap<KEY>::setOccupancy(const Vector3<>& location, const float occ) {
+  return this->setOccupancy(KEY(location), occ);
 }
 
-OcNode* Octomap::updateLogOdds(const OcNodeKey& key, const float logOdds) {
+template<class KEY>
+OcNode<KEY>* Octomap<KEY>::updateLogOdds(const KEY& key, const float logOdds) {
   // We do a search before updating the target node. This small overhead can save a lot
   // of time in the long-run. Note: the search takes O(l) time, where l is the max depth, which is constant.
   // If the node already exists, we can see if the update would change its log-odds. If the node is stable
@@ -67,29 +46,34 @@ OcNode* Octomap::updateLogOdds(const OcNodeKey& key, const float logOdds) {
   return this->rootNode->updateLogOdds(key, this->depth, logOdds, createdRoot);
 }
 
-OcNode* Octomap::updateOccupancy(const OcNodeKey& key, const float occ) {
-  return this->updateLogOdds(key, (float) OcNode::prob2logodds(occ));
+template<class KEY>
+OcNode<KEY>* Octomap<KEY>::updateOccupancy(const KEY& key, const float occ) {
+  return this->updateLogOdds(key, (float) Node::prob2logodds(occ));
 }
 
-OcNode* Octomap::updateOccupancy(const Vector3<>& location, const float occ) {
-  return this->updateOccupancy(*newOcNodeKey(this->depth, location), occ);
+template<class KEY>
+OcNode<KEY>* Octomap<KEY>::updateOccupancy(const Vector3<>& location, const float occ) {
+  return this->updateOccupancy(KEY(location), occ);
 }
 
-OcNode* Octomap::search(const OcNodeKey& key) {
+template<class KEY>
+OcNode<KEY>* Octomap<KEY>::search(const KEY& key) {
   if (this->rootNode == nullptr) return nullptr;
   return this->rootNode->search(key, this->depth);
 }
 
-OcNode* Octomap::search(const Vector3<>& location) {
+template<class KEY>
+OcNode<KEY>* Octomap<KEY>::search(const Vector3<>& location) {
   if (this->rootNode == nullptr) return nullptr;
-  return this->search(*newOcNodeKey(this->depth, location));
+  return this->search(KEY(location));
 }
 
-std::vector<OcNodeKeyPtr> Octomap::rayCast(const Vector3<>& orig, const Vector3<>& end) const {
-  std::vector<OcNodeKeyPtr> ray;
+template<class KEY>
+std::vector<KEY> Octomap<KEY>::rayCast(const Vector3<>& orig, const Vector3<>& end) const {
+  std::vector<KEY> ray;
 
-  auto coord = newOcNodeKey(this->depth, orig);
-  auto endKey = newOcNodeKey(this->depth, end);
+  auto coord = KEY(orig);
+  auto endKey = KEY(end);
   if (coord == endKey) return ray;
 
   Vector3 origCoord = coord->toCoord();
@@ -129,11 +113,9 @@ std::vector<OcNodeKeyPtr> Octomap::rayCast(const Vector3<>& orig, const Vector3<
          )) {
     int idx = int(min - tMax.begin());
     // save key
-    auto newCoord = newOcNodeKey(this->depth, *coord);
-    ray.push_back(std::move(coord));
+    ray.push_back(coord);
     // gen next key
     tMax[idx] += tDelta[idx];
-    coord = std::move(newCoord);
     coord->set(idx, coord->get(idx) + step[idx]);
   }
 
@@ -141,11 +123,12 @@ std::vector<OcNodeKeyPtr> Octomap::rayCast(const Vector3<>& orig, const Vector3<
 }
 
 
-std::vector<OcNodeKeyPtr> Octomap::rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) const {
-  std::vector<OcNodeKeyPtr> ray;
+template<class KEY>
+std::vector<KEY> Octomap<KEY>::rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) const {
+  std::vector<KEY> ray;
 
-  auto coord = newOcNodeKey(this->depth, orig);
-  auto endKey = newOcNodeKey(this->depth, end);
+  auto coord = KEY(orig);
+  auto endKey = KEY(end);
   if (coord == endKey) return ray;
 
   auto d = Vector3<int>();
@@ -171,9 +154,7 @@ std::vector<OcNodeKeyPtr> Octomap::rayCastBresenham(const Vector3<>& orig, const
   ray.reserve(d[0] + d[1] + d[2]);
   while (coord->get(idx) != endKey->get(idx)) {
     // save coord
-    auto newCoord = newOcNodeKey(this->depth, *coord);
-    ray.push_back(std::move(coord));
-    coord = std::move(newCoord);
+    ray.push_back(coord);
     // new coord
     coord->set(idx, coord->get(idx) + step[idx]);
     if (p1 >= 0) {
@@ -191,14 +172,16 @@ std::vector<OcNodeKeyPtr> Octomap::rayCastBresenham(const Vector3<>& orig, const
   return ray;
 }
 
-OcNode* Octomap::rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, float occ) {
+template<class KEY>
+OcNode<KEY>* Octomap<KEY>::rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, float occ) {
   auto ray = this->rayCast(orig, end);
   for (auto& it: ray)
     this->setEmpty(*it);
   return this->updateOccupancy(end, occ);
 }
 
-void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
+template<class KEY>
+void Octomap<KEY>::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
   std::vector<KeySet> freeNodesList, occupiedNodesList;
 
   // small hack to alloc 2 containers for each simultaneous thread
@@ -239,7 +222,7 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
     for (auto& rayPoint: ray) {
       freeNodes.insert(std::move(rayPoint));
     }
-    occupiedNodesList.at(idx).insert(newOcNodeKey(this->depth, endpoint));
+    occupiedNodesList.at(idx).insert(KEY(endpoint));
   }
 
   //// join measurements
@@ -264,11 +247,12 @@ void Octomap::pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Ve
   //}
 }
 
-void Octomap::discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
+template<class KEY>
+void Octomap<KEY>::discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
   std::vector<Vector3f> discretizedPc;
   KeySet endpoints;
   for (const auto& endpointCoord: pointcloud) {
-    OcNodeKeyPtr endpoint = newOcNodeKey(this->depth, endpointCoord);
+    KEY endpoint = KEY(endpointCoord);
     auto succ = endpoints.insert(std::move(endpoint));
     if (succ.second) {
       discretizedPc.push_back(endpointCoord);
@@ -278,7 +262,8 @@ void Octomap::discretizedPointcloudUpdate(const std::vector<Vector3f>& pointclou
   this->pointcloudUpdate(discretizedPc, origin);
 }
 
-bool Octomap::writeBinary(std::ostream& os) {
+template<class KEY>
+bool Octomap<KEY>::writeBinary(std::ostream& os) {
   os << "# Octomap OcTree binary file\n";
   os << "id OcTree\n";
   os << "size " << this->getSize() << std::endl;
@@ -289,7 +274,8 @@ bool Octomap::writeBinary(std::ostream& os) {
   return true;
 }
 
-bool Octomap::writeBinary(const std::string& filename) {
+template<class KEY>
+bool Octomap<KEY>::writeBinary(const std::string& filename) {
   std::ofstream binary_outfile(filename.c_str(), std::ios_base::binary);
   if (!binary_outfile.is_open()) {
     return false;

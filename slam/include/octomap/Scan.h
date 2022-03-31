@@ -10,7 +10,6 @@
 
 using namespace boost::property_tree;
 
-
 class Beam {
 private:
   uint8_t* intensities;

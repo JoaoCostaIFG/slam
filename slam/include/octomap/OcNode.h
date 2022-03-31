@@ -13,6 +13,7 @@
 #include "OcNodeKey.hxx"
 
 namespace octomap {
+  template<class KEY>
   class OcNode {
   public:
     // Can return +/-infinite
@@ -51,7 +52,7 @@ namespace octomap {
     void updateBasedOnChildren();
 
     OcNode*
-    setOrUpdateLogOdds(const OcNodeKey& key, unsigned int depth, float lo, bool isUpdate, bool justCreated = false);
+    setOrUpdateLogOdds(const KEY& key, unsigned int depth, float lo, bool isUpdate, bool justCreated = false);
 
     void writeBinaryInner(std::ostream& os, int baseI, std::bitset<8>& childBitset) const;
 
@@ -121,15 +122,15 @@ namespace octomap {
       return true;
     }
 
-    OcNode* setLogOdds(const OcNodeKey& key, unsigned int depth, float lo, bool justCreated = false);
+    OcNode* setLogOdds(const KEY& key, unsigned int depth, float lo, bool justCreated = false);
 
-    OcNode* updateLogOdds(const OcNodeKey& key, unsigned int depth, float lo, bool justCreated = false);
+    OcNode* updateLogOdds(const KEY& key, unsigned int depth, float lo, bool justCreated = false);
 
-    OcNode* setOccupancy(const OcNodeKey& key, unsigned int depth, float occ, bool justCreated = false);
+    OcNode* setOccupancy(const KEY& key, unsigned int depth, float occ, bool justCreated = false);
 
-    OcNode* updateOccupancy(const OcNodeKey& key, unsigned int depth, float occ, bool justCreated = false);
+    OcNode* updateOccupancy(const KEY& key, unsigned int depth, float occ, bool justCreated = false);
 
-    OcNode* search(const OcNodeKey& key, unsigned int depth);
+    OcNode* search(const KEY& key, unsigned int depth);
 
     bool operator==(const OcNode& rhs) const {
       return this->logOdds == rhs.logOdds;

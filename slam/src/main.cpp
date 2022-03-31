@@ -34,7 +34,8 @@ int main() {
   using chrono::milliseconds;
   using chrono::duration_cast;
 
-  Octomap o = Octomap();
+  Octomap o = Octomap<OcNodeKey<uint16_t>>();
+
   //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
 
   //for (int x = -100; x < 100; x++) {
@@ -80,8 +81,8 @@ int main() {
   //}
   //o.setFull(Vector3f(1.0, 1.0, 1.0));
 
-  cout << "Size: " << o.getSize() << endl;
-  o.writeBinary("rust.bt");
+  //cout << "Size: " << o.getSize() << endl;
+  //o.writeBinary("rust.bt");
 
   //ifstream ss("../data.json");
   //Scan *s = Scan::importJson(ss);
