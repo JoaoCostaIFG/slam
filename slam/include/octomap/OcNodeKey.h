@@ -28,7 +28,7 @@ namespace octomap {
     }
 
     [[nodiscard]] static float key2coord(T key) {
-      return float((key - maxCoord + 0.5) * resolution);
+      return (0.5 - float(maxCoord) + key) * resolution;
     }
 
   public:

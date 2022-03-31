@@ -48,16 +48,11 @@ int main() {
   //  }
   //}
 
-  for (auto& point: o.rayCast(Vector3(), Vector3f(-1, -1, 1))) {
-    o.setEmpty(point);
-    o.setFull(Vector3f(1, 1, 1));
-  }
-
   //for (int i = -1; i < 2; i += 2) {
   //  for (int j = -1; j < 2; j += 2) {
   //    for (int k = -1; k < 2; k += 2) {
   //      auto endpointCoord = Vector3f(i, j, k);
-  //      for (auto& point: o.rayCast(Vector3(), endpointCoord)) {
+  //      for (auto& point: o.rayCastBresenham(Vector3(), endpointCoord)) {
   //        o.setEmpty(point);
   //        o.setFull(endpointCoord);
   //      }
@@ -72,12 +67,12 @@ int main() {
   //}
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
-  //for (int i = 0; i < 3; ++i) {
-  //  auto startTime = high_resolution_clock::now();
-  //  o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-  //  auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
-  //  cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
-  //}
+  for (int i = 0; i < 3; ++i) {
+    auto startTime = high_resolution_clock::now();
+    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+    auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
+    cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
+  }
 
   //auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1.0, 1.0, 1.0));
   //for (auto & it : ray) {

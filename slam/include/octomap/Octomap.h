@@ -276,33 +276,30 @@ namespace octomap {
         //auto ray = this->rayCast(origin, endpoint);
         auto ray = this->rayCastBresenham(origin, endpoint);
         // store the ray info
-        auto& freeNodes = freeNodesList.at(idx);
-        for (auto& rayPoint: ray) {
-          freeNodes.insert(std::move(rayPoint));
-        }
+        freeNodesList.at(idx).insert(ray.begin(), ray.end());
         occupiedNodesList.at(idx).insert(KEY(endpoint));
       }
 
-      //// join measurements
-      //KeySet occupiedNodes;
-      //for (auto& occupiedNodesI: occupiedNodesList) {
-      //  occupiedNodes.merge(occupiedNodesI);
-      //}
-      //KeySet freeNodes;
-      //for (auto& freeNodesI: freeNodesList) {
-      //  freeNodes.merge(freeNodesI);
-      //}
+      // join measurements
+      KeySet occupiedNodes;
+      for (auto& occupiedNodesI: occupiedNodesList) {
+        occupiedNodes.merge(occupiedNodesI);
+      }
+      KeySet freeNodes;
+      for (auto& freeNodesI: freeNodesList) {
+        freeNodes.merge(freeNodesI);
+      }
 
-      //// TODO these loops could benefit from lazy eval!
-      //// update nodes, discarding updates on freenodes that will be set as occupied
-      //for (const auto& freeNode: freeNodes) {
-      //  if (!occupiedNodes.contains(freeNode)) {
-      //    this->setEmpty(freeNode);
-      //  }
-      //}
-      //for (auto& endpoint: occupiedNodes) {
-      //  this->setFull(endpoint);
-      //}
+      // TODO these loops could benefit from lazy eval!
+      // update nodes, discarding updates on freenodes that will be set as occupied
+      for (const auto& freeNode: freeNodes) {
+        if (!occupiedNodes.contains(freeNode)) {
+          this->setEmpty(freeNode);
+        }
+      }
+      for (auto& endpoint: occupiedNodes) {
+        this->setFull(endpoint);
+      }
     }
 
     // The same as pointcloudUpdate but first it discretizes the point cloud. This means that
