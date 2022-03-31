@@ -67,12 +67,12 @@ int main() {
   //}
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
-  for (int i = 0; i < 3; ++i) {
-    auto startTime = high_resolution_clock::now();
-    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-    auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
-    cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
-  }
+  //for (int i = 0; i < 3; ++i) {
+  //  auto startTime = high_resolution_clock::now();
+  //  o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+  //  auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
+  //  cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
+  //}
 
   //auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1.0, 1.0, 1.0));
   //for (auto & it : ray) {
