@@ -2,18 +2,16 @@
 // Created by joao on 3/23/22.
 //
 
-#ifndef SLAM_OCNODEKEY_HXX
-#define SLAM_OCNODEKEY_HXX
+#ifndef SLAM_OCNODEKEY_H
+#define SLAM_OCNODEKEY_H
 
 #include <bitset>
-#include <boost/dynamic_bitset.hpp>
 #include <cassert>
 #include <cinttypes>
-#include <memory>
-#include <unordered_set>
+
+#include "../parallel_hashmap/phmap_utils.h"
 
 #include "Vector3.h"
-#include "../parallel_hashmap/phmap_utils.h"
 
 namespace octomap {
   template<typename T = uint16_t>
@@ -34,6 +32,8 @@ namespace octomap {
     }
 
   public:
+    constexpr static unsigned int size = (unsigned int) sizeof(T) * 8;
+
     explicit OcNodeKey(const Vector3<>& p) : k{
         coord2key(p[0]),
         coord2key(p[1]),
@@ -99,10 +99,10 @@ namespace octomap {
     }
 
     friend std::ostream& operator<<(std::ostream& out, OcNodeKey const& key) {
-      // TODO should adapt
-      return out << "(" << std::bitset<16>(key[0]) <<
-                 " " << std::bitset<16>(key[1]) <<
-                 " " << std::bitset<16>(key[2]) << ")";
+      constexpr unsigned int bitCnt = size;
+      return out << "(" << std::bitset<bitCnt>(key[0]) <<
+                 " " << std::bitset<bitCnt>(key[1]) <<
+                 " " << std::bitset<bitCnt>(key[2]) << ")";
     }
 
     static void setMaxCoord(unsigned int mc) {
@@ -112,11 +112,6 @@ namespace octomap {
     static void setResolution(double r) {
       resolution = r;
       resolution_factor = 1.0 / r;
-    }
-
-    // TODO template specializations
-    static unsigned int size() {
-      return 16;
     }
 
     struct Cmp {
@@ -133,4 +128,4 @@ namespace octomap {
   };
 }
 
-#endif //SLAM_OCNODEKEY_HXX
+#endif //SLAM_OCNODEKEY_H

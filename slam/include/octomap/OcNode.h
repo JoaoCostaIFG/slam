@@ -10,7 +10,7 @@
 #include <cmath>
 #include <ostream>
 
-#include "OcNodeKey.hxx"
+#include "OcNodeKey.h"
 
 namespace octomap {
   template<class KEY>
@@ -33,47 +33,203 @@ namespace octomap {
     OcNode** children = nullptr;
     float logOdds;
 
-    void allocChildren();
+    void allocChildren() {
+      this->children = new OcNode* [8]{nullptr};
+    }
 
-    void expandNode();
+    void expandNode() {
+      assert(!this->hasChildren());
+      if (this->children == nullptr) {
+        this->allocChildren();
+      }
+
+      for (int i = 0; i < 8; ++i) {
+        this->children[i] = new OcNode(this->getLogOdds());
+      }
+    }
 
     // Node is prunable is all children exist and have the same occupancy
-    [[nodiscard]] bool isPrunable() const;
+    [[nodiscard]] bool isPrunable() const {
+      OcNode* firstChild = this->getChild(0);
+      if (firstChild == nullptr || firstChild->hasChildren()) return false;
+
+      for (int i = 1; i < 8; ++i) {
+        OcNode* child = this->getChild(i);
+        if (child == nullptr ||             // all children exist
+            child->hasChildren() ||         // they don't have children of their own
+            (*firstChild) != (*child)) {    // and have the same occupancy
+          return false;
+        }
+      }
+
+      return true;
+    }
 
     // Returns the max occupancy log-odds from the children.
     // For internal use: presence of all children should be checked first.
-    [[nodiscard]] float getMaxChildrenLogOdds() const;
+    [[nodiscard]] float getMaxChildrenLogOdds() const {
+      float max = std::numeric_limits<float>::min();
+      for (int i = 0; i < 8; ++i) {
+        OcNode* child = this->children[i];
+        if (child == nullptr) continue;
+        if (child->getLogOdds() > max) max = child->getLogOdds();
+      }
+      return max;
+    }
 
     // Returns the mean occupancy log-odds from the children.
     // For internal use: presence of all children should be checked first.
-    [[nodiscard]] float getMeanChildrenLogOdds() const;
+    [[nodiscard]] float getMeanChildrenLogOdds() const {
+      unsigned int cnt = 0;
+      float ret = 0;
+      for (int i = 0; i < 8; ++i) {
+        OcNode* child = this->children[i];
+        if (child == nullptr) continue;
+        ret += child->getLogOdds();
+        ++cnt;
+      }
+      return ret / (float) cnt;
+    }
 
     // Use the max of the children's occupancy (conservative approach).
-    void updateBasedOnChildren();
+    void updateBasedOnChildren() {
+      if (this->children == nullptr) return;
+      this->setLogOdds(this->getMaxChildrenLogOdds());
+    }
 
     OcNode*
-    setOrUpdateLogOdds(const KEY& key, unsigned int depth, float lo, bool isUpdate, bool justCreated = false);
+    setOrUpdateLogOdds(const KEY& key, unsigned int depth, float lo, bool isUpdate, bool justCreated = false) {
+      bool createdChild = false;
+      OcNode* child;
 
-    void writeBinaryInner(std::ostream& os, int baseI, std::bitset<8>& childBitset) const;
+      // follow down to last level
+      if (depth > 0) {
+        unsigned int d = depth - 1;
+        unsigned int pos = key.getStep(d);
+        if (!this->childExists(pos)) {
+          // child does not exist, but maybe it's a pruned node?
+          if (!this->hasChildren() && !justCreated) {
+            // current node does not have children AND it is not a new node
+            // -> expand pruned node
+            this->expandNode();
+          } else {
+            // not a pruned node, create requested child
+            this->createChild(pos);
+            createdChild = true;
+          }
+        }
+
+        child = this->getChild(pos);
+        child->setOrUpdateLogOdds(key, d, lo, isUpdate, createdChild);
+
+        // prune if possible (return self is pruned)
+        if (this->prune()) return this;
+        // updated occupancy if not pruned
+        this->updateBasedOnChildren();
+        return child;
+      } else { // at last level, update node, end of recursion
+        if (isUpdate) this->updateLogOdds(lo);
+        else this->setLogOdds(lo);
+        return this;
+      }
+    }
+
+    void writeBinaryInner(std::ostream& os, int baseI, std::bitset<8>& childBitset) const {
+      // 00 : child is unknown node
+      // 01 : child is occupied node
+      // 10 : child is free node
+      // 11 : child has children
+
+      for (unsigned int i = 0; i < 4; ++i) {
+        if (this->childExists(baseI + i)) {
+          const OcNode* child = this->getChild(baseI + i);
+          if (child->hasChildren()) {
+            // 11 : child has children
+            childBitset[i * 2] = 1;
+            childBitset[i * 2 + 1] = 1;
+          } else if (child->isOccupied()) {
+            // 01 : child is occupied node
+            childBitset[i * 2] = 0;
+            childBitset[i * 2 + 1] = 1;
+          } else {
+            // 10 : child is free node
+            childBitset[i * 2] = 1;
+            childBitset[i * 2 + 1] = 0;
+          }
+        } else {
+          // 00 : child is unknown node
+          childBitset[i * 2] = 0;
+          childBitset[i * 2 + 1] = 0;
+        }
+      }
+    }
 
   public:
-    explicit OcNode(float logOdds);
+    explicit OcNode(float logOdds) : logOdds(logOdds) {}
 
-    OcNode();
+    OcNode() : OcNode<KEY>(OcNode::occThreshold) {}
 
-    ~OcNode();
+    ~OcNode() {
+      if (this->children != nullptr) {
+        for (int i = 0; i < 8; ++i) {
+          delete this->children[i];
+        }
+      }
+      delete[] this->children;
+    }
 
-    [[nodiscard]] unsigned int getChildCount() const;
+    [[nodiscard]] unsigned int getChildCount() const {
+      if (this->children == nullptr) return 0;
+      unsigned int ret = 0;
+      for (int i = 0; i < 8; ++i) {
+        OcNode* child = this->children[i];
+        if (child != nullptr) ret += child->getChildCount() + 1;
+      }
+      return ret;
+    }
 
-    [[nodiscard]] OcNode* getChild(unsigned int pos) const;
+    [[nodiscard]] OcNode* getChild(unsigned int pos) const {
+      assert(pos < 8);
+      if (this->children == nullptr) return nullptr;
+      return this->children[pos];
+    }
 
-    OcNode* createChild(unsigned int pos);
+    OcNode* createChild(unsigned int pos) {
+      assert(pos < 8);
+      if (this->children == nullptr) {
+        this->allocChildren();
+      }
 
-    [[nodiscard]] bool hasChildren() const;
+      if (!this->childExists(pos)) this->children[pos] = new OcNode();
+      return this->children[pos];
+    }
 
-    [[nodiscard]] bool childExists(unsigned int i) const;
+    [[nodiscard]] bool hasChildren() const {
+      if (this->children == nullptr) return false;
+      for (int i = 0; i < 8; ++i) {
+        if (this->children[i] != nullptr) return true;
+      }
+      return false;
+    }
 
-    bool prune();
+    [[nodiscard]] bool childExists(unsigned int i) const {
+      if (this->children == nullptr) return false;
+      return this->children[i] != nullptr;
+    }
+
+    bool prune() {
+      if (!this->isPrunable()) return false;
+      // all children are equal so we take their value
+      this->setLogOdds(this->getChild(0)->getLogOdds());
+      // delete children
+      for (int i = 0; i < 8; ++i) {
+        delete this->children[i];
+        this->children[i] = nullptr;
+      }
+      delete[] this->children;
+      this->children = nullptr;
+      return true;
+    }
 
     [[nodiscard]] float getLogOdds() const {
       return this->logOdds;
@@ -122,15 +278,37 @@ namespace octomap {
       return true;
     }
 
-    OcNode* setLogOdds(const KEY& key, unsigned int depth, float lo, bool justCreated = false);
+    OcNode* setLogOdds(const KEY& key, unsigned int depth, float lo, bool justCreated = false) {
+      return this->setOrUpdateLogOdds(key, depth, lo, false, justCreated);
+    }
 
-    OcNode* updateLogOdds(const KEY& key, unsigned int depth, float lo, bool justCreated = false);
+    OcNode* updateLogOdds(const KEY& key, unsigned int depth, float lo, bool justCreated = false) {
+      return this->setOrUpdateLogOdds(key, depth, lo, true, justCreated);
+    }
 
-    OcNode* setOccupancy(const KEY& key, unsigned int depth, float occ, bool justCreated = false);
+    OcNode* setOccupancy(const KEY& key, unsigned int depth, float occ, bool justCreated = false) {
+      return this->setLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
+    }
 
-    OcNode* updateOccupancy(const KEY& key, unsigned int depth, float occ, bool justCreated = false);
+    OcNode* updateOccupancy(const KEY& key, unsigned int depth, float occ, bool justCreated = false) {
+      return this->updateLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
+    }
 
-    OcNode* search(const KEY& key, unsigned int depth);
+    OcNode* search(const KEY& key, unsigned int depth) {
+      if (depth > 0) {
+        unsigned int d = depth - 1;
+        unsigned int pos = key.getStep(d);
+        OcNode* child = this->getChild(pos);
+        if (child != nullptr) // child exists
+          return child->search(key, d);
+        else if (!this->hasChildren()) // we're a leaf (children pruned)
+          return this;
+        else // search failed
+          return nullptr;
+      } else {
+        return this;
+      }
+    }
 
     bool operator==(const OcNode& rhs) const {
       return this->logOdds == rhs.logOdds;
@@ -140,7 +318,27 @@ namespace octomap {
       return !(rhs == *this);
     }
 
-    void writeBinary(std::ostream& os) const;
+    void writeBinary(std::ostream& os) const {
+      std::bitset<8> child1to4;
+      std::bitset<8> child5to8;
+
+      this->writeBinaryInner(os, 0, child1to4);
+      this->writeBinaryInner(os, 4, child5to8);
+
+      char child1to4_char = (char) child1to4.to_ulong();
+      char child5to8_char = (char) child5to8.to_ulong();
+
+      os.write((char*) &child1to4_char, sizeof(char));
+      os.write((char*) &child5to8_char, sizeof(char));
+
+      // write children
+      for (unsigned int i = 0; i < 8; i++) {
+        if (this->childExists(i)) {
+          const OcNode* child = this->getChild(i);
+          if (child->hasChildren()) child->writeBinary(os);
+        }
+      }
+    }
   };
 }
 
