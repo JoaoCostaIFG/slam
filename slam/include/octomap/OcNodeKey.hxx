@@ -13,6 +13,7 @@
 #include <unordered_set>
 
 #include "Vector3.h"
+#include "../parallel_hashmap/phmap_utils.h"
 
 namespace octomap {
   class OcNodeKey;
@@ -68,11 +69,7 @@ namespace octomap {
 
     struct Hash {
       size_t operator()(const OcNodeKey& key) const {
-        size_t ret = key.get(0) * 37;
-        ret += key.get(1);
-        ret *= 37;
-        ret += key.get(2);
-        return ret;
+        return phmap::HashState::combine(0, key.get(0), key.get(1), key.get(2));
       }
 
       size_t operator()(const OcNodeKeyPtr& key) const {

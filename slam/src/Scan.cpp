@@ -4,7 +4,7 @@
 #include <rapidjson/document.h>
 #include <opencv2/opencv.hpp>
 
-#include "../include/Scan.h"
+#include "../include/octomap/Scan.h"
 
 // Beam
 Beam* Beam::importJson(const rapidjson::Value &beam_json, uint8_t *intensities) {
