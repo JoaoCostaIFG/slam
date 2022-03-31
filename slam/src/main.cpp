@@ -32,7 +32,7 @@ vector<Vector3f> importOff(const string& filename) {
 }
 
 int main() {
-  Octomap o = Octomap();
+//  Octomap o = Octomap();
   //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
 
 
@@ -65,12 +65,12 @@ int main() {
   //}
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
-  for (int i = 0; i < 3; ++i) {
-    clock_t start = clock();
-    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-    //o.discretizedPointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-    cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
-  }
+//  for (int i = 0; i < 3; ++i) {
+//    clock_t start = clock();
+//    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+//    //o.discretizedPointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+//    cout << float(clock() - start) / CLOCKS_PER_SEC << endl;
+//  }
 
   //auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1.0, 1.0, 1.0));
   //for (auto & it : ray) {
@@ -83,9 +83,11 @@ int main() {
 //  o.writeBinary("rust.bt");
 
   ifstream ss("../data.json");
-  Scan s = Scan::importJson(ss);
-  cout << s;
-
+  Scan *s = Scan::importJson(ss);
+  cout << *s << endl;
+  cout << *s->getSweeps().at(0) << endl;
+  cout << *s->getSweeps().at(0)->getBeams().at(0) << endl;
+  cout << *s->getSweeps().at(27)->getBeams().at(0) << endl;
 
 //  uint8_t  v1[] = {1, 2, 3};
 //  uint8_t  v2[] = {4, 255, 6};
@@ -96,7 +98,7 @@ int main() {
 //  std::string image_path = "../cartesian.png";
 //  cv::Mat img = cv::Mat(s->getBeamNo(), s->getBeamLen(), CV_8U, s->getIntensities().data());
 //
-//  cv::namedWindow("Display Image", cv::WINDOW_AUTOSIZE);
+//  cv::namedWindow("Display Iage", cv::WINDOW_AUTOSIZE);
 //  cv::imshow("Display window", img);
 //
 //  int k;

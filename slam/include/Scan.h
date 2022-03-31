@@ -3,13 +3,9 @@
 
 #define INTENSITIES_SIZE 399
 
-#include <boost/property_tree/ptree.hpp>
-#include <boost/property_tree/json_parser.hpp>
-#include <boost/foreach.hpp>
 #include <ostream>
 #include <utility>
-
-using namespace boost::property_tree;
+#include <rapidjson/document.h>
 
 class Beam {
 private:
@@ -32,7 +28,7 @@ public:
 
   friend std::ostream& operator<<(std::ostream& os, const Beam& beam);
 
-  static Beam* importJson(const ptree& p, uint8_t *intensities);
+  static Beam* importJson(const rapidjson::Value &b, uint8_t *intensities);
 };
 
 class Sweep {
@@ -58,9 +54,9 @@ public:
 
   void addBeam(const Beam* beam) { beams.push_back(beam); }
 
-  friend std::ostream& operator<<(std::ostream& os, const Sweep& scan);
+  friend std::ostream& operator<<(std::ostream& os, const Sweep& sweep);
 
-  static Sweep* importJson(std::istream& stream, size_t beam_no, size_t beam_len);
+  static Sweep* importJson(const rapidjson::Value &s, size_t beam_no, size_t beam_len);
 };
 
 class Scan {
@@ -68,18 +64,23 @@ private:
   double step_dist;
   size_t sweep_no;
   size_t beam_no;
-  std::vector<Sweep> sweeps;
+  std::vector<Sweep*> sweeps;
 
 public:
-  Scan(size_t sweepNo, size_t beamNo, std::vector<Sweep>  sweeps) : sweep_no(sweepNo),
-                                                                                           beam_no(beamNo),
+  ~Scan() {
+    for (Sweep *s: sweeps)
+      delete s;
+  }
+  Scan(size_t sweepNo, size_t beamNo, double step_dist, std::vector<Sweep*> sweeps) : sweep_no(sweepNo),
+                                                                                           beam_no(beamNo), step_dist(step_dist),
                                                                                            sweeps(std::move(sweeps)) {}
 
   [[nodiscard]] double getStepDist() const { return step_dist; }
+  const std::vector<Sweep*>& getSweeps() const { return sweeps; }
 
   friend std::ostream& operator<<(std::ostream& os, const Scan& scan);
 
-  static Scan importJson(std::istream& stream);
+  static Scan* importJson(std::istream& stream);
 };
 
 
