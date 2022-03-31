@@ -4,12 +4,14 @@
 #include <chrono>
 
 #include "../include/octomap/Octomap.h"
-#include "../include/octomap/Scan.h"
+#include "../include/scan/Scan.h"
+#include "../include/scan/Filters.h"
 
 #include <opencv2/opencv.hpp>
 
 using namespace std;
 using namespace octomap;
+using namespace scan;
 
 // https://segeval.cs.princeton.edu/public/off_format.html
 vector<Vector3f> importOff(const string& filename) {
@@ -91,8 +93,9 @@ int main() {
   cout << *s << endl;
 
   // s->getSweeps().at(0)->display(false);
-  s->getSweeps().at(22)->display(true);
-  s->getSweeps().at(1)->display(true);
+  Sweep *sweep = s->getSweeps().at(1);
+  applyGaussian(*sweep, 9, 5);
+  displaySweep(*sweep, true);
 
 //  uint8_t  v1[] = {1, 2, 3};
 //  uint8_t  v2[] = {4, 255, 6};
