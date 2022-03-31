@@ -85,9 +85,10 @@ int main() {
   ifstream ss("../data.json");
   Scan *s = Scan::importJson(ss);
   cout << *s << endl;
-  cout << *s->getSweeps().at(0) << endl;
-  cout << *s->getSweeps().at(0)->getBeams().at(0) << endl;
-  cout << *s->getSweeps().at(27)->getBeams().at(0) << endl;
+
+  // s->getSweeps().at(0)->display(false);
+  s->getSweeps().at(22)->display(true);
+  s->getSweeps().at(1)->display(true);
 
 //  uint8_t  v1[] = {1, 2, 3};
 //  uint8_t  v2[] = {4, 255, 6};
