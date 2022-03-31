@@ -10,19 +10,20 @@
 #include "OcNode.h"
 
 namespace octomap {
+  template<class NODE>
   class OctomapIterator {
   private:
-    std::stack<OcNode*> nodeStack;
+    std::stack<NODE*> nodeStack;
 
     // Return false if there is no next node
     bool nextNode() {
       if (this->nodeStack.empty()) return false;
 
-      OcNode* currentNode = this->nodeStack.top();
+      NODE* currentNode = this->nodeStack.top();
       this->nodeStack.pop();
       if (currentNode->hasChildren()) {
         for (int i = 7; i >= 0; --i) {
-          OcNode* childNode = currentNode->getChild(i);
+          NODE* childNode = currentNode->getChild(i);
           if (childNode) this->nodeStack.push(childNode);
         }
       }
@@ -31,7 +32,7 @@ namespace octomap {
     }
 
   public:
-    explicit OctomapIterator(OcNode* node) {
+    explicit OctomapIterator(NODE* node) {
       if (node != nullptr)
         this->nodeStack.push(node);
     }
@@ -48,12 +49,12 @@ namespace octomap {
       return OctomapIterator(nullptr);
     }
 
-    OcNode* operator*() const {
+    NODE* operator*() const {
       if (this->nodeStack.empty()) return nullptr;
       return this->nodeStack.top();
     }
 
-    OcNode* operator->() const {
+    NODE* operator->() const {
       if (this->nodeStack.empty()) return nullptr;
       return this->nodeStack.top();
     }
