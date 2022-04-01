@@ -2,6 +2,7 @@
 #include <iostream>
 #include <fstream>
 #include <chrono>
+#include <random>
 
 #include "../include/octomap/Octomap.h"
 #include "../include/sonar/Scan.h"
@@ -39,7 +40,7 @@ int main() {
   using chrono::milliseconds;
   using chrono::duration_cast;
 
-  Octomap o = Octomap<>();
+  //Octomap o = Octomap<>();
 
   //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
 
@@ -53,17 +54,17 @@ int main() {
   //  }
   //}
 
-  for (int i = -1; i < 2; i += 2) {
-    for (int j = -1; j < 2; j += 2) {
-      for (int k = -1; k < 2; k += 2) {
-        auto endpointCoord = Vector3f(i, j, k);
-        for (auto& point: o.rayCastBresenham(Vector3(), endpointCoord)) {
-          o.setEmpty(point);
-          o.setFull(endpointCoord);
-        }
-      }
-    }
-  }
+  //for (int i = -1; i < 2; i += 2) {
+  //  for (int j = -1; j < 2; j += 2) {
+  //    for (int k = -1; k < 2; k += 2) {
+  //      auto endpointCoord = Vector3f(i, j, k);
+  //      for (auto& point: o.rayCastBresenham(Vector3(), endpointCoord)) {
+  //        o.setEmpty(point);
+  //        o.setFull(endpointCoord);
+  //      }
+  //    }
+  //  }
+  //}
 
   //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
   //o.rayCast(Vector3(), Vector3f(1267.09998, 2835.5, 272.221985));
@@ -71,6 +72,23 @@ int main() {
   //    o.setFull(*point);
   //}
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
+
+  std::default_random_engine generator;
+  std::normal_distribution<float> distribution(100.0, 10.0);
+  for (int rayCnt = 1; rayCnt < 1000000; rayCnt += 100) {
+    Vector3f orig;
+    Octomap o = Octomap<>();
+    cout << "Ray from " << orig << " to normal distribution of coordinates (100.0, 10.0) " << rayCnt << " times\n";
+    for (int i = 0; i < 5; ++i) {
+      auto startTime = high_resolution_clock::now();
+      for (int j = 0; j < rayCnt; ++j) {
+        Vector3f dest(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
+        auto n = o.rayCastBresenham(orig, dest);
+      }
+      auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
+      cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
+    }
+  }
 
 //  for (int i = 0; i < 3; ++i) {
 //    auto startTime = high_resolution_clock::now();
@@ -87,8 +105,8 @@ int main() {
   //o.setFull(Vector3f(1.0, 1.0, 1.0));
 
   // Reads data from json, displays cartesian and exports to octovis format
-  cout << "Size: " << o.getSize() << endl;
-  o.writeBinary("rust.bt");
+  //cout << "Size: " << o.getSize() << endl;
+  //o.writeBinary("rust.bt");
 
   //ifstream ss("../data.json");
   //Scan* s = Scan::importJson(ss);
