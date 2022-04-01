@@ -13,7 +13,7 @@
 #include "OcNodeKey.h"
 
 namespace octomap {
-  template<class KEY>
+  template<class T>
   class OcNode {
   public:
     // Can return +/-infinite
@@ -26,6 +26,8 @@ namespace octomap {
     }
 
   private:
+    using Key = OcNodeKey<T>;
+
     inline static double occThreshold = prob2logodds(0.5);
     inline static double minThreshold = prob2logodds(0.1);
     inline static double maxThreshold = prob2logodds(0.9);
@@ -98,7 +100,7 @@ namespace octomap {
     }
 
     OcNode*
-    setOrUpdateLogOdds(const KEY& key, unsigned int depth, float lo, bool isUpdate, bool justCreated = false) {
+    setOrUpdateLogOdds(const Key& key, unsigned int depth, float lo, bool isUpdate, bool justCreated = false) {
       bool createdChild = false;
       OcNode* child;
 
@@ -167,7 +169,7 @@ namespace octomap {
   public:
     explicit OcNode(float logOdds) : logOdds(logOdds) {}
 
-    OcNode() : OcNode<KEY>(OcNode::occThreshold) {}
+    OcNode() : OcNode(OcNode::occThreshold) {}
 
     ~OcNode() {
       if (this->children != nullptr) {
@@ -278,23 +280,23 @@ namespace octomap {
       return true;
     }
 
-    OcNode* setLogOdds(const KEY& key, unsigned int depth, float lo, bool justCreated = false) {
+    OcNode* setLogOdds(const Key& key, unsigned int depth, float lo, bool justCreated = false) {
       return this->setOrUpdateLogOdds(key, depth, lo, false, justCreated);
     }
 
-    OcNode* updateLogOdds(const KEY& key, unsigned int depth, float lo, bool justCreated = false) {
+    OcNode* updateLogOdds(const Key& key, unsigned int depth, float lo, bool justCreated = false) {
       return this->setOrUpdateLogOdds(key, depth, lo, true, justCreated);
     }
 
-    OcNode* setOccupancy(const KEY& key, unsigned int depth, float occ, bool justCreated = false) {
+    OcNode* setOccupancy(const Key& key, unsigned int depth, float occ, bool justCreated = false) {
       return this->setLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
     }
 
-    OcNode* updateOccupancy(const KEY& key, unsigned int depth, float occ, bool justCreated = false) {
+    OcNode* updateOccupancy(const Key& key, unsigned int depth, float occ, bool justCreated = false) {
       return this->updateLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
     }
 
-    OcNode* search(const KEY& key, unsigned int depth) {
+    OcNode* search(const Key& key, unsigned int depth) {
       if (depth > 0) {
         unsigned int d = depth - 1;
         unsigned int pos = key.getStep(d);

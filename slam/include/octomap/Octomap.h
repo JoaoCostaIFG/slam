@@ -20,11 +20,12 @@
 #define DFLT_RESOLUTION 0.1
 
 namespace octomap {
-  template<class KEY = OcNodeKey<>>
+  template<typename T = uint16_t>
   class Octomap {
   private:
-    using KeySet = std::unordered_set<KEY, typename KEY::Hash, typename KEY::Cmp>;
-    using Node = OcNode<KEY>;
+    using Key = OcNodeKey<T>;
+    using KeySet = std::unordered_set<Key, typename Key::Hash, typename Key::Cmp>;
+    using Node = OcNode<T>;
 
     const unsigned int depth;
     const double resolution; // in meters
@@ -45,10 +46,10 @@ namespace octomap {
     Octomap(unsigned int maxDepth, double resolution) :
         depth(maxDepth), resolution(resolution) {
       assert(this->depth >= 1);
-      assert(this->depth <= KEY::size);
+      assert(this->depth <= Key::size);
 
-      KEY::setMaxCoord((int) pow(2, maxDepth - 1));
-      KEY::setResolution(resolution);
+      Key::setMaxCoord((int) pow(2, maxDepth - 1));
+      Key::setResolution(resolution);
 
       // pre-calculate step sizes
       this->stepLookupTable.reserve(this->depth + 2);
@@ -59,7 +60,7 @@ namespace octomap {
       this->stepLookupTable[this->depth + 1] = this->resolution / 2.0;
     }
 
-    explicit Octomap(double resolution) : Octomap(KEY::size, resolution) {}
+    explicit Octomap(double resolution) : Octomap(Key::size, resolution) {}
 
     Octomap() : Octomap(DFLT_RESOLUTION) {}
 
@@ -72,16 +73,16 @@ namespace octomap {
       return this->rootNode->getChildCount() + 1;
     }
 
-    Node* setOccupancy(const KEY& key, float occ) {
+    Node* setOccupancy(const Key& key, float occ) {
       bool createdRoot = this->createRootIfNeeded();
       return this->rootNode->setOccupancy(key, this->depth, occ, createdRoot);
     }
 
     Node* setOccupancy(const Vector3<>& location, float occ) {
-      return this->setOccupancy(KEY(location), occ);
+      return this->setOccupancy(Key(location), occ);
     }
 
-    Node* setFull(const KEY& key) {
+    Node* setFull(const Key& key) {
       return this->setOccupancy(key, 1.0);
     }
 
@@ -89,7 +90,7 @@ namespace octomap {
       return this->setOccupancy(location, 1.0);
     }
 
-    Node* setEmpty(const KEY& key) {
+    Node* setEmpty(const Key& key) {
       return this->setOccupancy(key, 0.0);
     }
 
@@ -97,7 +98,7 @@ namespace octomap {
       return this->setOccupancy(location, 0.0);
     }
 
-    Node* updateLogOdds(const KEY& key, float logOdds) {
+    Node* updateLogOdds(const Key& key, float logOdds) {
       // We do a search before updating the target node. This small overhead can save a lot
       // of time in the long-run. Note: the search takes O(l) time, where l is the max depth, which is constant.
       // If the node already exists, we can see if the update would change its log-odds. If the node is stable
@@ -110,31 +111,31 @@ namespace octomap {
       return this->rootNode->updateLogOdds(key, this->depth, logOdds, createdRoot);
     }
 
-    Node* updateOccupancy(const KEY& key, float occ) {
+    Node* updateOccupancy(const Key& key, float occ) {
       return this->updateLogOdds(key, (float) Node::prob2logodds(occ));
     }
 
     Node* updateOccupancy(const Vector3<>& location, float occ) {
-      return this->updateOccupancy(KEY(location), occ);
+      return this->updateOccupancy(Key(location), occ);
     }
 
-    Node* search(const KEY& key) {
+    Node* search(const Key& key) {
       if (this->rootNode == nullptr) return nullptr;
       return this->rootNode->search(key, this->depth);
     }
 
     Node* search(const Vector3<>& location) {
       if (this->rootNode == nullptr) return nullptr;
-      return this->search(KEY(location));
+      return this->search(Key(location));
     }
 
     // Algorithm from "A Fast Voxel Traversal Algorithm for Ray Tracing" by John Amanatides & Andrew Woo.
     // Based on DDA ray casting algorithm for 3D.
-    [[nodiscard]] std::vector<KEY> rayCast(const Vector3<>& orig, const Vector3<>& end) const {
-      std::vector<KEY> ray;
+    [[nodiscard]] std::vector<Key> rayCast(const Vector3<>& orig, const Vector3<>& end) const {
+      std::vector<Key> ray;
 
-      auto coord = KEY(orig);
-      auto endKey = KEY(end);
+      auto coord = Key(orig);
+      auto endKey = Key(end);
       if (coord == endKey) return ray;
 
       // Initialization phase
@@ -181,11 +182,11 @@ namespace octomap {
       return ray;
     }
 
-    [[nodiscard]] std::vector<KEY> rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) const {
-      std::vector<KEY> ray;
+    [[nodiscard]] std::vector<Key> rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) const {
+      std::vector<Key> ray;
 
-      auto coord = KEY(orig);
-      auto endKey = KEY(end);
+      auto coord = Key(orig);
+      auto endKey = Key(end);
       if (coord == endKey) return ray;
 
       auto d = Vector3<int>();
@@ -278,7 +279,7 @@ namespace octomap {
         auto ray = this->rayCastBresenham(origin, endpoint);
         // store the ray info
         freeNodesList.at(idx).insert(ray.begin(), ray.end());
-        occupiedNodesList.at(idx).insert(KEY(endpoint));
+        occupiedNodesList.at(idx).insert(Key(endpoint));
       }
 
       // join measurements
@@ -310,7 +311,7 @@ namespace octomap {
       std::vector<Vector3f> discretizedPc;
       KeySet endpoints;
       for (const auto& endpointCoord: pointcloud) {
-        KEY endpoint = KEY(endpointCoord);
+        Key endpoint = Key(endpointCoord);
         auto succ = endpoints.insert(std::move(endpoint));
         if (succ.second) {
           discretizedPc.push_back(endpointCoord);
@@ -341,8 +342,8 @@ namespace octomap {
       return writeBinary(binary_outfile);
     }
 
-    typedef OctomapIterator<KEY> iterator;
-    typedef const OctomapIterator<KEY> const_iterator;
+    typedef OctomapIterator<Key> iterator;
+    typedef const OctomapIterator<Key> const_iterator;
 
     iterator begin() {
       return iterator(this->rootNode);

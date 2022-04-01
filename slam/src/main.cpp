@@ -87,8 +87,8 @@ int main() {
   //o.setFull(Vector3f(1.0, 1.0, 1.0));
 
   // Reads data from json, displays cartesian and exports to octovis format
-//  cout << "Size: " << o.getSize() << endl;
-//  o.writeBinary("rust.bt");
+  cout << "Size: " << o.getSize() << endl;
+  o.writeBinary("rust.bt");
 
   //ifstream ss("../data.json");
   //Scan* s = Scan::importJson(ss);
