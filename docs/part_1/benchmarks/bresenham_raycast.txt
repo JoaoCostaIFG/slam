@@ -1,0 +1,120 @@
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 1 times
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 2 times
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 4 times
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 8 times
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 16 times
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ms: 0 Secs: 0
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 32 times
+Ms: 1 Secs: 0.001
+Ms: 1 Secs: 0.001
+Ms: 1 Secs: 0.001
+Ms: 1 Secs: 0.001
+Ms: 1 Secs: 0.001
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 64 times
+Ms: 3 Secs: 0.003
+Ms: 2 Secs: 0.002
+Ms: 3 Secs: 0.003
+Ms: 2 Secs: 0.002
+Ms: 3 Secs: 0.003
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 128 times
+Ms: 5 Secs: 0.005
+Ms: 5 Secs: 0.005
+Ms: 6 Secs: 0.006
+Ms: 5 Secs: 0.005
+Ms: 5 Secs: 0.005
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 256 times
+Ms: 11 Secs: 0.011
+Ms: 11 Secs: 0.011
+Ms: 11 Secs: 0.011
+Ms: 11 Secs: 0.011
+Ms: 11 Secs: 0.011
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 512 times
+Ms: 23 Secs: 0.023
+Ms: 23 Secs: 0.023
+Ms: 23 Secs: 0.023
+Ms: 23 Secs: 0.023
+Ms: 23 Secs: 0.023
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 1024 times
+Ms: 47 Secs: 0.047
+Ms: 47 Secs: 0.047
+Ms: 47 Secs: 0.047
+Ms: 47 Secs: 0.047
+Ms: 47 Secs: 0.047
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 2048 times
+Ms: 94 Secs: 0.094
+Ms: 94 Secs: 0.094
+Ms: 94 Secs: 0.094
+Ms: 94 Secs: 0.094
+Ms: 95 Secs: 0.095
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 4096 times
+Ms: 189 Secs: 0.189
+Ms: 190 Secs: 0.19
+Ms: 190 Secs: 0.19
+Ms: 187 Secs: 0.187
+Ms: 180 Secs: 0.18
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 8192 times
+Ms: 358 Secs: 0.358
+Ms: 357 Secs: 0.357
+Ms: 358 Secs: 0.358
+Ms: 358 Secs: 0.358
+Ms: 358 Secs: 0.358
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 16384 times
+Ms: 716 Secs: 0.716
+Ms: 715 Secs: 0.715
+Ms: 715 Secs: 0.715
+Ms: 716 Secs: 0.716
+Ms: 716 Secs: 0.716
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 32768 times
+Ms: 1432 Secs: 1.432
+Ms: 1432 Secs: 1.432
+Ms: 1433 Secs: 1.433
+Ms: 1434 Secs: 1.434
+Ms: 1434 Secs: 1.434
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 65536 times
+Ms: 2866 Secs: 2.866
+Ms: 2866 Secs: 2.866
+Ms: 2866 Secs: 2.866
+Ms: 2867 Secs: 2.867
+Ms: 2863 Secs: 2.863
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 131072 times
+Ms: 5738 Secs: 5.738
+Ms: 5763 Secs: 5.763
+Ms: 5764 Secs: 5.764
+Ms: 5765 Secs: 5.765
+Ms: 5746 Secs: 5.746
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 262144 times
+Ms: 11498 Secs: 11.498
+Ms: 11503 Secs: 11.503
+Ms: 11469 Secs: 11.469
+Ms: 11470 Secs: 11.47
+Ms: 11508 Secs: 11.508
+Ray from (0 0 0) to normal distribution of coordinates (100.0, 10.0) 524288 times
+Ms: 22997 Secs: 22.997
+Ms: 22959 Secs: 22.959
+Ms: 22945 Secs: 22.945
+Ms: 22916 Secs: 22.916
+Ms: 22933 Secs: 22.933
