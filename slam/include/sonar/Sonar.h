@@ -11,7 +11,7 @@ namespace sonar {
   class Sonar {
   private:
     Vector3<> position;
-    Octomap octomap;
+    Octomap<> octomap;
   public:
     Sonar() : position(0.0, 0.0, 0.0) {}
 

@@ -35,13 +35,13 @@ vector<Vector3f> importOff(const string& filename) {
 }
 
 int main() {
-//  using chrono::high_resolution_clock;
-//  using chrono::milliseconds;
-//  using chrono::duration_cast;
-//
-//  Octomap o = Octomap();
-  //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
+  using chrono::high_resolution_clock;
+  using chrono::milliseconds;
+  using chrono::duration_cast;
 
+  Octomap o = Octomap<>();
+
+  //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
 
   //for (int x = -100; x < 100; x++) {
   //  for (int y = -100; y < 100; y++) {
@@ -53,17 +53,17 @@ int main() {
   //  }
   //}
 
-  //for (int i = -1; i < 2; i += 2) {
-  //  for (int j = -1; j < 2; j += 2) {
-  //    for (int k = -1; k < 2; k += 2) {
-  //      auto endpointCoord = Vector3f(i, j, k);
-  //      for (auto& point: o.rayCastBresenham(Vector3(), endpointCoord)) {
-  //        o.setEmpty(*point);
-  //        o.setFull(endpointCoord);
-  //      }
-  //    }
-  //  }
-  //}
+  for (int i = -1; i < 2; i += 2) {
+    for (int j = -1; j < 2; j += 2) {
+      for (int k = -1; k < 2; k += 2) {
+        auto endpointCoord = Vector3f(i, j, k);
+        for (auto& point: o.rayCastBresenham(Vector3(), endpointCoord)) {
+          o.setEmpty(point);
+          o.setFull(endpointCoord);
+        }
+      }
+    }
+  }
 
   //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
   //o.rayCast(Vector3(), Vector3f(1267.09998, 2835.5, 272.221985));
@@ -86,37 +86,21 @@ int main() {
   //}
   //o.setFull(Vector3f(1.0, 1.0, 1.0));
 
+  // Reads data from json, displays cartesian and exports to octovis format
 //  cout << "Size: " << o.getSize() << endl;
 //  o.writeBinary("rust.bt");
 
-  ifstream ss("../data.json");
-  Scan *s = Scan::importJson(ss);
-  cout << *s << endl;
+  //ifstream ss("../data.json");
+  //Scan* s = Scan::importJson(ss);
+  //cout << *s << endl;
 
-  // s->getSweeps().at(0)->display(false);
-  Sweep *sweep = s->getSweeps().at(1);
-  applyGaussian(*sweep, 9, 5);
-  displaySweep(*sweep, true);
+  //// s->getSweeps().at(0)->display(false);
+  //Sweep* sweep = s->getSweeps().at(1);
+  //applyGaussian(*sweep, 9, 5);
+  //displaySweep(*sweep, true);
 
-  Sonar sonar;
-  sonar.update(*sweep);
-
-//  uint8_t  v1[] = {1, 2, 3};
-//  uint8_t  v2[] = {4, 255, 6};
-//  uint8_t  v3[] = {7, 8, 9};
-//  uint8_t *m[] = {v1, v2, v3};
-//
-
-//  std::string image_path = "../cartesian.png";
-//  cv::Mat img = cv::Mat(s->getBeamNo(), s->getBeamLen(), CV_8U, s->getIntensities().data());
-//
-//  cv::namedWindow("Display Iage", cv::WINDOW_AUTOSIZE);
-//  cv::imshow("Display window", img);
-//
-//  int k;
-//  do {
-//    k = cv::waitKey(0); // Wait for a keystroke in the window
-//  } while (k != 'q');
+//  Sonar sonar;
+//  sonar.update(*sweep);
 
   return EXIT_SUCCESS;
 }
