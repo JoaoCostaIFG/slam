@@ -18,6 +18,7 @@ Our main implementation has octrees, probabilistic mapping, data preprocessing.
 - OpenCV and its dependencies:
   - glew
   - vtk
+    - pugixml
   - hdf5
 - Boost
 - OpenMP (**Optional** - Improves performance)
