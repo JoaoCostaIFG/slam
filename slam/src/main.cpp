@@ -73,20 +73,24 @@ int main() {
   //}
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
-  std::default_random_engine generator;
-  std::normal_distribution<float> distribution(100.0, 10.0);
-  for (int rayCnt = 1; rayCnt < 1000000; rayCnt += 100) {
+  std::ofstream file("insert_search_concentrated2.txt", std::ios_base::trunc);
+
+  std::default_random_engine generator(std::hash<std::string>()("peedors"));
+  float a = 10000.0, b = 2.0;
+  std::normal_distribution<float> distribution(a, b);
+  for (int cnt = 1000; cnt < 2000000; cnt *= 1.5) {
     Vector3f orig;
     Octomap o = Octomap<>();
-    cout << "Ray from " << orig << " to normal distribution of coordinates (100.0, 10.0) " << rayCnt << " times\n";
+    file << "Inserting to normal distribution of coordinates (" << a << ", " << b << ") " << cnt
+         << " times\n";
     for (int i = 0; i < 5; ++i) {
       auto startTime = high_resolution_clock::now();
-      for (int j = 0; j < rayCnt; ++j) {
+      for (int j = 0; j < cnt; ++j) {
         Vector3f dest(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
-        auto n = o.rayCastBresenham(orig, dest);
+        auto n = o.updateOccupancy(dest, 0.8);
       }
       auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
-      cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
+      file << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
     }
   }
 

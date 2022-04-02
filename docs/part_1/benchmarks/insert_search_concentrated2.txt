@@ -1,0 +1,114 @@
+Inserting to normal distribution of coordinates (10000, 2) 1000 times
+Ms: 1 Secs: 0.001
+Ms: 2 Secs: 0.002
+Ms: 2 Secs: 0.002
+Ms: 2 Secs: 0.002
+Ms: 2 Secs: 0.002
+Inserting to normal distribution of coordinates (10000, 2) 1500 times
+Ms: 3 Secs: 0.003
+Ms: 3 Secs: 0.003
+Ms: 2 Secs: 0.002
+Ms: 3 Secs: 0.003
+Ms: 3 Secs: 0.003
+Inserting to normal distribution of coordinates (10000, 2) 2250 times
+Ms: 4 Secs: 0.004
+Ms: 4 Secs: 0.004
+Ms: 5 Secs: 0.005
+Ms: 5 Secs: 0.005
+Ms: 5 Secs: 0.005
+Inserting to normal distribution of coordinates (10000, 2) 3375 times
+Ms: 7 Secs: 0.007
+Ms: 7 Secs: 0.007
+Ms: 8 Secs: 0.008
+Ms: 7 Secs: 0.007
+Ms: 7 Secs: 0.007
+Inserting to normal distribution of coordinates (10000, 2) 5062 times
+Ms: 25 Secs: 0.025
+Ms: 25 Secs: 0.025
+Ms: 13 Secs: 0.013
+Ms: 13 Secs: 0.013
+Ms: 21 Secs: 0.021
+Inserting to normal distribution of coordinates (10000, 2) 7593 times
+Ms: 20 Secs: 0.02
+Ms: 23 Secs: 0.023
+Ms: 23 Secs: 0.023
+Ms: 20 Secs: 0.02
+Ms: 23 Secs: 0.023
+Inserting to normal distribution of coordinates (10000, 2) 11389 times
+Ms: 30 Secs: 0.03
+Ms: 35 Secs: 0.035
+Ms: 59 Secs: 0.059
+Ms: 90 Secs: 0.09
+Ms: 50 Secs: 0.05
+Inserting to normal distribution of coordinates (10000, 2) 17083 times
+Ms: 65 Secs: 0.065
+Ms: 58 Secs: 0.058
+Ms: 82 Secs: 0.082
+Ms: 70 Secs: 0.07
+Ms: 79 Secs: 0.079
+Inserting to normal distribution of coordinates (10000, 2) 25624 times
+Ms: 184 Secs: 0.184
+Ms: 88 Secs: 0.088
+Ms: 122 Secs: 0.122
+Ms: 147 Secs: 0.147
+Ms: 124 Secs: 0.124
+Inserting to normal distribution of coordinates (10000, 2) 38436 times
+Ms: 156 Secs: 0.156
+Ms: 166 Secs: 0.166
+Ms: 171 Secs: 0.171
+Ms: 169 Secs: 0.169
+Ms: 123 Secs: 0.123
+Inserting to normal distribution of coordinates (10000, 2) 57654 times
+Ms: 186 Secs: 0.186
+Ms: 196 Secs: 0.196
+Ms: 149 Secs: 0.149
+Ms: 133 Secs: 0.133
+Ms: 124 Secs: 0.124
+Inserting to normal distribution of coordinates (10000, 2) 86481 times
+Ms: 207 Secs: 0.207
+Ms: 205 Secs: 0.205
+Ms: 201 Secs: 0.201
+Ms: 181 Secs: 0.181
+Ms: 174 Secs: 0.174
+Inserting to normal distribution of coordinates (10000, 2) 129721 times
+Ms: 308 Secs: 0.308
+Ms: 301 Secs: 0.301
+Ms: 286 Secs: 0.286
+Ms: 249 Secs: 0.249
+Ms: 235 Secs: 0.235
+Inserting to normal distribution of coordinates (10000, 2) 194581 times
+Ms: 474 Secs: 0.474
+Ms: 432 Secs: 0.432
+Ms: 374 Secs: 0.374
+Ms: 335 Secs: 0.335
+Ms: 313 Secs: 0.313
+Inserting to normal distribution of coordinates (10000, 2) 291871 times
+Ms: 1273 Secs: 1.273
+Ms: 793 Secs: 0.793
+Ms: 681 Secs: 0.681
+Ms: 646 Secs: 0.646
+Ms: 457 Secs: 0.457
+Inserting to normal distribution of coordinates (10000, 2) 437806 times
+Ms: 1040 Secs: 1.04
+Ms: 786 Secs: 0.786
+Ms: 653 Secs: 0.653
+Ms: 567 Secs: 0.567
+Ms: 511 Secs: 0.511
+Inserting to normal distribution of coordinates (10000, 2) 656709 times
+Ms: 1424 Secs: 1.424
+Ms: 1039 Secs: 1.039
+Ms: 904 Secs: 0.904
+Ms: 747 Secs: 0.747
+Ms: 707 Secs: 0.707
+Inserting to normal distribution of coordinates (10000, 2) 985063 times
+Ms: 1983 Secs: 1.983
+Ms: 1328 Secs: 1.328
+Ms: 1056 Secs: 1.056
+Ms: 931 Secs: 0.931
+Ms: 844 Secs: 0.844
+Inserting to normal distribution of coordinates (10000, 2) 1477594 times
+Ms: 2694 Secs: 2.694
+Ms: 1678 Secs: 1.678
+Ms: 1360 Secs: 1.36
+Ms: 1205 Secs: 1.205
+Ms: 1106 Secs: 1.106
