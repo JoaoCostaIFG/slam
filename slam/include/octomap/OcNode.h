@@ -50,7 +50,7 @@ namespace octomap {
       }
     }
 
-    // Node is prunable is all children exist and have the same occupancy
+    // Node is *prunable* is all children exist and have the same occupancy
     [[nodiscard]] bool isPrunable() const {
       OcNode* firstChild = this->getChild(0);
       if (firstChild == nullptr || firstChild->hasChildren()) return false;
@@ -100,7 +100,8 @@ namespace octomap {
     }
 
     OcNode*
-    setOrUpdateLogOdds(const Key& key, unsigned int depth, float lo, bool isUpdate, bool justCreated = false) {
+    setOrUpdateLogOdds(const Key& key, unsigned int depth, float lo, bool isUpdate, bool lazy = false,
+                       bool justCreated = false) {
       bool createdChild = false;
       OcNode* child;
 
@@ -122,12 +123,15 @@ namespace octomap {
         }
 
         child = this->getChild(pos);
-        child->setOrUpdateLogOdds(key, d, lo, isUpdate, createdChild);
+        child->setOrUpdateLogOdds(key, d, lo, isUpdate, lazy, createdChild);
 
-        // prune if possible (return self is pruned)
-        if (this->prune()) return this;
-        // updated occupancy if not pruned
-        this->updateBasedOnChildren();
+        if (!lazy) {
+          // prune if possible (return self if pruned)
+          if (this->prune()) return this;
+          // updated occupancy if not pruned (still has children)
+          this->updateBasedOnChildren();
+        }
+
         return child;
       } else { // at last level, update node, end of recursion
         if (isUpdate) this->updateLogOdds(lo);
@@ -219,8 +223,10 @@ namespace octomap {
       return this->children[i] != nullptr;
     }
 
+    // Prunes the node if it fulfills the isPrunable method
     bool prune() {
       if (!this->isPrunable()) return false;
+
       // all children are equal so we take their value
       this->setLogOdds(this->getChild(0)->getLogOdds());
       // delete children
@@ -228,8 +234,10 @@ namespace octomap {
         delete this->children[i];
         this->children[i] = nullptr;
       }
+
       delete[] this->children;
       this->children = nullptr;
+
       return true;
     }
 
@@ -280,20 +288,35 @@ namespace octomap {
       return true;
     }
 
-    OcNode* setLogOdds(const Key& key, unsigned int depth, float lo, bool justCreated = false) {
-      return this->setOrUpdateLogOdds(key, depth, lo, false, justCreated);
+    OcNode* setLogOdds(const Key& key, unsigned int depth, float lo, bool lazy = false, bool justCreated = false) {
+      return this->setOrUpdateLogOdds(key, depth, lo, false, lazy, justCreated);
     }
 
-    OcNode* updateLogOdds(const Key& key, unsigned int depth, float lo, bool justCreated = false) {
-      return this->setOrUpdateLogOdds(key, depth, lo, true, justCreated);
+    OcNode* updateLogOdds(const Key& key, unsigned int depth, float lo, bool lazy = false, bool justCreated = false) {
+      return this->setOrUpdateLogOdds(key, depth, lo, true, lazy, justCreated);
     }
 
-    OcNode* setOccupancy(const Key& key, unsigned int depth, float occ, bool justCreated = false) {
-      return this->setLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
+    OcNode* setOccupancy(const Key& key, unsigned int depth, float occ, bool lazy = false, bool justCreated = false) {
+      return this->setLogOdds(key, depth, (float) prob2logodds(occ), lazy, justCreated);
     }
 
-    OcNode* updateOccupancy(const Key& key, unsigned int depth, float occ, bool justCreated = false) {
-      return this->updateLogOdds(key, depth, (float) prob2logodds(occ), justCreated);
+    OcNode*
+    updateOccupancy(const Key& key, unsigned int depth, float occ, bool lazy = false, bool justCreated = false) {
+      return this->updateLogOdds(key, depth, (float) prob2logodds(occ), lazy, justCreated);
+    }
+
+    // Prune children (if possible) and update the log-odds (if inner node).
+    // Fixes the tree recursively, and should be called after a batch of lazy sets/updates.
+    void fix() {
+      for (int i = 0; i < 8; ++i) {
+        auto child = this->getChild(i);
+        if (child) child->fix();
+      }
+
+      // prune if possible
+      if (this->prune()) return;
+      // updated occupancy if not pruned
+      this->updateBasedOnChildren();
     }
 
     OcNode* search(const Key& key, unsigned int depth) {

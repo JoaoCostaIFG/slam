@@ -73,32 +73,32 @@ namespace octomap {
       return this->rootNode->getChildCount() + 1;
     }
 
-    Node* setOccupancy(const Key& key, float occ) {
+    Node* setOccupancy(const Key& key, float occ, bool lazy = false) {
       bool createdRoot = this->createRootIfNeeded();
-      return this->rootNode->setOccupancy(key, this->depth, occ, createdRoot);
+      return this->rootNode->setOccupancy(key, this->depth, occ, lazy, createdRoot);
     }
 
-    Node* setOccupancy(const Vector3<>& location, float occ) {
-      return this->setOccupancy(Key(location), occ);
+    Node* setOccupancy(const Vector3<>& location, float occ, bool lazy = false) {
+      return this->setOccupancy(Key(location), occ, lazy);
     }
 
-    Node* setFull(const Key& key) {
-      return this->setOccupancy(key, 1.0);
+    Node* setFull(const Key& key, bool lazy = false) {
+      return this->setOccupancy(key, 1.0, lazy);
     }
 
-    Node* setFull(const Vector3<>& location) {
-      return this->setOccupancy(location, 1.0);
+    Node* setFull(const Vector3<>& location, bool lazy = false) {
+      return this->setOccupancy(location, 1.0, lazy);
     }
 
-    Node* setEmpty(const Key& key) {
-      return this->setOccupancy(key, 0.0);
+    Node* setEmpty(const Key& key, bool lazy = false) {
+      return this->setOccupancy(key, 0.0, lazy);
     }
 
-    Node* setEmpty(const Vector3<>& location) {
-      return this->setOccupancy(location, 0.0);
+    Node* setEmpty(const Vector3<>& location, bool lazy = false) {
+      return this->setOccupancy(location, 0.0, lazy);
     }
 
-    Node* updateLogOdds(const Key& key, float logOdds) {
+    Node* updateLogOdds(const Key& key, float logOdds, bool lazy = false) {
       // We do a search before updating the target node. This small overhead can save a lot
       // of time in the long-run. Note: the search takes O(l) time, where l is the max depth, which is constant.
       // If the node already exists, we can see if the update would change its log-odds. If the node is stable
@@ -108,15 +108,20 @@ namespace octomap {
       if (s && !s->wouldChange(logOdds)) return s;
 
       bool createdRoot = this->createRootIfNeeded();
-      return this->rootNode->updateLogOdds(key, this->depth, logOdds, createdRoot);
+      return this->rootNode->updateLogOdds(key, this->depth, logOdds, lazy, createdRoot);
     }
 
-    Node* updateOccupancy(const Key& key, float occ) {
-      return this->updateLogOdds(key, (float) Node::prob2logodds(occ));
+    Node* updateOccupancy(const Key& key, float occ, bool lazy = false) {
+      return this->updateLogOdds(key, (float) Node::prob2logodds(occ), lazy);
     }
 
-    Node* updateOccupancy(const Vector3<>& location, float occ) {
-      return this->updateOccupancy(Key(location), occ);
+    Node* updateOccupancy(const Vector3<>& location, float occ, bool lazy = false) {
+      return this->updateOccupancy(Key(location), occ, lazy);
+    }
+
+    void fix() {
+      if (!this->rootNode) return;
+      this->rootNode->fix();
     }
 
     Node* search(const Key& key) {
@@ -230,11 +235,12 @@ namespace octomap {
       return ray;
     }
 
-    Node* rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, float occ) {
+    void rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, float occ, bool lazy = false) {
       auto ray = this->rayCast(orig, end);
       for (auto& it: ray)
-        this->setEmpty(it);
-      return this->updateOccupancy(end, occ);
+        this->setEmpty(it, lazy);
+      this->updateOccupancy(end, occ, lazy);
+      if (lazy) this->rootNode->fix();
     }
 
     // Calculates a ray for each endpoint in pointcloud (with origin in origin).
@@ -292,16 +298,16 @@ namespace octomap {
         freeNodes.merge(freeNodesI);
       }
 
-      // TODO these loops could benefit from lazy eval!
       // update nodes, discarding updates on freenodes that will be set as occupied
       for (const auto& freeNode: freeNodes) {
         if (!occupiedNodes.contains(freeNode)) {
-          this->setEmpty(freeNode);
+          this->setEmpty(freeNode, true);
         }
       }
       for (auto& endpoint: occupiedNodes) {
-        this->setFull(endpoint);
+        this->setFull(endpoint, true);
       }
+      this->rootNode->fix();
     }
 
     // The same as pointcloudUpdate but first it discretizes the point cloud. This means that

@@ -19,19 +19,19 @@ namespace sonar {
   /* A Scan has multiple sweeps. Each sweep has multiple beams (around 360º) */
   class Beam {
   private:
-    uchar *row; // This points to the respective intensity in the Sweep Mat
+    uchar* row; // This points to the respective intensity in the Sweep Mat
     size_t beam_len;
     double time;
     double angle;
 
   public:
-    Beam(uchar *row, size_t beam_len, double time, double angle) : row(row), beam_len(beam_len),
-                          time(time), angle(angle) {}
+    Beam(uchar* row, size_t beam_len, double time, double angle) : row(row), beam_len(beam_len),
+                                                                   time(time), angle(angle) {}
 
     /* This returns the index of the measure that corresponds to an obstacle with Simple Threshold */
     [[nodiscard]] size_t getObstacleST() const;
 
-    [[nodiscard]] uchar *getIntensities() const { return row; }
+    [[nodiscard]] uchar* getIntensities() const { return row; }
 
     [[nodiscard]] double getTime() const { return time; }
 
@@ -44,6 +44,7 @@ namespace sonar {
       double angle_rad = ((angle + 180) * CV_PI) / 180;
       return this->atVec(i, angle_rad);
     }
+
     [[nodiscard]] Vector3<> atVec(int i, double angle_rad) const {
       float x = (double) i * cos(angle_rad);
       float y = (double) i * sin(angle_rad);
@@ -52,9 +53,10 @@ namespace sonar {
     }
 
     uchar& at(int i) { return *(row + i); }
+
     uchar& at(int i) const { return *(row + i); }
 
-    static Beam* importJson(const rapidjson::Value& b, cv::Mat &intensities);
+    static Beam* importJson(const rapidjson::Value& b, cv::Mat& intensities);
   };
 
   class Sweep {

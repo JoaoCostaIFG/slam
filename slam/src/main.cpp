@@ -40,19 +40,24 @@ int main() {
   using chrono::milliseconds;
   using chrono::duration_cast;
 
-  //Octomap o = Octomap<>();
+  /*
+  for (int i = 0; i < 5; ++i) {
+    Octomap o = Octomap<>();
 
-  //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
-
-  //for (int x = -100; x < 100; x++) {
-  //  for (int y = -100; y < 100; y++) {
-  //    for (int z = -100; z < 100; z++) {
-  //      Vector3f endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
-  //      //cout << endpoint << endl;
-  //      o.setFull(endpoint); // integrate 'occupied' measurement
-  //    }
-  //  }
-  //}
+    auto startTime = high_resolution_clock::now();
+    for (int x = -100; x < 100; x++) {
+      for (int y = -100; y < 100; y++) {
+        for (int z = -100; z < 100; z++) {
+          Vector3f endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
+          o.setFull(endpoint, true); // integrate 'occupied' measurement
+        }
+      }
+    }
+    auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
+    cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
+    o.fix();
+  }
+   */
 
   //for (int i = -1; i < 2; i += 2) {
   //  for (int j = -1; j < 2; j += 2) {
@@ -73,7 +78,8 @@ int main() {
   //}
   //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
-  std::ofstream file("insert_search_concentrated2.txt", std::ios_base::trunc);
+  /*
+  std::ofstream file("bench.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
   float a = 10000.0, b = 2.0;
@@ -93,20 +99,14 @@ int main() {
       file << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
     }
   }
+   */
 
-//  for (int i = 0; i < 3; ++i) {
-//    auto startTime = high_resolution_clock::now();
-//    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-//    auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
-//    cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
-//  }
-
-  //auto ray = o.rayCast(Vector3<float>(0, 0, 0), Vector3<float>(1.0, 1.0, 1.0));
-  //for (auto & it : ray) {
-  //    cout << it->toCoord() << endl;
-  //    o.setOccupancy(*it, 1.0);
+  //for (int i = 0; i < 1; ++i) {
+  //  auto startTime = high_resolution_clock::now();
+  //  o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
+  //  auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
+  //  cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
   //}
-  //o.setFull(Vector3f(1.0, 1.0, 1.0));
 
   // Reads data from json, displays cartesian and exports to octovis format
   //cout << "Size: " << o.getSize() << endl;
