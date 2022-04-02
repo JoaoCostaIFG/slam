@@ -8,14 +8,14 @@
 using namespace sonar;
 
 namespace sonar {
-  void applyGaussian(Sweep &sweep, int kernelSize, int sigma) {
+  void applyGaussian(Sweep& sweep, int kernelSize, int sigma) {
     cv::InputArray arr(sweep.getIntensities());
     cv::GaussianBlur(sweep.getIntensities(), sweep.getIntensities(), cv::Size(kernelSize, kernelSize), sigma);
   }
 }
 
 /* Opens an openCV window with a sweep sonar (polar). Note: Waits for user to press q to close */
-void displaySweep(const Sweep &sweep, const bool &inCartesian=false) {
+void displaySweep(const Sweep& sweep, const bool& inCartesian = false) {
   cv::Mat img;
   if (inCartesian) {
     size_t n = sweep.getBeamLen() * 2;
@@ -27,11 +27,12 @@ void displaySweep(const Sweep &sweep, const bool &inCartesian=false) {
     int x0 = sweep.getBeamLen(), y0 = sweep.getBeamLen();
     for (const Beam* beam: sweep.getBeams()) {
       double base_angle = beam->getAngle();
-      for (double angle=base_angle-1.5; angle < base_angle + 1.601; angle += 0.1) { // TODO Replace 1.601 with angle step
+      for (double angle = base_angle - 1.5;
+           angle < base_angle + 1.601; angle += 0.1) { // TODO Replace 1.601 with angle step
         // 180 => pi
         // deg => rad
-        for (size_t i=0; i<sweep.getBeamLen(); ++i) {
-          const uint8_t &intensity = beam->at(i);
+        for (size_t i = 0; i < sweep.getBeamLen(); ++i) {
+          const uint8_t& intensity = beam->at(i);
           double angle_rad = ((angle + 180) * CV_PI) / 180;
           Vector3<> v = beam->atVec(i, angle_rad);
           int x = x0 + round(v.x()), y = y0 + round(v.y());
@@ -42,8 +43,8 @@ void displaySweep(const Sweep &sweep, const bool &inCartesian=false) {
       }
     }
 
-    for (size_t y=0; y<n; y++) {
-      for (size_t x=0; x<n; x++) {
+    for (size_t y = 0; y < n; y++) {
+      for (size_t x = 0; x < n; x++) {
         int pos = y + x * n;
         int cnt = vote_count[pos];
         if (cnt != 0) {

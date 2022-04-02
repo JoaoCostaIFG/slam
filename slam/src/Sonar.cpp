@@ -5,7 +5,7 @@
 namespace sonar {
 
   void Sonar::update(const Sweep& sweep) {
-    for (const Beam *beam: sweep.getBeams()) {
+    for (const Beam* beam: sweep.getBeams()) {
       size_t obstacle_index = beam->getObstacleST();
 
       // TODO Use sonar position instead of center of axis

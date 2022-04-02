@@ -15,7 +15,7 @@ namespace sonar {
   public:
     Sonar() : position(0.0, 0.0, 0.0) {}
 
-    void update(const Sweep &sweep);
+    void update(const Sweep& sweep);
 
     [[nodiscard]] const Vector3<>& getPosition() const { return position; }
   };

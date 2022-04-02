@@ -10,11 +10,11 @@ using namespace sonar;
 
 namespace sonar {
   // Beam
-  Beam* Beam::importJson(const rapidjson::Value &beam_json, cv::Mat &row) {
+  Beam* Beam::importJson(const rapidjson::Value& beam_json, cv::Mat& row) {
     double time = beam_json["time"].GetDouble();
     double angle = beam_json["angle"].GetDouble();
 
-    const auto &intensities_json = beam_json["intensities"];
+    const auto& intensities_json = beam_json["intensities"];
     // assert(INTENSITIES_SIZE == intensities_json.Size()); This verification is done in python
     int cnt = 0;
     // Beam points to its intensities, we need to read from json and update them
@@ -24,12 +24,12 @@ namespace sonar {
       ++cnt;
     }
 
-    Beam *beam = new Beam(row.ptr(), intensities_json.Size(), time, angle);
+    Beam* beam = new Beam(row.ptr(), intensities_json.Size(), time, angle);
     return beam;
   }
 
   size_t Beam::getObstacleST() const {
-    for (size_t i=0; i + 1<this->beam_len; ++i) {
+    for (size_t i = 0; i + 1 < this->beam_len; ++i) {
       int dev = (int) this->at(i + 1) - this->at(i);
       if (dev > 0 && dev > OBSTACLE_THRESHOLD)
         return i + 1;
@@ -46,12 +46,12 @@ namespace sonar {
   }
 
   // Sweep
-  Sweep* Sweep::importJson(const rapidjson::Value &sweep_json, size_t sweep_no, size_t beam_no, size_t beam_len) {
+  Sweep* Sweep::importJson(const rapidjson::Value& sweep_json, size_t sweep_no, size_t beam_no, size_t beam_len) {
     Sweep* sweep = new Sweep(sweep_no, beam_no, beam_len);
 
     assert(sweep_json.IsArray());
     assert(sweep_json.Size() == beam_no);
-    int i=0;
+    int i = 0;
     for (const auto& b: sweep_json.GetArray()) {
       cv::Mat row = sweep->intensities.row(i);
       Beam* beam = Beam::importJson(b, row);
@@ -63,10 +63,9 @@ namespace sonar {
   }
 
   std::ostream& operator<<(std::ostream& os, const Sweep& sweep) {
-    os << "SWEEP "<< sweep.sweep_no << "\tbeams_count: " << sweep.beams.size();
+    os << "SWEEP " << sweep.sweep_no << "\tbeams_count: " << sweep.beams.size();
     return os;
   }
-
 
 
   // Scan
@@ -82,14 +81,14 @@ namespace sonar {
     size_t beam_len = doc["beam_len"].GetInt();
     double step_dist = doc["step_dist"].GetDouble();
 
-    const rapidjson::Value & sweeps = doc["sweeps"];
+    const rapidjson::Value& sweeps = doc["sweeps"];
     assert(sweeps.IsArray());
     assert(sweeps.Size() == scan_len);
     std::vector<Sweep*> sweeps_vec;
     sweeps_vec.reserve(scan_len);
     size_t i = 0;
     for (const rapidjson::Value& sweep_json: sweeps.GetArray()) {
-      Sweep *sweep = Sweep::importJson(sweep_json, i, sweep_len, beam_len);
+      Sweep* sweep = Sweep::importJson(sweep_json, i, sweep_len, beam_len);
       std::cout << *sweep->getBeams().at(0) << std::endl;
       sweeps_vec.push_back(sweep);
       ++i;
