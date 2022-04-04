@@ -11,8 +11,7 @@ namespace sonar {
       // TODO Use sonar position instead of center of axis
       Vector3<> obstacle = beam->atVec(obstacle_index);
       float prob = (float) beam->at(obstacle_index) / MAX_INTENSITY;
-      std::cout << prob << std::endl;
-      this->octomap.rayCastUpdate(this->position, obstacle, 1);
+      this->octomap.rayCastUpdate(this->position, obstacle, 1); // TODO Don't use prob of 1
     }
 
     this->octomap.writeBinary("test.bt");

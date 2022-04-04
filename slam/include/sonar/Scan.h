@@ -12,7 +12,7 @@
 
 using namespace octomap;
 
-#define OBSTACLE_THRESHOLD 20
+#define OBSTACLE_THRESHOLD 100
 #define MAX_INTENSITY 255
 
 namespace sonar {

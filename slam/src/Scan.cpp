@@ -30,8 +30,7 @@ namespace sonar {
 
   size_t Beam::getObstacleST() const {
     for (size_t i = 0; i + 1 < this->beam_len; ++i) {
-      int dev = (int) this->at(i + 1) - this->at(i);
-      if (dev > 0 && dev > OBSTACLE_THRESHOLD)
+      if (this->at(i) > OBSTACLE_THRESHOLD)
         return i + 1;
     }
     return this->beam_len - 1;

@@ -114,17 +114,13 @@ int main() {
 
   ifstream ss("../data.json");
   Scan* s = Scan::importJson(ss);
-  applyMedian(*s->getSweeps().at(0), 101);
-  displaySweep(*s->getSweeps().at(0), true);
-  cout << *s << endl;
 
-  //// s->getSweeps().at(0)->display(false);
-  //Sweep* sweep = s->getSweeps().at(1);
-  //applyGaussian(*sweep, 9, 5);
+  Sweep* sweep = s->getSweeps().at(1);
+  applyGaussian(*sweep, 9, 5);
   //displaySweep(*sweep, true);
 
-//  Sonar sonar;
-//  sonar.update(*sweep);
+  Sonar sonar;
+  sonar.update(*sweep);
 
   return EXIT_SUCCESS;
 }
