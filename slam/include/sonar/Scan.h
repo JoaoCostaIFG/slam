@@ -12,7 +12,7 @@
 
 using namespace octomap;
 
-#define OBSTACLE_THRESHOLD 100
+#define OBSTACLE_THRESHOLD 255
 #define MAX_INTENSITY 255
 
 namespace sonar {
@@ -40,12 +40,13 @@ namespace sonar {
     friend std::ostream& operator<<(std::ostream& os, const Beam& beam);
 
 
-    [[nodiscard]] Vector3<> atVec(int i) const {
+    [[nodiscard]] Vector3<> atVec(size_t i) const {
       double angle_rad = ((angle + 180) * CV_PI) / 180;
       return this->atVec(i, angle_rad);
     }
 
-    [[nodiscard]] Vector3<> atVec(int i, double angle_rad) const {
+    // Deviates measurement i across an angle angle_rad
+    [[nodiscard]] Vector3<> atVec(size_t i, double angle_rad) const {
       float x = (double) i * cos(angle_rad);
       float y = (double) i * sin(angle_rad);
       // TODO Move to 3D here
