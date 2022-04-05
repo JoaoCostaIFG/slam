@@ -9,6 +9,8 @@
 #include <cassert>
 #include <cmath>
 
+#include "../parallel_hashmap/phmap_utils.h"
+
 namespace octomap {
   template<typename T = float>
   class Vector3 {
@@ -98,6 +100,10 @@ namespace octomap {
       this->d[2] /= norm;
     }
 
+    [[nodiscard]] unsigned long hash() const {
+      return phmap::HashState::combine(0, this->get(0), this->get(1), this->get(2));
+    }
+
     Vector3 operator+(const Vector3& rhs) const {
       auto ret = Vector3(*this);
       ret[0] += rhs[0];
@@ -161,6 +167,18 @@ namespace octomap {
     [[nodiscard]] const_iterator end() const {
       return std::end(this->d);
     }
+
+    struct Cmp {
+      bool operator()(const Vector3& a, const Vector3& b) const {
+        return a == b;
+      }
+    };
+
+    struct Hash {
+      unsigned long operator()(const Vector3& v) const {
+        return v.hash();
+      }
+    };
   };
 
   using Vector3d = Vector3<double>;
