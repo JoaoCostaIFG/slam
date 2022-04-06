@@ -101,26 +101,27 @@ int main() {
   }
    */
 
-  //for (int i = 0; i < 1; ++i) {
-  //  auto startTime = high_resolution_clock::now();
-  //  o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f());
-  //  auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
-  //  cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
-  //}
+  for (int i = 0; i < 3; ++i) {
+    Octomap<> o;
+    auto startTime = high_resolution_clock::now();
+    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1.0);
+    auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
+    cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
+  }
 
   // Reads data from json, displays cartesian and exports to octovis format
   //cout << "Size: " << o.getSize() << endl;
   //o.writeBinary("rust.bt");
 
-  ifstream ss("../data.json");
-  Scan* s = Scan::importJson(ss);
+  //ifstream ss("../data.json");
+  //Scan* s = Scan::importJson(ss);
 
-  Sweep* sweep = s->getSweeps().at(1);
-  applyGaussian(*sweep, 9, 5);
-  //displaySweep(*sweep, true);
+  //Sweep* sweep = s->getSweeps().at(1);
+  //applyGaussian(*sweep, 9, 5);
+  ////displaySweep(*sweep, true);
 
-  Sonar sonar;
-  sonar.update(*sweep);
+  //Sonar sonar;
+  //sonar.update(*sweep);
 
   return EXIT_SUCCESS;
 }

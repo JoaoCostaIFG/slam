@@ -160,9 +160,9 @@ namespace octomap {
         // It should be 1/abs(direction[i]) from the paper, but out cell size varies by *resolution*
         // so we multiply it.
         tDelta[i] = this->resolution / fabs(direction[i]);
-        if (std::isinf(tDelta[i])) {
+        if (std::isinf(tDelta[i])) [[unlikely]] {
           tMax[i] = std::numeric_limits<double>::max(); // infinity
-        } else {
+        } else [[likely]] {
           double voxelBorder = origCoord[i] + step[i] * this->stepLookupTable[this->depth + 1];
           tMax[i] = (voxelBorder - orig[i]) / direction[i];
         }

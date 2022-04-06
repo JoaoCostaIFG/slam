@@ -17,11 +17,11 @@ namespace octomap {
   class OcNode {
   public:
     // Can return +/-infinite
-    static double prob2logodds(double prob) {
+    constexpr static double prob2logodds(double prob) {
       return log(prob / (1 - prob));
     }
 
-    static double logodds2prob(double logodds) {
+    constexpr static double logodds2prob(double logodds) {
       return 1.0 - (1.0 / (1.0 + exp(logodds)));
     }
 
