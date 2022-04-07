@@ -101,7 +101,7 @@ namespace octomap {
     }
 
     [[nodiscard]] unsigned long hash() const {
-      return phmap::HashState::combine(0, this->get(0), this->get(1), this->get(2));
+      return phmap::HashState::combine(0, this->x(), this->y(), this->z());
     }
 
     Vector3 operator+(const Vector3& rhs) const {
@@ -169,13 +169,13 @@ namespace octomap {
     }
 
     struct Cmp {
-      bool operator()(const Vector3& a, const Vector3& b) const {
+      bool operator()(const Vector3<T>& a, const Vector3<T>& b) const {
         return a == b;
       }
     };
 
     struct Hash {
-      unsigned long operator()(const Vector3& v) const {
+      unsigned long operator()(const Vector3<T>& v) const {
         return v.hash();
       }
     };

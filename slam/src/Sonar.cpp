@@ -15,9 +15,8 @@ namespace sonar {
       for (double angle = base_angle - 1.5;
           angle < base_angle + 1.601; angle += 0.1) { // TODO Replace 1.601 with angle step
           double angle_rad = ((angle + 180) * CV_PI) / 180;
-          Vector3<> v = beam->atVec(obstacle_index, angle_rad);
-          int x = round(v.x()), y = round(v.y());
-          pointCloud.emplace_back(x, y, 0);
+          Vector3f v = beam->coordToReal(beam->atVec(obstacle_index, angle_rad));
+          pointCloud.push_back(v);
         }
 
       // TODO Use sonar position instead of center of axis

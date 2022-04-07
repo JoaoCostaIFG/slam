@@ -10,21 +10,23 @@ using namespace sonar;
 
 namespace sonar {
   // Beam
-  Beam* Beam::importJson(const rapidjson::Value& beam_json, cv::Mat& row) {
+  Beam* Beam::importJson(const rapidjson::Value& beam_json, cv::Mat& row, double step_dist) {
     double time = beam_json["time"].GetDouble();
     double angle = beam_json["angle"].GetDouble();
 
     const auto& intensities_json = beam_json["intensities"];
-    // assert(INTENSITIES_SIZE == intensities_json.Size()); This verification is done in python
+    assert(399 == intensities_json.Size()); // This verification is done in python
     int cnt = 0;
     // Beam points to its intensities, we need to read from json and update them
     for (const auto& i: intensities_json.GetArray()) {
-      //beam->at(cnt) = (uint8_t) i.GetUint();
-      row.at<uchar>(cnt) = (uint8_t) i.GetUint();
+      // Ignore first 24 intensities, which are self reflections
+      if (cnt > 24) {
+        row.at<uchar>(cnt) = (uint8_t) i.GetUint();
+      }
       ++cnt;
     }
 
-    Beam* beam = new Beam(row.ptr(), intensities_json.Size(), time, angle);
+    Beam* beam = new Beam(row.ptr(), intensities_json.Size(), step_dist, time, angle);
     return beam;
   }
 
@@ -45,7 +47,8 @@ namespace sonar {
   }
 
   // Sweep
-  Sweep* Sweep::importJson(const rapidjson::Value& sweep_json, size_t sweep_no, size_t beam_no, size_t beam_len) {
+  Sweep* Sweep::importJson(const rapidjson::Value& sweep_json, size_t sweep_no, size_t beam_no, size_t beam_len,
+                           double step_dist) {
     Sweep* sweep = new Sweep(sweep_no, beam_no, beam_len);
 
     assert(sweep_json.IsArray());
@@ -53,7 +56,7 @@ namespace sonar {
     int i = 0;
     for (const auto& b: sweep_json.GetArray()) {
       cv::Mat row = sweep->intensities.row(i);
-      Beam* beam = Beam::importJson(b, row);
+      Beam* beam = Beam::importJson(b, row, step_dist);
       sweep->addBeam(beam);
       ++i;
     }
@@ -87,8 +90,7 @@ namespace sonar {
     sweeps_vec.reserve(scan_len);
     size_t i = 0;
     for (const rapidjson::Value& sweep_json: sweeps.GetArray()) {
-      Sweep* sweep = Sweep::importJson(sweep_json, i, sweep_len, beam_len);
-      std::cout << *sweep->getBeams().at(0) << std::endl;
+      Sweep* sweep = Sweep::importJson(sweep_json, i, sweep_len, beam_len, step_dist);
       sweeps_vec.push_back(sweep);
       ++i;
     }
