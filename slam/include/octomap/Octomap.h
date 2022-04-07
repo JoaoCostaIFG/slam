@@ -160,9 +160,9 @@ namespace octomap {
         // It should be 1/abs(direction[i]) from the paper, but out cell size varies by *resolution*
         // so we multiply it.
         tDelta[i] = this->resolution / fabs(direction[i]);
-        if (std::isinf(tDelta[i])) {
+        if (std::isinf(tDelta[i])) [[unlikely]] {
           tMax[i] = std::numeric_limits<double>::max(); // infinity
-        } else {
+        } else [[likely]] {
           double voxelBorder = origCoord[i] + step[i] * this->stepLookupTable[this->depth + 1];
           tMax[i] = (voxelBorder - orig[i]) / direction[i];
         }
@@ -247,7 +247,7 @@ namespace octomap {
     // The rays are calculated in parallel and the reported free and occupied nodes for
     // each ray are joint in 2 sets.
     // These sets are processed so each node is only updated once and occupied nodes have priority.
-    void pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
+    void pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin, float occ) {
       std::vector<KeySet> freeNodesList, occupiedNodesList;
 
       // small hack to alloc 2 containers for each simultaneous thread
@@ -305,7 +305,7 @@ namespace octomap {
         }
       }
       for (auto& endpoint: occupiedNodes) {
-        this->setFull(endpoint, true);
+        this->updateOccupancy(endpoint, occ);
       }
       this->rootNode->fix();
     }
@@ -313,7 +313,7 @@ namespace octomap {
     // The same as pointcloudUpdate but first it discretizes the point cloud. This means that
     // if 2 rays would end up on the same end-point (cell), only the first one is inserted into the tree.
     // In some cases, this can improve performance, but can lead to diferente results.
-    void discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
+    void discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin, float occ) {
       std::vector<Vector3f> discretizedPc;
       KeySet endpoints;
       for (const auto& endpointCoord: pointcloud) {
@@ -324,7 +324,7 @@ namespace octomap {
         }
       }
 
-      this->pointcloudUpdate(discretizedPc, origin);
+      this->pointcloudUpdate(discretizedPc, origin, occ);
     }
 
     // The binary format is compatible with octoviz

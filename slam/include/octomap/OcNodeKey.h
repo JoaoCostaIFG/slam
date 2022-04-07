@@ -23,11 +23,11 @@ namespace octomap {
     inline static double resolution = 0.1;
     inline static double resolution_factor = 10.0; // 1.0 / resolution
 
-    static T coord2key(float coord) {
+    constexpr static T coord2key(float coord) {
       return (T) floor(resolution_factor * coord) + maxCoord;
     }
 
-    [[nodiscard]] static float key2coord(T key) {
+    [[nodiscard]] constexpr static float key2coord(T key) {
       return (0.5 - float(maxCoord) + key) * resolution;
     }
 
@@ -145,11 +145,11 @@ namespace octomap {
     inline static double resolution = 0.1;
     inline static double resolution_factor = 10.0; // 1.0 / resolution
 
-    static unsigned long coord2key(float coord) {
+    static constexpr unsigned long coord2key(float coord) {
       return (unsigned long) floor(resolution_factor * coord) + maxCoord;
     }
 
-    [[nodiscard]] static float key2coord(BitSet key) {
+    [[nodiscard]] constexpr static float key2coord(BitSet key) {
       return (0.5 - float(maxCoord) + key) * resolution;
     }
 

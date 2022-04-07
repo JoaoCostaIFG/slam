@@ -9,7 +9,6 @@ namespace sonar {
       size_t obstacle_index = beam->getObstacleST();
 
       double base_angle = beam->getAngle();
-      Vector3<> obstacle = beam->atVec(obstacle_index);
       std::vector<Vector3<>> pointCloud;
 
       for (double angle = base_angle - 1.5;
@@ -24,6 +23,10 @@ namespace sonar {
       for (const auto &dest: pointCloud) {
         this->octomap.rayCastUpdate(this->position, dest, 1); // TODO Don't use prob of 1
       }
+
+      // TODO Don't use prob of 1
+      // float prob = (float) beam->at(obstacle_index) / MAX_INTENSITY;
+      this->octomap.pointcloudUpdate(pointCloud, this->position, 1);
     }
 
     this->octomap.writeBinary("test.bt");
