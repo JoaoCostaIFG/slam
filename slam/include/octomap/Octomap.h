@@ -27,13 +27,18 @@ namespace octomap {
     using KeySet = std::unordered_set<Key, typename Key::Hash, typename Key::Cmp>;
     using Node = OcNode<T>;
 
+    /** The max depth of tree */
     const unsigned int depth;
-    const double resolution; // in meters
+    /** The same represented by a leaf node/voxel (in meters) */
+    const double resolution;
 
     std::vector<double> stepLookupTable;
-    // number of nodes in the tree (starts with 1 root node)
     Node* rootNode = nullptr;
 
+    /**
+     * Helper method that checks whether the root node exists and creates it if necessary.
+     * @return True if the root node was just created. False, otherwise.
+     */
     bool createRootIfNeeded() {
       if (this->rootNode == nullptr) {
         this->rootNode = new Node();
@@ -43,6 +48,12 @@ namespace octomap {
     }
 
   public:
+    /**
+     * Instantiates an Octomap with the given maximum depth and resolution.
+     * Checks if the chosen max depth fits within the chosen Keys type.
+     * @param maxDepth The maximum depth to use.
+     * @param resolution The resolution to use.
+     */
     Octomap(unsigned int maxDepth, double resolution) :
         depth(maxDepth), resolution(resolution) {
       assert(this->depth >= 1);
@@ -68,36 +79,86 @@ namespace octomap {
       delete this->rootNode;
     }
 
+    /**
+     * Calculates the number of nodes in the Octomap.
+     * Keep in mind that the number of nodes is calculated recursively each time this is called,
+     * @return The number of nodes in the Octomap.
+     */
     [[nodiscard]] unsigned int getSize() const {
       if (this->rootNode == nullptr) return 0;
       return this->rootNode->getChildCount() + 1;
     }
 
+    /**
+     * Sets the occupancy value of the node/location represented by @param key.
+     * @param key The key that represents the target node/location.
+     * @param occ The value of occupancy to set.
+     * @param lazy Whether or not to lazy eval (default=false).
+     * @return Pointer to the updated node.
+     */
     Node* setOccupancy(const Key& key, float occ, bool lazy = false) {
       bool createdRoot = this->createRootIfNeeded();
       return this->rootNode->setOccupancy(key, this->depth, occ, lazy, createdRoot);
     }
 
+    /**
+     * Sets the occupancy value of the node at the location represented by @param location.
+     * @param location The location of the node to set the value.
+     * @param occ The value of occupancy to set.
+     * @param lazy Whether or not to lazy eval (default=false).
+     * @return Pointer to the updated node.
+     */
     Node* setOccupancy(const Vector3<>& location, float occ, bool lazy = false) {
       return this->setOccupancy(Key(location), occ, lazy);
     }
 
+    /**
+     * Sets the occupancy value of the node/location represented by @param key to 100%.
+     * @param key The key that represents the target node/location.
+     * @param lazy Whether or not to lazy eval (default=false).
+     * @return Pointer to the updated node.
+     */
     Node* setFull(const Key& key, bool lazy = false) {
       return this->setOccupancy(key, 1.0, lazy);
     }
 
+    /**
+     * Sets the occupancy value of the node at the location represented by @param location to 100%.
+     * @param location The location of the node to set the value.
+     * @param lazy Whether or not to lazy eval (default=false).
+     * @return Pointer to the updated node.
+     */
     Node* setFull(const Vector3<>& location, bool lazy = false) {
       return this->setOccupancy(location, 1.0, lazy);
     }
 
+    /**
+     * Sets the occupancy value of the node/location represented by @param key to 0%.
+     * @param key The key that represents the target node/location.
+     * @param lazy Whether or not to lazy eval (default=false).
+     * @return Pointer to the updated node.
+     */
     Node* setEmpty(const Key& key, bool lazy = false) {
       return this->setOccupancy(key, 0.0, lazy);
     }
 
+    /**
+     * Sets the occupancy value of the node at the location represented by @param location to 0%.
+     * @param location The location of the node to set the value.
+     * @param lazy Whether or not to lazy eval (default=false).
+     * @return Pointer to the updated node.
+     */
     Node* setEmpty(const Vector3<>& location, bool lazy = false) {
       return this->setOccupancy(location, 0.0, lazy);
     }
 
+    /**
+     * Update the log-odds value of the node/location represented by @param key.
+     * @param key The key that represents the target node/location.
+     * @param logOdds The value of log-odds to use in the update.
+     * @param lazy Whether or not to lazy eval (default=false).
+     * @return Pointer to the updated node.
+     */
     Node* updateLogOdds(const Key& key, float logOdds, bool lazy = false) {
       // We do a search before updating the target node. This small overhead can save a lot
       // of time in the long-run. Note: the search takes O(l) time, where l is the max depth, which is constant.
@@ -111,31 +172,65 @@ namespace octomap {
       return this->rootNode->updateLogOdds(key, this->depth, logOdds, lazy, createdRoot);
     }
 
+    /**
+     * Update the occupancy value of the node/location represented by @param key.
+     * @param key The key that represents the target node/location.
+     * @param occ The value of occupancy to use in the update.
+     * @param lazy Whether or not to lazy eval (default=false).
+     * @return Pointer to the updated node.
+     */
     Node* updateOccupancy(const Key& key, float occ, bool lazy = false) {
       return this->updateLogOdds(key, (float) Node::prob2logodds(occ), lazy);
     }
 
+    /**
+     * Sets the occupancy value of the node at the location represented by @param location.
+     * @param location The location of the node to update the value.
+     * @param occ The value of occupancy to use in the update.
+     * @param lazy Whether or not to lazy eval (default=false).
+     * @return Pointer to the updated node.
+     */
     Node* updateOccupancy(const Vector3<>& location, float occ, bool lazy = false) {
       return this->updateOccupancy(Key(location), occ, lazy);
     }
 
+    /**
+     * Fix the Octomap. This should be called after a set of lazy updates.
+     * Updates the log-odds value of intermediate nodes and prunes the tree.
+     */
     void fix() {
       if (!this->rootNode) return;
       this->rootNode->fix();
     }
 
+    /**
+     * Search for the node represented by @param key in the Octomap.
+     * @param key The key that represents the target node/location.
+     * @return A pointer to the node represented by @param key.
+     */
     Node* search(const Key& key) {
       if (this->rootNode == nullptr) return nullptr;
       return this->rootNode->search(key, this->depth);
     }
 
+    /**
+     * Search for the node represented by @param location in the Octomap.
+     * @param location The location of the node to search
+     * @return A pointer to the node represented by @param locatiion.
+     */
     Node* search(const Vector3<>& location) {
       if (this->rootNode == nullptr) return nullptr;
       return this->search(Key(location));
     }
 
-    // Algorithm from "A Fast Voxel Traversal Algorithm for Ray Tracing" by John Amanatides & Andrew Woo.
-    // Based on DDA ray casting algorithm for 3D.
+    /**
+     * Calculates the keys of the nodes traveled by the raycasting algorithm.
+     * Algorithm from: "A Fast Voxel Traversal Algorithm for Ray Tracing" by John Amanatides & Andrew Woo.
+     * Based on DDA ray casting algorithm for 3D.
+     * @param orig The location to start the raycast from.
+     * @param end The end location of the raycast.
+     * @return A vector containing the keys of the nodes traveled by the raycasting algorithm
+     */
     [[nodiscard]] std::vector<Key> rayCast(const Vector3<>& orig, const Vector3<>& end) const {
       std::vector<Key> ray;
 
@@ -187,6 +282,13 @@ namespace octomap {
       return ray;
     }
 
+    /**
+     * Calculates the keys of the nodes traveled by the raycasting algorithm.
+     * Uses the Bresenham Line Algorithm.
+     * @param orig The location to start the raycast from.
+     * @param end The end location of the raycast.
+     * @return A vector containing the keys of the nodes traveled by the raycasting algorithm
+     */
     [[nodiscard]] std::vector<Key> rayCastBresenham(const Vector3<>& orig, const Vector3<>& end) const {
       std::vector<Key> ray;
 
@@ -235,6 +337,15 @@ namespace octomap {
       return ray;
     }
 
+    /**
+     * Updates the cells in the Octomap using a raycast.
+     * The cells in the way are marked as free and the last cell is marked as occupied according
+     * to the @param occ passed.
+     * @param orig The location to start the raycast from.
+     * @param end The end location of the raycast.
+     * @param occ The occupancy value to use in the update of the end cell.
+     * @param lazy Whether or not to use lazy eval (default=false).
+     */
     void rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, float occ, bool lazy = false) {
       auto ray = this->rayCast(orig, end);
       for (auto& it: ray)
@@ -243,10 +354,15 @@ namespace octomap {
       if (lazy) this->rootNode->fix();
     }
 
-    // Calculates a ray for each endpoint in pointcloud (with origin in origin).
-    // The rays are calculated in parallel and the reported free and occupied nodes for
-    // each ray are joint in 2 sets.
-    // These sets are processed so each node is only updated once and occupied nodes have priority.
+    /**
+     * Calculates a ray for each endpoint in pointcloud (with origin in @param origin).
+     * The rays are calculated in parallel and the reported free and occupied nodes for
+     * each ray are joint in 2 sets.
+     * These sets are processed so each node is only updated once and occupied nodes have priority.
+     *
+     * @param pointcloud A vector containing the end points of the rays to calculate (1 ray for each).
+     * @param origin The origin location of each raycast.
+     */
     void pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
       std::vector<KeySet> freeNodesList, occupiedNodesList;
 
@@ -310,9 +426,15 @@ namespace octomap {
       this->rootNode->fix();
     }
 
-    // The same as pointcloudUpdate but first it discretizes the point cloud. This means that
-    // if 2 rays would end up on the same end-point (cell), only the first one is inserted into the tree.
-    // In some cases, this can improve performance, but can lead to diferente results.
+    /**
+     * The same as pointcloudUpdate but first it discretizes the point cloud.
+     * This means that if 2 rays would end up on the same end-point (cell), only the
+     * first one is inserted into the tree. This can happen with end-points with different coordinates.
+     * In some cases, this can improve performance, but can lead to diferent results.
+     *
+     * @param pointcloud A vector containing the end points of the rays to calculate (1 ray for each).
+     * @param origin The origin location of each raycast.
+     */
     void discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
       std::vector<Vector3f> discretizedPc;
       KeySet endpoints;
@@ -327,8 +449,13 @@ namespace octomap {
       this->pointcloudUpdate(discretizedPc, origin);
     }
 
-    // The binary format is compatible with octoviz
-    // See: https://github.com/OctoMap/octomap/tree/devel/octovis
+    /**
+     * Outputs the tree to the given stream.
+     * The tree is output in a binary format compatible with [octoviz](https://github.com/OctoMap/octomap/tree/devel/octovis).
+     *
+     * @param os The stream to output to.
+     * @return True on success. False, otherwise.
+     */
     bool writeBinary(std::ostream& os) {
       os << "# Octomap OcTree binary file\n";
       os << "id OcTree\n";
@@ -340,6 +467,13 @@ namespace octomap {
       return true;
     }
 
+    /**
+     * Outputs the tree to a file with the given file name. The file will be truncated before writing.
+     * The tree is output in a binary format compatible with [octoviz](https://github.com/OctoMap/octomap/tree/devel/octovis).
+     *
+     * @param filename The name of the file to output to.
+     * @return True on success. False, otherwise.
+     */
     bool writeBinary(const std::string& filename) {
       std::ofstream binary_outfile(filename.c_str(), std::ios_base::binary);
       if (!binary_outfile.is_open()) {

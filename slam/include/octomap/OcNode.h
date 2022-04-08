@@ -16,11 +16,21 @@ namespace octomap {
   template<class T>
   class OcNode {
   public:
-    // Can return +/-infinite
+    /**
+     * Converts the given probability (occupancy) to log-odds.
+     * @warning Can return +/-infinite
+     * @param prob The probability to convert.
+     * @return The converted log-odds value.
+     */
     static double prob2logodds(double prob) {
       return log(prob / (1 - prob));
     }
 
+    /**
+     * Converts the given log-odds to the corresponding probability (occupancy).
+     * @param logodds The log-odds to convert.
+     * @return The converted probabilities value.
+     */
     static double logodds2prob(double logodds) {
       return 1.0 - (1.0 / (1.0 + exp(logodds)));
     }
@@ -35,10 +45,18 @@ namespace octomap {
     OcNode** children = nullptr;
     float logOdds;
 
+    /**
+     * Helper method that allocates the container for the 8 children of this node.
+     * @warning This doesn't check if the container is already instantiated.
+     */
     void allocChildren() {
       this->children = new OcNode* [8]{nullptr};
     }
 
+    /**
+     * Helper method that allocates 8 children for the current node (and their container if needed),
+     * and initializes them with the log-odds value of the current node (parent).
+     */
     void expandNode() {
       assert(!this->hasChildren());
       if (this->children == nullptr) {
@@ -50,7 +68,11 @@ namespace octomap {
       }
     }
 
-    // Node is *prunable* is all children exist and have the same occupancy
+    /**
+     * Checks if the current node is "prunable".
+     * A node is "prunable" is it has 8 children with strictly the same occupancy.
+     * @return True if the node is prunable. False, otherwise.
+     */
     [[nodiscard]] bool isPrunable() const {
       OcNode* firstChild = this->getChild(0);
       if (firstChild == nullptr || firstChild->hasChildren()) return false;
@@ -67,8 +89,11 @@ namespace octomap {
       return true;
     }
 
-    // Returns the max occupancy log-odds from the children.
-    // For internal use: presence of all children should be checked first.
+    /**
+     * Helper method that calculates the maximum log-odds value of the node's children.
+     * @warning The presence of all children should be checked first.
+     * @return The maximum log-odds value of the node's children.
+     */
     [[nodiscard]] float getMaxChildrenLogOdds() const {
       float max = std::numeric_limits<float>::min();
       for (int i = 0; i < 8; ++i) {
@@ -79,8 +104,11 @@ namespace octomap {
       return max;
     }
 
-    // Returns the mean occupancy log-odds from the children.
-    // For internal use: presence of all children should be checked first.
+    /**
+     * Helper method that calculates the mean log-odds value of the node's children.
+     * @warning The presence of all children should be checked first.
+     * @return The mean log-odds value of the node's children.
+     */
     [[nodiscard]] float getMeanChildrenLogOdds() const {
       unsigned int cnt = 0;
       float ret = 0;
@@ -93,12 +121,26 @@ namespace octomap {
       return ret / (float) cnt;
     }
 
-    // Use the max of the children's occupancy (conservative approach).
+    /**
+     * Helper method that updates the node's log-odds using the maximum log-odds of its children.
+     * The mean strategy could be used alternatively (max is the conservative approach).
+     */
     void updateBasedOnChildren() {
       if (this->children == nullptr) return;
       this->setLogOdds(this->getMaxChildrenLogOdds());
     }
 
+    /**
+     * Sets/updates the log-odds value of the current node. If the current node isn't at the lowest level
+     * (leaf node), the update function of a child is called (recursive).
+     * @param key The key representing the target node.
+     * @param depth The current depth on the tree (counts backwards => 0 is the lowest level).
+     * @param lo The log-odds value to use.
+     * @param isUpdate Whether this is an update (true) or a set (false).
+     * @param lazy Whether to do a lazy update (default=false).
+     * @param justCreated Whether this node was created because of this update (default=false).
+     * @return A pointer to the (final) updated node.
+     */
     OcNode*
     setOrUpdateLogOdds(const Key& key, unsigned int depth, float lo, bool isUpdate, bool lazy = false,
                        bool justCreated = false) {
@@ -140,7 +182,12 @@ namespace octomap {
       }
     }
 
-    void writeBinaryInner(std::ostream& os, int baseI, std::bitset<8>& childBitset) const {
+    /**
+     * Helper method to convert the current node to a binary format compatible with octoviz.
+     * @param baseI What children to start with.
+     * @param childBitset The output in binary.
+     */
+    void writeBinaryInner(int baseI, std::bitset<8>& childBitset) const {
       // 00 : child is unknown node
       // 01 : child is occupied node
       // 10 : child is free node
@@ -184,6 +231,10 @@ namespace octomap {
       delete[] this->children;
     }
 
+    /**
+     * Counts the number of children of this node (direct and indirect).
+     * @return The number of successors of this node.
+     */
     [[nodiscard]] unsigned int getChildCount() const {
       if (this->children == nullptr) return 0;
       unsigned int ret = 0;
@@ -194,12 +245,22 @@ namespace octomap {
       return ret;
     }
 
+    /**
+     * Gets a pointer to a given child (if it exists).
+     * @param pos The index of the child in the children container (pos < 8).
+     * @return A pointer to the wanted children. nullptr if it doesn't exist/isn't instantiated.
+     */
     [[nodiscard]] OcNode* getChild(unsigned int pos) const {
       assert(pos < 8);
       if (this->children == nullptr) return nullptr;
       return this->children[pos];
     }
 
+    /**
+     * Creates a child with the given index @param pos.
+     * @param pos The index of the child in the children container (pos < 8).
+     * @return A pointer to the new child.
+     */
     OcNode* createChild(unsigned int pos) {
       assert(pos < 8);
       if (this->children == nullptr) {
@@ -210,6 +271,10 @@ namespace octomap {
       return this->children[pos];
     }
 
+    /**
+     * Checks if the current node has any children (at least 1).
+     * @return True, if the node has at least 1 child. False, otherwise.
+     */
     [[nodiscard]] bool hasChildren() const {
       if (this->children == nullptr) return false;
       for (int i = 0; i < 8; ++i) {
@@ -218,12 +283,21 @@ namespace octomap {
       return false;
     }
 
-    [[nodiscard]] bool childExists(unsigned int i) const {
+    /**
+     * Checks if a child with the given index, @param pos, exists.
+     * @param pos The index of the child to check (pos < 8).
+     * @return True, if the child exists. False, otherwise.
+     */
+    [[nodiscard]] bool childExists(unsigned int pos) const {
       if (this->children == nullptr) return false;
-      return this->children[i] != nullptr;
+      return this->children[pos] != nullptr;
     }
 
-    // Prunes the node if it fulfills the isPrunable method
+    /**
+     * Prunes the node (if possible). The isPrunable method is used to check if
+     * the node is "prunable" beforehand.
+     * @return True, if the node pruned children. False, otherwise.
+     */
     bool prune() {
       if (!this->isPrunable()) return false;
 
@@ -249,7 +323,10 @@ namespace octomap {
       return (float) logodds2prob(this->logOdds);
     }
 
-    // Sets the node occupancy log-odds. Performs min/max clamping.
+    /**
+     * Sets the log-odds value of the node. Performs min/max clamping.
+     * @param lo The log-odds value to set.
+     */
     void setLogOdds(float lo) {
       this->logOdds = std::clamp(lo, (float) OcNode::minThreshold, (float) OcNode::maxThreshold);
     }
@@ -278,6 +355,13 @@ namespace octomap {
       return this->logOdds == (float) OcNode::minThreshold;
     }
 
+    /**
+     * Checks if the node would change if updated with the given log-odds value, @param lo.
+     * A node won't change if @param lo is 0, or if the node is stable and the given value would
+     * not affect this stability.
+     * @param lo The log-odds value to test.
+     * @return True, if the node would change. False, otherwise.
+     */
     [[nodiscard]] bool wouldChange(float lo) const {
       if (lo == (float) OcNode::occThreshold) return false;
       if (lo < 0) {
@@ -305,8 +389,10 @@ namespace octomap {
       return this->updateLogOdds(key, depth, (float) prob2logodds(occ), lazy, justCreated);
     }
 
-    // Prune children (if possible) and update the log-odds (if inner node).
-    // Fixes the tree recursively, and should be called after a batch of lazy sets/updates.
+    /**
+     * Prune children (if possible) and update the log-odds (if inner node).
+     * Fixes the tree recursively, and should be called after a batch of lazy sets/updates.
+     */
     void fix() {
       for (int i = 0; i < 8; ++i) {
         auto child = this->getChild(i);
@@ -319,6 +405,12 @@ namespace octomap {
       this->updateBasedOnChildren();
     }
 
+    /**
+     * Search for the node resented by the given key. Can cause recursive calls.
+     * @param key The key representing the wanted node.
+     * @param depth The current depth in the tree (counting backwards).
+     * @return A pointer to the OcNode represented by the given key in the tree.
+     */
     OcNode* search(const Key& key, unsigned int depth) {
       if (depth > 0) {
         unsigned int d = depth - 1;
@@ -335,20 +427,37 @@ namespace octomap {
       }
     }
 
+    /**
+     * Checks if 2 nodes are equal.
+     * 2 OcNodes are equal if they have the same (strictly) log-odds.
+     * @param rhs The node to compare against.
+     * @return True, if the 2 OcNodes are equal. False, otherwise.
+     */
     bool operator==(const OcNode& rhs) const {
       return this->logOdds == rhs.logOdds;
     }
 
+    /**
+     * Checks if 2 nodes are different.
+     * 2 OcNodes are different if they have different (strictly) log-odds.
+     * @param rhs The node to compare against.
+     * @return False, if the 2 OcNodes are equal. True, otherwise.
+     */
     bool operator!=(const OcNode& rhs) const {
       return !(rhs == *this);
     }
 
+    /**
+     * Writes the current node in binary format (compatible with octoviz) to the given output stream.
+     * @note Writing the current node implies writing the children (recursive).
+     * @param os The output stream to write to.
+     */
     void writeBinary(std::ostream& os) const {
       std::bitset<8> child1to4;
       std::bitset<8> child5to8;
 
-      this->writeBinaryInner(os, 0, child1to4);
-      this->writeBinaryInner(os, 4, child5to8);
+      this->writeBinaryInner(0, child1to4);
+      this->writeBinaryInner(4, child5to8);
 
       char child1to4_char = (char) child1to4.to_ulong();
       char child5to8_char = (char) child5to8.to_ulong();

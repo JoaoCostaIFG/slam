@@ -37,54 +37,112 @@ namespace octomap {
     }
 
 
+    /**
+     * Get the first component of this vector (x-dimension).
+     * @return The value of the first component of the vector.
+     */
     [[nodiscard]] T x() const {
       return (*this)[0];
     }
 
+    /**
+     * Get the second component of this vector (y-dimension).
+     * @return The value of the second component of the vector.
+     */
     [[nodiscard]] T y() const {
       return (*this)[1];
     }
 
+    /**
+     * Get the third component of this vector (z-dimension).
+     * @return The value of the third component of the vector.
+     */
     [[nodiscard]] T z() const {
       return (*this)[2];
     }
 
+    /**
+     * Set the value of the first component of the vector (x-dimension).
+     * @param x The value to set.
+     */
     void setX(T x) {
       this->d[0] = x;
     }
 
+    /**
+     * Set the value of the second component of the vector (y-dimension).
+     * @param y The value to set.
+     */
     void setY(T y) {
       this->d[1] = y;
     }
 
+    /**
+     * Set the value of the third component of the vector (z-dimension).
+     * @param z The value to set.
+     */
     void setZ(T z) {
       this->d[2] = z;
     }
 
+    /**
+     * Tests if this vector represents a point in space at the left of another (this.x <= other.x).
+     * @param other The point to compare with.
+     * @return True, if this vector is at the left. False, Otherwise.
+     */
     [[nodiscard]] bool atLeft(const Vector3& other) const {
       return this->x() <= other.x();
     }
 
+    /**
+     * Tests if this vector represents a point in space at the right of another (this.x > other.x).
+     * @param other The point to compare with.
+     * @return True, if this vector is at the right. False, Otherwise.
+     */
     [[nodiscard]] bool atRight(const Vector3& other) const {
       return !this->atLeft(other);
     }
 
+    /**
+     * Tests if this vector represents a point in space at the back of another (this.z <= other.z).
+     * @param other The point to compare with.
+     * @return True, if this vector is at the back. False, Otherwise.
+     */
     [[nodiscard]] bool atBack(const Vector3& other) const {
       return this->z() <= other.z();
     }
 
+    /**
+     * Tests if this vector represents a point in space in front of another (this.z > other.z).
+     * @param other The point to compare with.
+     * @return True, if this vector is in front of. False, Otherwise.
+     */
     [[nodiscard]] bool atFront(const Vector3& other) const {
       return !this->atBack(other);
     }
 
+    /**
+     * Tests if this vector represents a point in space at the down of another (this.y <= other.y).
+     * @param other The point to compare with.
+     * @return True, if this vector is at the down. False, Otherwise.
+     */
     [[nodiscard]] bool atDown(const Vector3& other) const {
       return this->y() <= other.y();
     }
 
+    /**
+     * Tests if this vector represents a point in space above of another (this.y > other.y).
+     * @param other The point to compare with.
+     * @return True, if this vector is above. False, Otherwise.
+     */
     [[nodiscard]] bool atUp(const Vector3& other) const {
       return !this->atDown(other);
     }
 
+    /**
+     * Calculates the length (norm) of the vector.
+     * @return The length (norm) of the vector.
+     */
     [[nodiscard]] double norm() const {
       return sqrt(
           pow(this->x(), 2) +
@@ -93,6 +151,9 @@ namespace octomap {
       );
     }
 
+    /**
+     * Normalizes the vector: scales its components so its length becomes 1.
+     */
     void normalize() {
       T norm = this->norm();
       this->d[0] /= norm;
@@ -100,10 +161,19 @@ namespace octomap {
       this->d[2] /= norm;
     }
 
+    /**
+     * Calculates a hash value from the components of this vector.
+     * @return The hash value.
+     */
     [[nodiscard]] unsigned long hash() const {
       return phmap::HashState::combine(0, this->get(0), this->get(1), this->get(2));
     }
 
+    /**
+     * Adds the components of 2 vectors.
+     * @param rhs The vector to add,
+     * @return A new vector resulting from the sum of the components.
+     */
     Vector3 operator+(const Vector3& rhs) const {
       auto ret = Vector3(*this);
       ret[0] += rhs[0];
@@ -112,6 +182,11 @@ namespace octomap {
       return ret;
     }
 
+    /**
+     * Subtracts the components of 2 vectors.
+     * @param rhs The vector to subtract,
+     * @return A new vector resulting from the difference of the components.
+     */
     Vector3 operator-(const Vector3& rhs) const {
       auto ret = Vector3(*this);
       ret[0] -= rhs[0];
@@ -120,6 +195,11 @@ namespace octomap {
       return ret;
     }
 
+    /**
+     * Multiplies the components of 2 vectors.
+     * @param rhs The vector to multiply,
+     * @return A new vector resulting from the multiplication of the components.
+     */
     Vector3 operator*(const T factor) const {
       auto ret = Vector3(*this);
       ret[0] *= factor;
@@ -128,10 +208,20 @@ namespace octomap {
       return ret;
     }
 
+    /**
+     * Divides the components of 2 vectors.
+     * @param rhs The vector to divide,
+     * @return A new vector resulting from the division of the components.
+     */
     Vector3 operator/(const T factor) const {
       return *this * (1.0 / factor);
     }
 
+    /**
+     * Compares 2 vectors.
+     * @param rhs The vector to compare against.
+     * @return True if all components of both vectors are strictly equal, pairwise. False, otherwise.
+     */
     bool operator==(const Vector3& rhs) const {
       for (int i = 0; i < 3; ++i) {
         if ((*this)[i] != rhs[i])
@@ -140,6 +230,11 @@ namespace octomap {
       return true;
     }
 
+    /**
+     * Compares 2 vectors.
+     * @param rhs The vector to compare against.
+     * @return False if all components of both vectors are strictly equal, pairwise. False, otherwise.
+     */
     bool operator!=(const Vector3& rhs) const {
       return !(rhs == *this);
     }
