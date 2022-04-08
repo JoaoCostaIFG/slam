@@ -12,7 +12,7 @@
 
 using namespace octomap;
 
-#define OBSTACLE_THRESHOLD 100
+#define OBSTACLE_THRESHOLD 70
 #define MAX_INTENSITY 255
 
 namespace sonar {
@@ -21,12 +21,13 @@ namespace sonar {
   private:
     uchar* row; // This points to the respective intensity in the Sweep Mat
     size_t beam_len;
+    double step_dist;
     double time;
     double angle;
 
   public:
-    Beam(uchar* row, size_t beam_len, double time, double angle) : row(row), beam_len(beam_len),
-                                                                   time(time), angle(angle) {}
+    Beam(uchar* row, size_t beam_len, double step_dist, double time, double angle) : row(row), beam_len(beam_len),
+                                                                   step_dist(step_dist), time(time), angle(angle) {}
 
     /* This returns the index of the measure that corresponds to an obstacle with Simple Threshold */
     [[nodiscard]] size_t getObstacleST() const;
@@ -35,28 +36,37 @@ namespace sonar {
 
     [[nodiscard]] double getTime() const { return time; }
 
+    double getStepDist() const {
+      return step_dist;
+    }
+
     [[nodiscard]] double getAngle() const { return angle; }
 
     friend std::ostream& operator<<(std::ostream& os, const Beam& beam);
 
 
-    [[nodiscard]] Vector3<> atVec(int i) const {
+    [[nodiscard]] Vector3<> atVec(size_t i) const {
       double angle_rad = ((angle + 180) * CV_PI) / 180;
       return this->atVec(i, angle_rad);
     }
 
-    [[nodiscard]] Vector3<> atVec(int i, double angle_rad) const {
+    // Deviates measurement i across an angle angle_rad
+    [[nodiscard]] Vector3<> atVec(size_t i, double angle_rad) const {
       float x = (double) i * cos(angle_rad);
       float y = (double) i * sin(angle_rad);
       // TODO Move to 3D here
       return {x, y, 0};
     }
 
+    [[nodiscard]] Vector3<> coordToReal(Vector3<> pos) const {
+      return Vector3f(pos.x() * this->step_dist, pos.y() * this->step_dist, pos.z() * this->step_dist);
+    }
+
     uchar& at(int i) { return *(row + i); }
 
     uchar& at(int i) const { return *(row + i); }
 
-    static Beam* importJson(const rapidjson::Value& b, cv::Mat& intensities);
+    static Beam* importJson(const rapidjson::Value& beam_json, cv::Mat& row, double step_dist);
   };
 
   class Sweep {
@@ -88,7 +98,8 @@ namespace sonar {
 
     friend std::ostream& operator<<(std::ostream& os, const Sweep& sweep);
 
-    static Sweep* importJson(const rapidjson::Value& s, size_t sweep_no, size_t beam_no, size_t beam_len);
+    static Sweep* importJson(const rapidjson::Value& sweep_json, size_t sweep_no, size_t beam_no, size_t beam_len,
+                             double step_dist);
   };
 
   class Scan {

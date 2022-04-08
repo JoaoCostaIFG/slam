@@ -255,9 +255,9 @@ namespace octomap {
         // It should be 1/abs(direction[i]) from the paper, but out cell size varies by *resolution*
         // so we multiply it.
         tDelta[i] = this->resolution / fabs(direction[i]);
-        if (std::isinf(tDelta[i])) {
+        if (std::isinf(tDelta[i])) [[unlikely]] {
           tMax[i] = std::numeric_limits<double>::max(); // infinity
-        } else {
+        } else [[likely]] {
           double voxelBorder = origCoord[i] + step[i] * this->stepLookupTable[this->depth + 1];
           tMax[i] = (voxelBorder - orig[i]) / direction[i];
         }
@@ -362,8 +362,9 @@ namespace octomap {
      *
      * @param pointcloud A vector containing the end points of the rays to calculate (1 ray for each).
      * @param origin The origin location of each raycast.
+     * @param occ The occupancy to update the end node (occupied) with.
      */
-    void pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
+    void pointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin, float occ) {
       std::vector<KeySet> freeNodesList, occupiedNodesList;
 
       // small hack to alloc 2 containers for each simultaneous thread
@@ -421,7 +422,7 @@ namespace octomap {
         }
       }
       for (auto& endpoint: occupiedNodes) {
-        this->setFull(endpoint, true);
+        this->updateOccupancy(endpoint, occ);
       }
       this->rootNode->fix();
     }
@@ -434,8 +435,9 @@ namespace octomap {
      *
      * @param pointcloud A vector containing the end points of the rays to calculate (1 ray for each).
      * @param origin The origin location of each raycast.
+     * @param occ The occupancy value to update the end node with.
      */
-    void discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin) {
+    void discretizedPointcloudUpdate(const std::vector<Vector3f>& pointcloud, const Vector3f& origin, float occ) {
       std::vector<Vector3f> discretizedPc;
       KeySet endpoints;
       for (const auto& endpointCoord: pointcloud) {
@@ -446,7 +448,7 @@ namespace octomap {
         }
       }
 
-      this->pointcloudUpdate(discretizedPc, origin);
+      this->pointcloudUpdate(discretizedPc, origin, occ);
     }
 
     /**

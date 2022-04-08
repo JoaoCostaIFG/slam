@@ -22,7 +22,7 @@ namespace octomap {
      * @param prob The probability to convert.
      * @return The converted log-odds value.
      */
-    static double prob2logodds(double prob) {
+    constexpr static double prob2logodds(double prob) {
       return log(prob / (1 - prob));
     }
 
@@ -31,7 +31,7 @@ namespace octomap {
      * @param logodds The log-odds to convert.
      * @return The converted probabilities value.
      */
-    static double logodds2prob(double logodds) {
+    constexpr static double logodds2prob(double logodds) {
       return 1.0 - (1.0 / (1.0 + exp(logodds)));
     }
 
