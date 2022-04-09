@@ -8,21 +8,48 @@
 using namespace sonar;
 
 namespace sonar {
+  /**
+   * Applies a gaussian filter with given kernelSize and sigma to a given sweep's data. This filter is applied directly
+   * to the beam intensity matrix, i.e. the data's polar representation.
+   * @param sweep the sweep that will be filtered
+   * @param kernelSize the size of the kernel that will be used when filtering
+   * @param sigma the sigma of the gaussian function that the kernel will use
+   */
   void applyGaussian(Sweep& sweep, int kernelSize, int sigma) {
     cv::GaussianBlur(sweep.getIntensities(), sweep.getIntensities(), cv::Size(kernelSize, kernelSize), sigma);
   }
 
+  /**
+   * Applies a mean filter with given kernelSize to a given sweep's data. This filter is applied directly
+   * to the beam intensity matrix, i.e. the data's polar representation.
+   * @param sweep the sweep that will be filtered
+   * @param kernelSize the size of the kernel that will be used when filtering
+   */
   void applyMean(Sweep& sweep, int kernelSize) {
     cv::InputArray arr(sweep.getIntensities());
     cv::blur(sweep.getIntensities(), sweep.getIntensities(), cv::Size(kernelSize, kernelSize));
   }
 
+  /**
+   * Applies a median filter with given kernelSize to a given sweep's data. This filter is applied directly
+   * to the beam intensity matrix, i.e. the data's polar representation. We've found that this filter tends
+   * to blur a lot of details.
+   * @param sweep the sweep that will be filtered
+   * @param kernelSize the size of the kernel that will be used when filtering
+   */
   void applyMedian(Sweep& sweep, int kernelSize) {
     cv::InputArray arr(sweep.getIntensities());
     cv::medianBlur(sweep.getIntensities(), sweep.getIntensities(), kernelSize);
   }
 
-  /* Opens an openCV window with a sweep sonar (polar). Note: Waits for user to press q to close */
+  /**
+   *
+   * Opens an openCV window with a representation, which may be cartesian or polar, of the given sweep. After the image
+   * is shown, use q to close the window.
+   * @param sweep the sweep that will be displayed
+   * @param inCartesian if true, the the data will be displayed in cartesian coordinates. Otherwise, the polar
+   * representation will be used.
+   */
   void displaySweep(const Sweep& sweep, const bool& inCartesian = false) {
     cv::Mat img;
     if (inCartesian) {
@@ -42,7 +69,7 @@ namespace sonar {
           for (size_t i = 0; i < sweep.getBeamLen(); ++i) {
             const uint8_t& intensity = beam->at(i);
             double angle_rad = ((angle + 180) * CV_PI) / 180;
-            Vector3<> v = beam->atVec(i, angle_rad);
+            Vector3<> v = beam->measurementToCartesian(i, angle_rad);
             int x = x0 + round(v.x()), y = y0 + round(v.y());
             int pos = y + x * n;
             vote_intensities[pos] += intensity;

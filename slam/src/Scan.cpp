@@ -95,11 +95,11 @@ namespace sonar {
       ++i;
     }
 
-    return new Scan(scan_len, sweep_len, step_dist, sweeps_vec);
+    return new Scan(scan_len, sweep_len, sweeps_vec);
   }
 
   std::ostream& operator<<(std::ostream& os, const Scan& scan) {
-    os << "SCAN\tlength: " << scan.scan_len << "\tsweep_len: " << scan.sweep_len << "\tstep_dist: " << scan.step_dist;
+    os << "SCAN\tlength: " << scan.scan_len << "\tsweep_len: " << scan.sweep_len;
     return os;
   }
 }

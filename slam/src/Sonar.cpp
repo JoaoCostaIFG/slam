@@ -14,7 +14,7 @@ namespace sonar {
       for (double angle = base_angle - 1.5;
           angle < base_angle + 1.601; angle += 0.1) { // TODO Replace 1.601 with angle step
           double angle_rad = ((angle + 180) * CV_PI) / 180;
-          Vector3f v = beam->coordToReal(beam->atVec(obstacle_index, angle_rad));
+          Vector3f v = beam->coordToReal(beam->measurementToCartesian(obstacle_index, angle_rad));
           pointCloud.push_back(v);
         }
 

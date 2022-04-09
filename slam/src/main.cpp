@@ -120,7 +120,7 @@ int main() {
 
   Sweep* sweep = s->getSweeps().at(1);
   applyGaussian(*sweep, 9, 5);
-  // displaySweep(*sweep, false);
+  displaySweep(*sweep, true);
 
   Sonar sonar;
   sonar.update(*sweep);
