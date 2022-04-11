@@ -127,14 +127,6 @@ namespace octomap {
     };
   };
 
-  template<>
-  class OcNodeKey<int> {
-  public:
-    int ometodo() const {
-      return 66;
-    }
-  };
-
   template<size_t T>
   class OcNodeKey<std::bitset<T>> {
   private:
