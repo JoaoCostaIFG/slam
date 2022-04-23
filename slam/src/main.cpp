@@ -35,48 +35,10 @@ vector<Vector3f> importOff(const string& filename) {
   return ret;
 }
 
-int main() {
+void benchmark() {
   using chrono::high_resolution_clock;
   using chrono::milliseconds;
   using chrono::duration_cast;
-
-  /*
-  for (int i = 0; i < 5; ++i) {
-    Octomap o = Octomap<>();
-
-    auto startTime = high_resolution_clock::now();
-    for (int x = -100; x < 100; x++) {
-      for (int y = -100; y < 100; y++) {
-        for (int z = -100; z < 100; z++) {
-          Vector3f endpoint((float) x * 0.05f, (float) y * 0.05f, (float) z * 0.05f);
-          o.setFull(endpoint, true); // integrate 'occupied' measurement
-        }
-      }
-    }
-    auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
-    cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
-    o.fix();
-  }
-   */
-
-  //for (int i = -1; i < 2; i += 2) {
-  //  for (int j = -1; j < 2; j += 2) {
-  //    for (int k = -1; k < 2; k += 2) {
-  //      auto endpointCoord = Vector3f(i, j, k);
-  //      for (auto& point: o.rayCastBresenham(Vector3(), endpointCoord)) {
-  //        o.setEmpty(point);
-  //        o.setFull(endpointCoord);
-  //      }
-  //    }
-  //  }
-  //}
-
-  //o.rayCastUpdate(Vector3(), Vector3f(1, 1, 1), 1.0);
-  //o.rayCast(Vector3(), Vector3f(1267.09998, 2835.5, 272.221985));
-  //for (auto &point: o.rayCast(Vector3(), Vector3f(67.09998, 35.5, 2.221985))) {
-  //    o.setFull(*point);
-  //}
-  //o.setEmpty(Vector3f(67.09998, 35.5, 2.221985));
 
   /*
   std::ofstream file("bench.txt", std::ios_base::trunc);
@@ -100,21 +62,33 @@ int main() {
     }
   }
    */
+}
 
-/*
-  for (int i = 0; i < 3; ++i) {
-    Octomap<> o;
-    auto startTime = high_resolution_clock::now();
-    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1.0);
-    auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
-    cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
+int main() {
+  /*
+  // insert some measurements of free cells
+  for (float x = -2; x <= 0; x += 0.02f) {
+    for (float y = -2; y <= 0; y += 0.02f) {
+      for (float z = -2; z <= 0; z += 0.02f) {
+        Vector3f endpoint(x, y, z);
+        o.setEmpty(endpoint); // integrate 'free' measurement
+      }
+    }
   }
-*/
+  // insert some measurements of occupied cells (twice as much)
+  for (float x = -1; x <= 0; x += 0.01f) {
+    for (float y = -1; y <= 0; y += 0.01f) {
+      for (float z = -1; z <= 0; z += 0.01f) {
+        Vector3f endpoint(x, y, z);
+        o.setFull(endpoint); // integrate 'occupied' measurement
+      }
+    }
+  }
+  o.rayCastUpdate(Vector3f(0, 0, 0), Vector3f(-2, -2, -2), 0.5);
+   */
+
 
   // Reads data from json, displays cartesian and exports to octovis format
-  //cout << "Size: " << o.getSize() << endl;
-  //o.writeBinary("rust.bt");
-
   ifstream ss("../data.json");
   Scan* s = Scan::importJson(ss);
 
