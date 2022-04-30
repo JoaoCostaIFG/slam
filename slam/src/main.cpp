@@ -9,8 +9,6 @@
 #include "../include/sonar/Sonar.h"
 #include "../include/sonar/Filters.h"
 
-#include <opencv2/opencv.hpp>
-
 using namespace std;
 using namespace octomap;
 using namespace sonar;
@@ -40,7 +38,6 @@ void benchmark() {
   using chrono::milliseconds;
   using chrono::duration_cast;
 
-  /*
   std::ofstream file("bench.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
@@ -61,25 +58,28 @@ void benchmark() {
       file << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
     }
   }
-   */
 }
 
 int main() {
+  std::cout << "Welcome to SLAM." << endl << endl;
 
-  std::cout << "Welcome to SLAM.";
-  int option, finished=0;
-  while(finished == 0){
+  int option, finished = 0;
+  while (finished == 0) {
     Octomap o = Octomap<>();
-    std::cout << "What cloud point would you like to use?\n\t1) Plane point cloud.\n\t2) AUV's collected point cloud.\n\t"
-                 "3) Other point cloud (should be found inside the folder \"datasets\")\n\t4) Exit." << std::endl;
+    std::cout << "What cloud point would you like to use?" << endl <<
+              "\t1) Plane point cloud." << endl <<
+              "\t2) AUV's collected point cloud." << endl <<
+              "\t3) Other point cloud (should be found inside the folder \"datasets\")" << endl <<
+              "\t4) Exit." << std::endl;
     std::cin >> option;
     switch (option) {
-      case(1): {
+      case (1): {
         o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1);
         o.writeBinary("plane.bt");
+        cout << "\nResult saved as plane.bt\n\n";
         break;
       }
-      case(2): {
+      case (2): {
         ifstream ss("../data.json");
         Scan* s = Scan::importJson(ss);
 
@@ -88,17 +88,20 @@ int main() {
 
         Sonar sonar;
         sonar.update(*sweep);
+        cout << "\nResult saved as auv.bt\n\n";
         break;
       }
-      case(3): {
+      case (3): {
         string filename;
-        std::cout << "What's the name of the .off file containing the desired points cloud (without .off)?" << std::endl;
+        std::cout << "What's the name of the .off file containing the desired points cloud (without .off)?"
+                  << std::endl;
         std::cin >> filename;
         o.pointcloudUpdate(importOff("../datasets/" + filename + ".off"), Vector3f(), 1);
         o.writeBinary(filename + ".bt");
+        cout << "\nResult saved as " << filename << ".bt\n\n";
         break;
       }
-      case(4): {
+      case (4): {
         finished = 1;
         break;
       }
@@ -106,10 +109,9 @@ int main() {
         std::cout << "Wrong input, please try again." << std::endl;
         std::cin.clear();
         std::cin.ignore(256, '\n');
+        break;
       }
-
     }
-
   }
 
 //  // insert some measurements of free cells
