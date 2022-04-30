@@ -88,12 +88,11 @@ int main() {
 
         Sonar sonar;
         sonar.update(*sweep);
-        o.writeBinary("auv.bt");
         break;
       }
       case(3): {
         string filename;
-        std::cout << "What's the name of the file containing the desired points cloud (without .bt)?" << std::endl;
+        std::cout << "What's the name of the .off file containing the desired points cloud (without .off)?" << std::endl;
         std::cin >> filename;
         o.pointcloudUpdate(importOff("../datasets/" + filename + ".off"), Vector3f(), 1);
         o.writeBinary(filename + ".bt");

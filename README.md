@@ -18,6 +18,23 @@ make
 ./SLAM
 ```
 
+After running, the user will be prompted with a simple command line menu. 
+This menu contains four options:
+- First: Import the plane point cloud used during the project development, 
+which is present in the slide presentations.
+- Second: Import the AUV's collected data, process it and use it as the 
+point cloud.
+- Third: Specify the name of the .off file to be used as the point cloud. 
+This file should be present in the "datasets" folder, found in the root of 
+the project. Additionally, when writting the file name, the .off extention
+should be ommited. 
+- Fourth: Exits the program.
+
+After the selected option finishes executing, there will be a new .bt file 
+in the "build" folder with the same name as the .off file, or auv.bt in case
+the point cloud used the collected data. This file is compatible with 
+the visualizer "octovis", which was used during the project's development.
+
 ## Dependencies
 
 ### Jupyter Notebook
