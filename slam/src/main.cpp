@@ -65,39 +65,85 @@ void benchmark() {
 }
 
 int main() {
-  /*
-  // insert some measurements of free cells
-  for (float x = -2; x <= 0; x += 0.02f) {
-    for (float y = -2; y <= 0; y += 0.02f) {
-      for (float z = -2; z <= 0; z += 0.02f) {
-        Vector3f endpoint(x, y, z);
-        o.setEmpty(endpoint); // integrate 'free' measurement
+
+  std::cout << "Welcome to SLAM.";
+  int option, finished=0;
+  while(finished == 0){
+    Octomap o = Octomap<>();
+    std::cout << "What cloud point would you like to use?\n\t1) Plane point cloud.\n\t2) AUV's collected point cloud.\n\t"
+                 "3) Other point cloud (should be found inside the folder \"datasets\")\n\t4) Exit." << std::endl;
+    std::cin >> option;
+    switch (option) {
+      case(1): {
+        o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1);
+        o.writeBinary("plane.bt");
+        break;
       }
-    }
-  }
-  // insert some measurements of occupied cells (twice as much)
-  for (float x = -1; x <= 0; x += 0.01f) {
-    for (float y = -1; y <= 0; y += 0.01f) {
-      for (float z = -1; z <= 0; z += 0.01f) {
-        Vector3f endpoint(x, y, z);
-        o.setFull(endpoint); // integrate 'occupied' measurement
+      case(2): {
+        ifstream ss("../data.json");
+        Scan* s = Scan::importJson(ss);
+
+        Sweep* sweep = s->getSweeps().at(1);
+        applyGaussian(*sweep, 9, 5);
+
+        Sonar sonar;
+        sonar.update(*sweep);
+        o.writeBinary("auv.bt");
+        break;
       }
+      case(3): {
+        string filename;
+        std::cout << "What's the name of the file containing the desired points cloud (without .bt)?" << std::endl;
+        std::cin >> filename;
+        o.pointcloudUpdate(importOff("../datasets/" + filename + ".off"), Vector3f(), 1);
+        o.writeBinary(filename + ".bt");
+        break;
+      }
+      case(4): {
+        finished = 1;
+        break;
+      }
+      default: {
+        std::cout << "Wrong input, please try again." << std::endl;
+        std::cin.clear();
+        std::cin.ignore(256, '\n');
+      }
+
     }
+
   }
-  o.rayCastUpdate(Vector3f(0, 0, 0), Vector3f(-2, -2, -2), 0.5);
-   */
 
-
-  // Reads data from json, displays cartesian and exports to octovis format
-  ifstream ss("../data.json");
-  Scan* s = Scan::importJson(ss);
-
-  Sweep* sweep = s->getSweeps().at(1);
-  applyGaussian(*sweep, 9, 5);
-  displaySweep(*sweep, true);
-
-  Sonar sonar;
-  sonar.update(*sweep);
+//  // insert some measurements of free cells
+//  for (float x = -2; x <= 0; x += 0.02f) {
+//    for (float y = -2; y <= 0; y += 0.02f) {
+//      for (float z = -2; z <= 0; z += 0.02f) {
+//        Vector3f endpoint(x, y, z);
+//        o.setEmpty(endpoint); // integrate 'free' measurement
+//      }
+//    }
+//  }
+//  // insert some measurements of occupied cells (twice as much)
+//  for (float x = -1; x <= 0; x += 0.01f) {
+//    for (float y = -1; y <= 0; y += 0.01f) {
+//      for (float z = -1; z <= 0; z += 0.01f) {
+//        Vector3f endpoint(x, y, z);
+//        o.setFull(endpoint); // integrate 'occupied' measurement
+//      }
+//    }
+//  }
+//  o.rayCastUpdate(Vector3f(0, 0, 0), Vector3f(-2, -2, -2), 0.5);
+//
+//
+//  // Reads data from json, displays cartesian and exports to octovis format
+//  ifstream ss("../data.json");
+//  Scan* s = Scan::importJson(ss);
+//
+//  Sweep* sweep = s->getSweeps().at(1);
+//  applyGaussian(*sweep, 9, 5);
+//  displaySweep(*sweep, true);
+//
+//  Sonar sonar;
+//  sonar.update(*sweep);
 
   return EXIT_SUCCESS;
 }

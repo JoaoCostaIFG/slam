@@ -29,6 +29,6 @@ namespace sonar {
       this->octomap.pointcloudUpdate(pointCloud, this->position, 1);
     }
 
-    this->octomap.writeBinary("test.bt");
+    this->octomap.writeBinary("auv.bt");
   }
 }
