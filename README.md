@@ -3,25 +3,53 @@
 We use our notebook to import, export and visualize data. Our main
 implementation has octrees, probabilistic mapping, data preprocessing.
 
+## Build
+
+```sh
+mkdir build
+cd build
+cmake ..
+make
+```
+
+## Run
+
+```sh
+./SLAM
+```
+
 ## Dependencies
 
 ### Jupyter Notebook
 
+Used to process the matlab dataset containing the sonar measurements.
+
 - Matplotlib
 - Scipy
 - Pypng
-- [Parallel Hashmap](https://github.com/greg7mdp/parallel-hashmap) - See
-  [License](./slam/include/parallel_hashmap/LICENSE).
 
 ### C++
 
-- OpenCV and its dependencies:
+#### Need install
+
+These libs are dynamic linked and need to be installed in the system in order to
+compile and run the program.
+
+- [OpenCV](https://opencv.org), and its dependencies:
   - glew
   - vtk
     - pugixml
   - hdf5
-- Boost
+- [Boost](https://www.boost.org)
+
+#### Bundled/Optional
+
+These libs are either optional or bundled with the application code, thus not
+needing any special action/attention from the user.
+
 - OpenMP (**Optional** - Improves performance)
+- [Parallel Hashmap](https://github.com/greg7mdp/parallel-hashmap) - See
+  [License](./slam/include/parallel_hashmap/LICENSE).
 
 ## Point-cloud dataset
 
@@ -41,9 +69,9 @@ in off format.
   inserir num set de frees e ocupados~~;
 - ~~Descretizar endpoints? Basicamente so guardar o primeiro raio para cada
   endpoint na point cloud => menos raycasts mas resultado diferente~~;
-- Lazy eval => n fazer o update das occupancy e pruning no insert. No final,
+- ~~Lazy eval => n fazer o update das occupancy e pruning no insert. No final,
   chamar método que da sync aos nos intermedios. Bom para muitas inserções
-  seguidas;
+  seguidas~~;
+- ~~Documentar coisas~~;
 - Tratar range de valores à volta do 0.5 (e.g. [0.45, 0.55]) como unknown tmb;
-- Documentar coisas;
 - Bounds check on keys;
