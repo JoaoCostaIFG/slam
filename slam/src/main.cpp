@@ -5,6 +5,7 @@
 #include <random>
 
 #include "../include/octomap/Octomap.h"
+#include "../include/HashTable/HashTable.h"
 #include "../include/sonar/Scan.h"
 #include "../include/sonar/Sonar.h"
 #include "../include/sonar/Filters.h"
@@ -60,91 +61,66 @@ void benchmark() {
   }
 }
 
+
 int main() {
-  std::cout << "Welcome to SLAM." << endl << endl;
+  auto h = new HashTable::HashTable<Vector3<int>>(20);
+  auto v = new Vector3<int>(2,1,4);
+  h->insert(*v);
+  h->printAll();
 
-  int option, finished = 0;
-  while (finished == 0) {
-    Octomap o = Octomap<>();
-    std::cout << "What cloud point would you like to use?" << endl <<
-              "\t1) Plane point cloud." << endl <<
-              "\t2) AUV's collected point cloud." << endl <<
-              "\t3) Other point cloud (should be found inside the folder \"datasets\")" << endl <<
-              "\t4) Exit." << std::endl;
-    std::cin >> option;
-    switch (option) {
-      case (1): {
-        o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1);
-        o.writeBinary("plane.bt");
-        cout << "\nResult saved as plane.bt\n\n";
-        break;
-      }
-      case (2): {
-        ifstream ss("../data.json");
-        Scan* s = Scan::importJson(ss);
-
-        Sweep* sweep = s->getSweeps().at(1);
-        applyGaussian(*sweep, 9, 5);
-
-        Sonar sonar;
-        sonar.update(*sweep);
-        cout << "\nResult saved as auv.bt\n\n";
-        break;
-      }
-      case (3): {
-        string filename;
-        std::cout << "What's the name of the .off file containing the desired points cloud (without .off)?"
-                  << std::endl;
-        std::cin >> filename;
-        o.pointcloudUpdate(importOff("../datasets/" + filename + ".off"), Vector3f(), 1);
-        o.writeBinary(filename + ".bt");
-        cout << "\nResult saved as " << filename << ".bt\n\n";
-        break;
-      }
-      case (4): {
-        finished = 1;
-        break;
-      }
-      default: {
-        std::cout << "Wrong input, please try again." << std::endl;
-        std::cin.clear();
-        std::cin.ignore(256, '\n');
-        break;
-      }
-    }
-  }
-
-//  // insert some measurements of free cells
-//  for (float x = -2; x <= 0; x += 0.02f) {
-//    for (float y = -2; y <= 0; y += 0.02f) {
-//      for (float z = -2; z <= 0; z += 0.02f) {
-//        Vector3f endpoint(x, y, z);
-//        o.setEmpty(endpoint); // integrate 'free' measurement
+//  benchmark();
+//  std::cout << "Welcome to SLAM." << endl << endl;
+//
+//  int option, finished = 0;
+//  while (finished == 0) {
+//    Octomap o = Octomap<>();
+//    std::cout << "What cloud point would you like to use?" << endl <<
+//              "\t1) Plane point cloud." << endl <<
+//              "\t2) AUV's collected point cloud." << endl <<
+//              "\t3) Other point cloud (should be found inside the folder \"datasets\")" << endl <<
+//              "\t4) Exit." << std::endl;
+//    std::cin >> option;
+//    switch (option) {
+//      case (1): {
+//        o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1);
+//        o.writeBinary("plane.bt");
+//        cout << "\nResult saved as plane.bt\n\n";
+//        break;
+//      }
+//      case (2): {
+//        ifstream ss("../data.json");
+//        Scan* s = Scan::importJson(ss);
+//
+//        Sweep* sweep = s->getSweeps().at(1);
+//        applyGaussian(*sweep, 9, 5);
+//
+//        Sonar sonar;
+//        sonar.update(*sweep);
+//        cout << "\nResult saved as auv.bt\n\n";
+//        break;
+//      }
+//      case (3): {
+//        string filename;
+//        std::cout << "What's the name of the .off file containing the desired points cloud (without .off)?"
+//                  << std::endl;
+//        std::cin >> filename;
+//        o.pointcloudUpdate(importOff("../datasets/" + filename + ".off"), Vector3f(), 1);
+//        o.writeBinary(filename + ".bt");
+//        cout << "\nResult saved as " << filename << ".bt\n\n";
+//        break;
+//      }
+//      case (4): {
+//        finished = 1;
+//        break;
+//      }
+//      default: {
+//        std::cout << "Wrong input, please try again." << std::endl;
+//        std::cin.clear();
+//        std::cin.ignore(256, '\n');
+//        break;
 //      }
 //    }
 //  }
-//  // insert some measurements of occupied cells (twice as much)
-//  for (float x = -1; x <= 0; x += 0.01f) {
-//    for (float y = -1; y <= 0; y += 0.01f) {
-//      for (float z = -1; z <= 0; z += 0.01f) {
-//        Vector3f endpoint(x, y, z);
-//        o.setFull(endpoint); // integrate 'occupied' measurement
-//      }
-//    }
-//  }
-//  o.rayCastUpdate(Vector3f(0, 0, 0), Vector3f(-2, -2, -2), 0.5);
-//
-//
-//  // Reads data from json, displays cartesian and exports to octovis format
-//  ifstream ss("../data.json");
-//  Scan* s = Scan::importJson(ss);
-//
-//  Sweep* sweep = s->getSweeps().at(1);
-//  applyGaussian(*sweep, 9, 5);
-//  displaySweep(*sweep, true);
-//
-//  Sonar sonar;
-//  sonar.update(*sweep);
 
   return EXIT_SUCCESS;
 }
