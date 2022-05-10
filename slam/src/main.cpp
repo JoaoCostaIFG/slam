@@ -63,10 +63,34 @@ void benchmark() {
 
 
 int main() {
-  auto h = HashTable::HashTable<Vector3<int>>(20);
+  auto h = HashTable::HashTable<Vector3<int>>(10);
   auto v = Vector3<int>(2,1,4);
+  auto v1 = Vector3<int>(2,2,4);
+  auto v2 = Vector3<int>(2,3,4);
+  auto v3 = Vector3<int>(2,4,4);
+  auto v4 = Vector3<int>(2,5,4);
+  auto v5 = Vector3<int>(2,6,4);
+  auto v6 = Vector3<int>(2,7,4);
+  auto v7 = Vector3<int>(2,8,4);
+  auto v8 = Vector3<int>(2,9,4);
+  auto v9 = Vector3<int>(2,0,4);
+  auto v10 = Vector3<int>(2,10,4);
+
   h.insert(v);
-  //h.printAll();
+  h.insert(v1);
+  h.insert(v2);
+  h.insert(v3);
+  h.insert(v4);
+  h.insert(v5);
+  h.insert(v6);
+  h.printAll();
+
+  h.insert(v7);
+  h.insert(v8);
+  h.insert(v9);
+  h.insert(v10);
+
+  h.printAll();
 
 //  benchmark();
 //  std::cout << "Welcome to SLAM." << endl << endl;

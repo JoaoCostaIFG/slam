@@ -5,12 +5,15 @@
 #include <iostream>
 #include "./TableEntry.h"
 
+
+
 namespace HashTable {
   template<typename T>
   class HashTable {
   private:
-    int size;
     std::vector<TableEntry<T>*> table;
+    int size;
+    int nOccupied;
 
   public:
     HashTable() : HashTable(20) {}
@@ -18,6 +21,7 @@ namespace HashTable {
     HashTable(int size) {
       this->size = size;
       this->table.resize(this->size, nullptr);
+      nOccupied = 0;
     }
 
     size_t getHash(const T& key) {
@@ -43,13 +47,15 @@ namespace HashTable {
 
       if (table.at(hash) == nullptr) {
         table[hash] = new TableEntry<T>(key);
+        nOccupied++;
       } else if (entry->getValue() == key) {
         // the element is already part of the set
         return false;
       } else {
         table.at(hash)->setValue(key);
+        nOccupied++;
       }
-
+      if((nOccupied*100)/size > 75) resize();
       return true;
     }
 
@@ -61,15 +67,36 @@ namespace HashTable {
       }
       if (table.at(hash)->getValue() == key) {
         table.at(hash)->setDeleted();
-        return false;
+        nOccupied--;
+        return true;
       }
       return false;
     }
 
+    void moveIndexes(){
+      for(size_t i = 0; i < this->size; ++i){
+        if(this->table.at(i) != nullptr && !this->table.at(i)->getDeleted()) {
+          if(this->insert(this->table.at(i)->getValue())) {
+            this->table.at(i)->setDeleted();
+          }
+        }
+      }
+    }
+
+    void resize() {
+      int newSize = this->size * this->size;
+      this->table.resize(newSize);
+      this->size = newSize;
+      moveIndexes();
+    }
+
     void printAll() {
+      std::cout << "SIZE: " << this->size << std::endl;
       for (size_t i = 0; i < table.size(); i++) {
-        std::cout << "Index: " << i << std::endl;
-        std::cout << "\t" << table.at(i)->getValue() << " - " << table.at(i)->getDeleted();
+        if(table.at(i) != nullptr) {
+          std::cout << "Index: " << i << std::endl;
+          std::cout << "\t" << table.at(i)->getValue() << " - " << table.at(i)->getDeleted() << std::endl;
+        }
       }
     }
   };
