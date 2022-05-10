@@ -63,10 +63,10 @@ void benchmark() {
 
 
 int main() {
-  auto h = new HashTable::HashTable<Vector3<int>>(20);
-  auto v = new Vector3<int>(2,1,4);
-  h->insert(*v);
-  h->printAll();
+  auto h = HashTable::HashTable<Vector3<int>>(20);
+  auto v = Vector3<int>(2,1,4);
+  h.insert(v);
+  //h.printAll();
 
 //  benchmark();
 //  std::cout << "Welcome to SLAM." << endl << endl;
