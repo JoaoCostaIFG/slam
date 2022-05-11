@@ -10,11 +10,13 @@ class TableEntry {
   private:
     bool deleted;
     T value;
+    unsigned long hash;
   public:
 
-  TableEntry(T value){
+  TableEntry(T value, unsigned long hash){
     this->value = value;
     this->deleted = false;
+    this->hash = hash;
   }
 
   void setDeleted(){
@@ -31,6 +33,10 @@ class TableEntry {
 
   void setValue(T value){
     this->value = value;
+  }
+
+  unsigned long getHash(){
+    return this->hash();
   }
 
 };

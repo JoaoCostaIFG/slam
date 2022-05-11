@@ -16,6 +16,18 @@ namespace HashTable {
     int nOccupied;
 
   public:
+    const std::vector<TableEntry<T>*> getTable() const {
+      return table;
+    }
+
+    int getSize() const {
+      return size;
+    }
+
+    int getNOccupied() const {
+      return nOccupied;
+    }
+
     HashTable() : HashTable(20) {}
 
     HashTable(int size) {
@@ -24,7 +36,7 @@ namespace HashTable {
       nOccupied = 0;
     }
 
-    size_t getHash(const T& key) {
+    size_t getIndex(const T& key) {
       return key.hash() % this->size;
     }
 
@@ -34,33 +46,60 @@ namespace HashTable {
      * @return
      */
     bool insert(T key) {
-      auto hash = this->getHash(key);
+      auto index = this->getIndex(key);
 
-      TableEntry<T>* entry = table.at(hash);
+      TableEntry<T>* entry = table.at(index);
       while (entry != nullptr && entry->getValue() != key) {
         if (entry->getDeleted())
           break;
         // go next
-        hash = (hash + 1) % this->size;
-        entry = table.at(hash);
+        index = (index + 1) % this->size;
+        entry = table.at(index);
       }
 
-      if (table.at(hash) == nullptr) {
-        table[hash] = new TableEntry<T>(key);
+      if (table.at(index) == nullptr) {
+        table[index] = new TableEntry<T>(key, key.hash());
         nOccupied++;
       } else if (entry->getValue() == key) {
         // the element is already part of the set
         return false;
       } else {
-        table.at(hash)->setValue(key);
+        table.at(index)->setValue(key);
         nOccupied++;
       }
       if((nOccupied*100)/size > 75) resize();
       return true;
     }
 
-    bool erase(T key) {
-      int hash = this->getHash(key);
+    /**
+     * Linear probing.
+     * @param key
+     * @return
+     */
+    bool insert(T key, unsigned long hash) {
+      auto index = hash % this->size;
+      TableEntry<T>* entry = table.at(index);
+      while (entry != nullptr && entry->getValue() != key) {
+        if (entry->getDeleted())
+          break;
+        // go next
+        index = (index + 1) % this->size;
+        entry = table.at(index);
+      }
+
+      if (table.at(index) == nullptr) {
+        table[index] = new TableEntry<T>(key, hash);
+      } else if (entry->getValue() == key) {
+        // the element is already part of the set
+        return false;
+      } else {
+        table.at(index)->setValue(key);
+      }
+      return true;
+    }
+
+    bool remove(T key) {
+      int hash = this->getIndex(key);
       while (table.at(hash) != nullptr && table.at(hash)->getValue() != key) {
         hash += 1;
         hash %= this->size;
@@ -84,10 +123,36 @@ namespace HashTable {
     }
 
     void resize() {
-      int newSize = this->size * this->size;
+      int newSize = this->size * 2;
       this->table.resize(newSize);
-      this->size = newSize;
+
+      std::cout << "Resizing: " << this->size << " - " << newSize << std::endl;
+
       moveIndexes();
+      this->size = newSize;
+    }
+
+    void merge(HashTable& h){
+      if(h.getNOccupied() > this->nOccupied) {
+        for(TableEntry<T>* i : this->getAll()){
+          h.insert(i->getValue());
+        }
+      } else {
+
+        for(TableEntry<T>* i : h.getAll()){
+          insert(i->getValue());
+        }
+      }
+    }
+
+    std::vector<TableEntry<T>*> getAll() {
+      std::vector<TableEntry<T>*> ret;
+      for (size_t i = 0; i < table.size(); i++) {
+        if(table.at(i) != nullptr && !table.at(i)->getDeleted()) {
+          ret.push_back(table.at(i));
+        }
+      }
+      return ret;
     }
 
     void printAll() {
