@@ -133,15 +133,8 @@ namespace HashTable {
     }
 
     void merge(HashTable& h){
-      if(h.getNOccupied() > this->nOccupied) {
-        for(TableEntry<T>* i : this->getAll()){
-          h.insert(i->getValue());
-        }
-      } else {
-
-        for(TableEntry<T>* i : h.getAll()){
-          insert(i->getValue());
-        }
+      for(TableEntry<T>* i : h.getAll()){
+        insert(i->getValue());
       }
     }
 
