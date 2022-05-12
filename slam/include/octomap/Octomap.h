@@ -10,12 +10,14 @@
 
 #include <omp.h>
 
+
 #endif
 
 #include "OcNode.h"
 #include "OcNodeKey.h"
 #include "OctomapIterator.h"
 #include "Vector3.h"
+#include "../HashTable/HashTable.h"
 
 #define DFLT_RESOLUTION 0.1
 
@@ -24,7 +26,7 @@ namespace octomap {
   class Octomap {
   private:
     using Key = OcNodeKey<T>;
-    using KeySet = std::unordered_set<Key, typename Key::Hash, typename Key::Cmp>;
+    using KeySet = HashTable::HashTable<Key>;
     using Node = OcNode<T>;
 
     /** The max depth of tree */
@@ -354,6 +356,7 @@ namespace octomap {
       if (lazy) this->rootNode->fix();
     }
 
+    //TODO: Estimar quantos pontos vai ter cada thread para nao haver tantos resizes
     /**
      * Calculates a ray for each endpoint in pointcloud (with origin in @param origin).
      * The rays are calculated in parallel and the reported free and occupied nodes for
@@ -415,15 +418,20 @@ namespace octomap {
         freeNodes.merge(freeNodesI);
       }
 
+      //TODO: maybe change to iterators
       // update nodes, discarding updates on freenodes that will be set as occupied
-      for (const auto& freeNode: freeNodes) {
-        if (!occupiedNodes.contains(freeNode)) {
-          this->setEmpty(freeNode, true);
+      auto allFreeNodes = freeNodes.getAll();
+      for (int i=0; i<allFreeNodes.size(); i++) {
+        if (!occupiedNodes.contains(allFreeNodes.at(i)->getValue())) {
+          this->setEmpty(allFreeNodes.at(i)->getValue(), true);
         }
       }
-      for (auto& endpoint: occupiedNodes) {
-        this->updateOccupancy(endpoint, occ);
+
+      auto allOccupiedNodes = occupiedNodes.getAll();
+      for (int i=0; i<allOccupiedNodes.size(); i++) {
+        this->updateOccupancy(allOccupiedNodes.at(i)->getValue(), occ);
       }
+      std::cout << "Finished" << std::endl;
       this->rootNode->fix();
     }
 

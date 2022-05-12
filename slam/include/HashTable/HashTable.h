@@ -36,8 +36,30 @@ namespace HashTable {
       nOccupied = 0;
     }
 
+    bool contains(T toFind){
+      auto index = this->getIndex(toFind);
+
+      TableEntry<T>* entry = table.at(index);
+      while (entry != nullptr) {
+        if( entry->getValue() == toFind ) return true;
+        index = (index + 1) % this->size;
+        entry = table.at(index);
+      }
+      return false;
+    }
+
+    void insert(typename std::vector<T>::iterator itB, typename std::vector<T>::iterator itE){
+      for(; itB <= itE; itB++){
+        insert(*itB);
+      }
+    }
+
     size_t getIndex(const T& key) {
       return key.hash() % this->size;
+    }
+
+    void reserve(int newSize){
+      this->table.resize(newSize, nullptr);
     }
 
     /**
@@ -125,8 +147,6 @@ namespace HashTable {
     void resize() {
       int newSize = this->size * 2;
       this->table.resize(newSize);
-
-      std::cout << "Resizing: " << this->size << " - " << newSize << std::endl;
 
       moveIndexes();
       this->size = newSize;
