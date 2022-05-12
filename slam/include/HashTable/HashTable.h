@@ -59,6 +59,7 @@ namespace HashTable {
     }
 
     void reserve(int newSize) {
+      if (newSize < this->getSize()) return;
       this->table.resize(newSize, nullptr);
     }
 

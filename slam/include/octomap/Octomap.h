@@ -387,9 +387,9 @@ namespace octomap {
       }
 #else
       freeNodesList.resize(1);
-  occupiedNodesList.resize(1);
-  freeNodesList.at(0).reserve(pointcloud.size() * 50);
-  occupiedNodesList.at(0).reserve(pointcloud.size());
+      occupiedNodesList.resize(1);
+      freeNodesList.at(0).reserve(pointcloud.size() * 50);
+      occupiedNodesList.at(0).reserve(pointcloud.size());
 #endif
 
 #ifdef _OPENMP
