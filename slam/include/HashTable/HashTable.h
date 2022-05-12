@@ -6,59 +6,59 @@
 #include "./TableEntry.h"
 
 
-
 namespace HashTable {
   template<typename T>
   class HashTable {
   private:
     std::vector<TableEntry<T>*> table;
-    int size;
     int nOccupied;
 
   public:
-    const std::vector<TableEntry<T>*> getTable() const {
+    std::vector<TableEntry<T>*> getTable() const {
       return table;
     }
 
-    int getSize() const {
-      return size;
+    [[nodiscard]] int getSize() const {
+      return this->table.size();
     }
 
-    int getNOccupied() const {
+    [[nodiscard]] int getNOccupied() const {
       return nOccupied;
+    }
+
+    explicit HashTable(int size) : nOccupied(0) {
+      this->table.resize(size, nullptr);
     }
 
     HashTable() : HashTable(20) {}
 
-    HashTable(int size) {
-      this->size = size;
-      this->table.resize(this->size, nullptr);
-      nOccupied = 0;
-    }
-
-    bool contains(T toFind){
-      auto index = this->getIndex(toFind);
+    bool contains(T toFind) {
+      auto index = this->getIndexFromHash(toFind);
 
       TableEntry<T>* entry = table.at(index);
       while (entry != nullptr) {
-        if( entry->getValue() == toFind ) return true;
-        index = (index + 1) % this->size;
+        if (entry->getValue() == toFind) return true;
+        index = this->getIndex(index + 1);
         entry = table.at(index);
       }
       return false;
     }
 
-    void insert(typename std::vector<T>::iterator itB, typename std::vector<T>::iterator itE){
-      for(; itB <= itE; itB++){
-        insert(*itB);
+    void insert(const std::vector<T>& vec) {
+      for (const auto& elem: vec) {
+        insert(elem);
       }
     }
 
-    size_t getIndex(const T& key) {
-      return key.hash() % this->size;
+    size_t getIndex(const size_t i) {
+      return i % this->getSize();
     }
 
-    void reserve(int newSize){
+    size_t getIndexFromHash(const T& key) {
+      return this->getIndex(key.hash());
+    }
+
+    void reserve(int newSize) {
       this->table.resize(newSize, nullptr);
     }
 
@@ -68,28 +68,27 @@ namespace HashTable {
      * @return
      */
     bool insert(T key) {
-      auto index = this->getIndex(key);
-
+      auto index = this->getIndexFromHash(key);
       TableEntry<T>* entry = table.at(index);
       while (entry != nullptr && entry->getValue() != key) {
         if (entry->getDeleted())
           break;
         // go next
-        index = (index + 1) % this->size;
+        index = this->getIndex(index + 1);
         entry = table.at(index);
       }
 
-      if (table.at(index) == nullptr) {
+      if (entry == nullptr) {
         table[index] = new TableEntry<T>(key, key.hash());
         nOccupied++;
       } else if (entry->getValue() == key) {
         // the element is already part of the set
         return false;
       } else {
-        table.at(index)->setValue(key);
+        entry->setValue(key);
         nOccupied++;
       }
-      if((nOccupied*100)/size > 75) resize();
+      if ((nOccupied * 100) / this->getSize() > 75) resize();
       return true;
     }
 
@@ -99,13 +98,14 @@ namespace HashTable {
      * @return
      */
     bool insert(T key, unsigned long hash) {
-      auto index = hash % this->size;
+      auto index = this->getIndex(hash);
+
       TableEntry<T>* entry = table.at(index);
       while (entry != nullptr && entry->getValue() != key) {
         if (entry->getDeleted())
           break;
         // go next
-        index = (index + 1) % this->size;
+        index = this->getIndex(index + 1);
         entry = table.at(index);
       }
 
@@ -121,10 +121,9 @@ namespace HashTable {
     }
 
     bool remove(T key) {
-      int hash = this->getIndex(key);
+      int hash = this->getIndexFromHash(key);
       while (table.at(hash) != nullptr && table.at(hash)->getValue() != key) {
-        hash += 1;
-        hash %= this->size;
+        hash = this->getIndex(hash + 1);
       }
       if (table.at(hash)->getValue() == key) {
         table.at(hash)->setDeleted();
@@ -134,10 +133,10 @@ namespace HashTable {
       return false;
     }
 
-    void moveIndexes(){
-      for(size_t i = 0; i < this->size; ++i){
-        if(this->table.at(i) != nullptr && !this->table.at(i)->getDeleted()) {
-          if(this->insert(this->table.at(i)->getValue())) {
+    void moveIndexes() {
+      for (size_t i = 0; i < this->getSize(); ++i) {
+        if (this->table.at(i) != nullptr && !this->table.at(i)->getDeleted()) {
+          if (this->insert(this->table.at(i)->getValue())) {
             this->table.at(i)->setDeleted();
           }
         }
@@ -145,15 +144,13 @@ namespace HashTable {
     }
 
     void resize() {
-      int newSize = this->size * 2;
+      int newSize = this->getSize() * 2;
       this->table.resize(newSize);
-
       moveIndexes();
-      this->size = newSize;
     }
 
-    void merge(HashTable& h){
-      for(TableEntry<T>* i : h.getAll()){
+    void merge(HashTable& h) {
+      for (TableEntry<T>* i: h.getAll()) {
         insert(i->getValue());
       }
     }
@@ -161,7 +158,7 @@ namespace HashTable {
     std::vector<TableEntry<T>*> getAll() {
       std::vector<TableEntry<T>*> ret;
       for (size_t i = 0; i < table.size(); i++) {
-        if(table.at(i) != nullptr && !table.at(i)->getDeleted()) {
+        if (table.at(i) != nullptr && !table.at(i)->getDeleted()) {
           ret.push_back(table.at(i));
         }
       }
@@ -169,9 +166,9 @@ namespace HashTable {
     }
 
     void printAll() {
-      std::cout << "SIZE: " << this->size << std::endl;
+      std::cout << "SIZE: " << this->getSize() << std::endl;
       for (size_t i = 0; i < table.size(); i++) {
-        if(table.at(i) != nullptr) {
+        if (table.at(i) != nullptr) {
           std::cout << "Index: " << i << std::endl;
           std::cout << "\t" << table.at(i)->getValue() << " - " << table.at(i)->getDeleted() << std::endl;
         }

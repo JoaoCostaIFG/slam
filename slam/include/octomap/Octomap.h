@@ -404,7 +404,7 @@ namespace octomap {
         //auto ray = this->rayCast(origin, endpoint);
         auto ray = this->rayCastBresenham(origin, endpoint);
         // store the ray info
-        freeNodesList.at(idx).insert(ray.begin(), ray.end());
+        freeNodesList.at(idx).insert(ray);
         occupiedNodesList.at(idx).insert(Key(endpoint));
       }
 
@@ -421,14 +421,14 @@ namespace octomap {
       //TODO: maybe change to iterators
       // update nodes, discarding updates on freenodes that will be set as occupied
       auto allFreeNodes = freeNodes.getAll();
-      for (int i=0; i<allFreeNodes.size(); i++) {
+      for (int i = 0; i < allFreeNodes.size(); i++) {
         if (!occupiedNodes.contains(allFreeNodes.at(i)->getValue())) {
           this->setEmpty(allFreeNodes.at(i)->getValue(), true);
         }
       }
 
       auto allOccupiedNodes = occupiedNodes.getAll();
-      for (int i=0; i<allOccupiedNodes.size(); i++) {
+      for (int i = 0; i < allOccupiedNodes.size(); i++) {
         this->updateOccupancy(allOccupiedNodes.at(i)->getValue(), occ);
       }
       std::cout << "Finished" << std::endl;
