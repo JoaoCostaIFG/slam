@@ -4,6 +4,7 @@
 #include "vector"
 #include <iostream>
 #include "./TableEntry.h"
+#include "./HashTableIterator.h"
 
 
 namespace HashTable {
@@ -174,6 +175,10 @@ namespace HashTable {
           std::cout << "\t" << table.at(i)->getValue() << " - " << table.at(i)->getDeleted() << std::endl;
         }
       }
+    }
+
+    HashTableIterator::HashTableIterator<TableEntry<T>*> getIterator(){
+      return HashTableIterator::HashTableIterator<TableEntry<T>*>(this->table.begin(), this->table.end());
     }
   };
 }

@@ -6,6 +6,7 @@
 
 #include "../include/octomap/Octomap.h"
 #include "../include/HashTable/HashTable.h"
+#include "../include/HashTable/HashTableIterator.h"
 #include "../include/sonar/Scan.h"
 #include "../include/sonar/Sonar.h"
 #include "../include/sonar/Filters.h"
@@ -76,10 +77,23 @@ int main() {
 //  auto v8 = Vector3<int>(2,9,4);
 //  auto v9 = Vector3<int>(2,0,4);
 //  auto v10 = Vector3<int>(2,10,4);
-//  vector<Vector3<int>> vec;
-//  vec.push_back(v);
-//  vec.push_back(v1);
-//  vec.push_back(v2);
+//  vector<Vector3<int>*> vec;
+//  vec.push_back(&v1);
+//  vec.push_back(&v2);
+//  vec.push_back(&v3);
+//
+//  auto hti = HashTableIterator::HashTableIterator<Vector3<int>*>(vec.begin(), vec.end());
+//
+//  cout << **hti << endl;
+//  hti++;
+//  cout << **hti << endl;
+//  hti++;
+//  cout << **hti << endl;
+//  hti++;
+//  cout << **hti << endl;
+//  hti++;
+//  cout << (hti!=hti) << endl;
+
 //
 //
 //  h1.insert(vec.begin(), vec.end());
@@ -108,8 +122,8 @@ int main() {
 
 
 //  benchmark();
-//  std::cout << "Welcome to SLAM." << endl << endl;
-//
+  std::cout << "Welcome to SLAM." << endl << endl;
+
   int option, finished = 0;
   while (finished == 0) {
     Octomap o = Octomap<>();

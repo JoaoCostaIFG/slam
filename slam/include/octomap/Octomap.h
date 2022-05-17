@@ -420,12 +420,20 @@ namespace octomap {
 
       //TODO: maybe change to iterators
       // update nodes, discarding updates on freenodes that will be set as occupied
-      auto allFreeNodes = freeNodes.getAll();
-      for (int i = 0; i < allFreeNodes.size(); i++) {
-        if (!occupiedNodes.contains(allFreeNodes.at(i)->getValue())) {
-          this->setEmpty(allFreeNodes.at(i)->getValue(), true);
+//      auto allFreeNodes = freeNodes.getAll();
+//      for (int i = 0; i < allFreeNodes.size(); i++) {
+//        if (!occupiedNodes.contains(allFreeNodes.at(i)->getValue())) {
+//          this->setEmpty(allFreeNodes.at(i)->getValue(), true);
+//        }
+//      }
+      auto itr = freeNodes.getIterator();
+      do {
+        if (!occupiedNodes.contains(itr->getValue())) {
+          this->setEmpty(itr->getValue(), true);
         }
-      }
+      }while(!(itr++.done()));
+
+
 
       auto allOccupiedNodes = occupiedNodes.getAll();
       for (int i = 0; i < allOccupiedNodes.size(); i++) {
