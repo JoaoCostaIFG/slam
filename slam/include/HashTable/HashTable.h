@@ -178,7 +178,7 @@ namespace HashTable {
     }
 
     HashTableIterator::HashTableIterator<TableEntry<T>*> getIterator(){
-      return HashTableIterator::HashTableIterator<TableEntry<T>*>(this->table.begin(), this->table.end());
+      return HashTableIterator::HashTableIterator<TableEntry<T>*>(&this->table);
     }
   };
 }

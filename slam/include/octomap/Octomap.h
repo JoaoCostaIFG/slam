@@ -428,10 +428,14 @@ namespace octomap {
 //      }
       auto itr = freeNodes.getIterator();
       do {
+        std::cout <<"Starting :";
+        std::cout << itr->getValue();
+        std::cout << "." << std::endl;
         if (!occupiedNodes.contains(itr->getValue())) {
           this->setEmpty(itr->getValue(), true);
         }
-      }while(!(itr++.done()));
+        itr++;
+      }while(!(itr.done()));
 
 
 

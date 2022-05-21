@@ -11,29 +11,29 @@ namespace HashTableIterator {
   template<typename TYPE>
   class HashTableIterator {
   private:
-    typename std::vector<TYPE>::iterator begin;
-    typename std::vector<TYPE>::iterator end;
+    std::vector<TYPE>* vec;
+    size_t currInd;
   public:
-    explicit HashTableIterator(typename std::vector<TYPE>::iterator beg, typename std::vector<TYPE>::iterator en) {
-      this->begin = beg;
-      this->end = en;
+    explicit HashTableIterator(std::vector<TYPE>* vec) {
+      this->vec = vec;
+      this->currInd = 0;
     }
 
     bool nextIndex() {
-      while(begin+1 != end){
-        begin++;
+      while(currInd < this->vec->size()){
+        currInd++;
 
-        //this will most likely never happen, but just to be safe
-        if(begin == end){
+        if(currInd >= this->vec->size()){
           return false;
         }
-        if(*begin != nullptr) return true;
+
+        if(vec->at(currInd) != nullptr) return true;
       }
       return false;
     }
 
     HashTableIterator operator++(int) {
-      if(this->begin+1 == this->end) return HashTableIterator(this->end, this->end);
+      if(currInd >= this->vec->size()) return HashTableIterator(new std::vector<TYPE>());
       HashTableIterator result = *this;
       ++(*this);
       return result;
@@ -42,18 +42,17 @@ namespace HashTableIterator {
     HashTableIterator operator++() {
       if (this->nextIndex())
         return *this;
-      std::cout << "Done" << std::endl;
-      return HashTableIterator(this->end, this->end);
+      return HashTableIterator(new std::vector<TYPE>());
     }
 
-    TYPE operator*() const {
-      //if (this->begin == this->end) return nullptr; //TODO:isto causa problemas de comp, no entanto nunca acontece
-      return *this->begin;
+    TYPE operator*() {
+      if (done()) return this->vec->at(currInd-1);
+      return this->vec->at(currInd);
     }
 
-    TYPE operator->() const {
-      //if (this->begin == this->end) return nullptr; //TODO:isto causa problemas de comp, no entanto nunca acontece
-      return *this->begin;
+    TYPE operator->() {
+      if (done()) return this->vec->at(currInd-1);
+      return this->vec->at(currInd);
     }
 
     bool operator==(const HashTableIterator& rhs) const {
@@ -65,7 +64,7 @@ namespace HashTableIterator {
     }
 
     bool done(){
-      return begin == end;
+      return currInd >= this->vec->size();
     }
 
   };
