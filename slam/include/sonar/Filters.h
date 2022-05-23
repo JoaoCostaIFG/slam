@@ -84,7 +84,7 @@ namespace sonar {
           int cnt = vote_count[pos];
           if (cnt != 0) {
             uint8_t mean = round(vote_intensities[pos] / (double) cnt);
-            img.at<uchar>(y, x) = mean;
+            img.at<uint8_t>(y, x) = mean;
           }
         }
       }

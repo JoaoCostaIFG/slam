@@ -116,39 +116,24 @@ void menu() {
 }
 
 int main() {
-  menu();
+  //menu();
 
-//  // insert some measurements of free cells
-//  for (float x = -2; x <= 0; x += 0.02f) {
-//    for (float y = -2; y <= 0; y += 0.02f) {
-//      for (float z = -2; z <= 0; z += 0.02f) {
-//        Vector3f endpoint(x, y, z);
-//        o.setEmpty(endpoint); // integrate 'free' measurement
-//      }
-//    }
-//  }
-//  // insert some measurements of occupied cells (twice as much)
-//  for (float x = -1; x <= 0; x += 0.01f) {
-//    for (float y = -1; y <= 0; y += 0.01f) {
-//      for (float z = -1; z <= 0; z += 0.01f) {
-//        Vector3f endpoint(x, y, z);
-//        o.setFull(endpoint); // integrate 'occupied' measurement
-//      }
-//    }
-//  }
-//  o.rayCastUpdate(Vector3f(0, 0, 0), Vector3f(-2, -2, -2), 0.5);
-//
-//
-//  // Reads data from json, displays cartesian and exports to octovis format
-//  ifstream ss("../data.json");
-//  Scan* s = Scan::importJson(ss);
-//
-//  Sweep* sweep = s->getSweeps().at(1);
-//  applyGaussian(*sweep, 9, 5);
-//  displaySweep(*sweep, true);
-//
-//  Sonar sonar;
-//  sonar.update(*sweep);
+  // Reads data from json, displays cartesian and exports to octovis format
+  ifstream ss("../data.json");
+  Scan* s = Scan::importJson(ss);
+
+  Sonar sonar;
+
+  auto sweeps = s->getSweeps();
+  for (size_t i = 0; i < sweeps.size(); ++i) {
+    Sweep* sweep = sweeps.at(i);
+    applyGaussian(*sweep, 9, 5);
+    displaySweep(*sweep, true);
+
+    cout << "Doing sweep: " << i << endl;
+    sonar.update(*sweep);
+    sonar.writeBinary("auv-" + std::to_string(i) + ".bt");
+  }
 
   return EXIT_SUCCESS;
 }

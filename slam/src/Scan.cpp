@@ -21,7 +21,7 @@ namespace sonar {
     for (const auto& i: intensities_json.GetArray()) {
       // Ignore first 24 intensities, which are self reflections
       if (cnt > 24) {
-        row.at<uchar>(cnt) = (uint8_t) i.GetUint();
+        row.at<uint8_t>(cnt) = (uint8_t) i.GetUint();
       }
       ++cnt;
     }

@@ -349,7 +349,7 @@ namespace octomap {
     void rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, float occ, bool lazy = false) {
       auto ray = this->rayCast(orig, end);
       for (auto& it: ray)
-        this->setEmpty(it, lazy);
+        this->updateOccupancy(it, 0, lazy); // this->setEmpty(it, lazy);
       this->updateOccupancy(end, occ, lazy);
       if (lazy) this->rootNode->fix();
     }

@@ -14,9 +14,9 @@ using namespace octomap;
 
 /** Using the simple threshold method, the minimum difference between two
  * intensities for them to be considered an obstacle  **/
-#define OBSTACLE_THRESHOLD 70
+#define OBSTACLE_THRESHOLD 70u // 60 %
 /** The maximum intensity that a beam intensity may have **/
-#define MAX_INTENSITY 255
+#define MAX_INTENSITY 255u
 
 namespace sonar {
   /* Our dataset comprises a scan. A Scan has multiple sweeps. Each sweep, composed of multiple beams, has information
@@ -26,7 +26,7 @@ namespace sonar {
   private:
     /** The information of all intensities is stored in the sweep.
      * A beam only needs to point to its row in that matrix. **/
-    uchar* row;
+    uint8_t* row;
     /** The length of the intensities that the beam has. Should be the same for all beams **/
     size_t beam_len;
     /** Distance of the step between each intensity of the beam **/
@@ -37,9 +37,9 @@ namespace sonar {
     double angle;
 
   public:
-    Beam(uchar* row, size_t beam_len, double step_dist, double time, double angle) : row(row), beam_len(beam_len),
-                                                                                     step_dist(step_dist), time(time),
-                                                                                     angle(angle) {}
+    Beam(uint8_t* row, size_t beam_len, double step_dist, double time, double angle) : row(row), beam_len(beam_len),
+                                                                                       step_dist(step_dist), time(time),
+                                                                                       angle(angle) {}
 
     /**
      * Yields the first obstacle found by using the simple threshold method. It uses OBSTACLE_THRESHOLD as a threshold.
@@ -47,7 +47,7 @@ namespace sonar {
      */
     [[nodiscard]] size_t getObstacleST() const;
 
-    [[nodiscard]] uchar* getIntensities() const { return row; }
+    [[nodiscard]] uint8_t* getIntensities() const { return row; }
 
     [[nodiscard]] double getTime() const { return time; }
 
@@ -99,13 +99,13 @@ namespace sonar {
      * @param i The index of measurement to return
      * @return Returns the intensity of the beam at the given index
      */
-    uchar& at(int i) { return *(row + i); }
+    uint8_t& at(int i) { return *(row + i); }
 
     /**
      * @param i The index of measurement to return
      * @return Returns the intensity of the beam at the given index
      */
-    uchar& at(int i) const { return *(row + i); }
+    [[nodiscard]] uint8_t& at(int i) const { return *(row + i); }
 
     /**
      * Creates a beam in the heap from a json node

@@ -24,6 +24,10 @@ namespace sonar {
      */
     void update(const Sweep& sweep);
 
+    bool writeBinary(const std::string& outfilename) {
+      return this->octomap.writeBinary(outfilename);
+    }
+
     [[nodiscard]] const Vector3<>& getPosition() const { return position; }
   };
 }
