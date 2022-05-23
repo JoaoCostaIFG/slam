@@ -62,8 +62,64 @@ void benchmark() {
   }
 }
 
+void menu() {
+  std::cout << "Welcome to SLAM." << endl << endl;
+
+  int option, finished = 0;
+  while (finished == 0) {
+    Octomap o = Octomap<>();
+    std::cout << "What cloud point would you like to use?" << endl <<
+              "\t1) Plane point cloud." << endl <<
+              "\t2) AUV's collected point cloud." << endl <<
+              "\t3) Other point cloud (should be found inside the folder \"datasets\")" << endl <<
+              "\t4) Exit." << std::endl;
+    std::cin >> option;
+    switch (option) {
+      case (1): {
+        o.pointcloudUpdate(importOff("../datasets/airplane_0119.off"), Vector3f(), 1);
+        o.writeBinary("plane.bt");
+        cout << "\nResult saved as plane.bt\n\n";
+        break;
+      }
+      case (2): {
+        ifstream ss("../data.json");
+        Scan* s = Scan::importJson(ss);
+
+        Sweep* sweep = s->getSweeps().at(1);
+        applyGaussian(*sweep, 9, 5);
+
+        Sonar sonar;
+        sonar.update(*sweep);
+        cout << "\nResult saved as auv.bt\n\n";
+        break;
+      }
+      case (3): {
+        string filename;
+        std::cout << "What's the name of the .off file containing the desired points cloud (without .off)?"
+                  << std::endl;
+        std::cin >> filename;
+        o.pointcloudUpdate(importOff("../datasets/" + filename + ".off"), Vector3f(), 1);
+        o.writeBinary(filename + ".bt");
+        cout << "\nResult saved as " << filename << ".bt\n\n";
+        break;
+      }
+      case (4): {
+        finished = 1;
+        break;
+      }
+      default: {
+        std::cout << "Wrong input, please try again." << std::endl;
+        std::cin.clear();
+        std::cin.ignore(256, '\n');
+        break;
+      }
+    }
+  }
+}
 
 int main() {
+  //menu();
+
 //  auto h1 = HashTable::HashTable<Vector3<int>>(10);
 //  auto h2 = HashTable::HashTable<Vector3<int>>(10);
 //  auto v = Vector3<int>(2,1,4);
@@ -118,62 +174,6 @@ int main() {
 //  h1.printAll();
 //  std::cout << "----------------------------------------" << std::endl;
 //  h2.printAll();
-
-
-
-//  benchmark();
-  std::cout << "Welcome to SLAM." << endl << endl;
-
-  int option, finished = 0;
-  while (finished == 0) {
-    Octomap o = Octomap<>();
-    std::cout << "What cloud point would you like to use?" << endl <<
-              "\t1) Plane point cloud." << endl <<
-              "\t2) AUV's collected point cloud." << endl <<
-              "\t3) Other point cloud (should be found inside the folder \"datasets\")" << endl <<
-              "\t4) Exit." << std::endl;
-    std::cin >> option;
-    switch (option) {
-      case (1): {
-        o.pointcloudUpdate(importOff("../datasets/airplane_0119.off"), Vector3f(), 1);
-        o.writeBinary("plane.bt");
-        cout << "\nResult saved as plane.bt\n\n";
-        break;
-      }
-      case (2): {
-        ifstream ss("../data.json");
-        Scan* s = Scan::importJson(ss);
-
-        Sweep* sweep = s->getSweeps().at(1);
-        applyGaussian(*sweep, 9, 5);
-
-        Sonar sonar;
-        sonar.update(*sweep);
-        cout << "\nResult saved as auv.bt\n\n";
-        break;
-      }
-      case (3): {
-        string filename;
-        std::cout << "What's the name of the .off file containing the desired points cloud (without .off)?"
-                  << std::endl;
-        std::cin >> filename;
-        o.pointcloudUpdate(importOff("../datasets/" + filename + ".off"), Vector3f(), 1);
-        o.writeBinary(filename + ".bt");
-        cout << "\nResult saved as " << filename << ".bt\n\n";
-        break;
-      }
-      case (4): {
-        finished = 1;
-        break;
-      }
-      default: {
-        std::cout << "Wrong input, please try again." << std::endl;
-        std::cin.clear();
-        std::cin.ignore(256, '\n');
-        break;
-      }
-    }
-  }
 
   return EXIT_SUCCESS;
 }
