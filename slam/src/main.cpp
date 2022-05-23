@@ -139,15 +139,5 @@ int main() {
     cout << (*it)->getValue() << endl;
   }
 
-  cout << endl;
-
-  auto all = h1.getTable();
-  for (int i = 0; i < all.size(); ++i) {
-    auto entry = all.at(i);
-    if (entry != nullptr && !entry->isDeleted()) {
-      cout << all.at(i)->getValue() << endl;
-    }
-  }
-
   return EXIT_SUCCESS;
 }
