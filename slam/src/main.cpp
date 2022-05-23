@@ -88,6 +88,7 @@ void menu() {
 
         Sonar sonar;
         sonar.update(*sweep);
+        sonar.writeBinary("auv.bt");
         cout << "\nResult saved as auv.bt\n\n";
         break;
       }
@@ -128,11 +129,12 @@ int main() {
   for (size_t i = 0; i < sweeps.size(); ++i) {
     Sweep* sweep = sweeps.at(i);
     applyGaussian(*sweep, 9, 5);
-    displaySweep(*sweep, true);
+    // displaySweep(*sweep, true);
 
     cout << "Doing sweep: " << i << endl;
     sonar.update(*sweep);
     sonar.writeBinary("auv-" + std::to_string(i) + ".bt");
+    break;
   }
 
   return EXIT_SUCCESS;

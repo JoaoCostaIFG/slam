@@ -12,9 +12,12 @@
 
 using namespace octomap;
 
-/** Using the simple threshold method, the minimum difference between two
+/** Using the range to first feature method, the minimum intensity that a cell
+ * can have to be considered for the differential threshold phase **/
+#define INTENSITY_THRESHOLD 100u
+/** Using the range to first feature method, the minimum difference between two
  * intensities for them to be considered an obstacle  **/
-#define OBSTACLE_THRESHOLD 70u // 60 %
+#define OBSTACLE_THRESHOLD 20u // 60 %
 /** The maximum intensity that a beam intensity may have **/
 #define MAX_INTENSITY 255u
 

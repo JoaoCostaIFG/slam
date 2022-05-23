@@ -101,6 +101,7 @@ namespace sonar {
     do {
       k = cv::waitKey(0); // Wait for a keystroke in the window
     } while (k != 'q');
+    cv::destroyWindow("Sweep" + std::to_string(sweep.getSweepNo()));
   }
 
 }
