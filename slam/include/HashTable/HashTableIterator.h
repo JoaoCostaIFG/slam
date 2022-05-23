@@ -37,7 +37,7 @@ namespace HashTable {
 
       if (isEnd) {
         this->vecBegin = this->vecEnd;
-      } else if (*this->vecBegin == nullptr) {
+      } else if (*(this->vecBegin) == nullptr || (*vecBegin)->isDeleted()) {
         this->nextIndex();
       }
     }
