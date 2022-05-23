@@ -7,38 +7,45 @@
 
 template<typename T>
 class TableEntry {
-  private:
-    bool deleted;
-    T value;
-    unsigned long hash;
-  public:
+private:
+  bool deleted;
+  T value;
+  unsigned long hash;
+public:
 
-  TableEntry(T value, unsigned long hash){
+  TableEntry(T value, unsigned long hash) {
     this->value = value;
     this->deleted = false;
     this->hash = hash;
   }
 
-  void setDeleted(){
+  void setDeleted() {
     this->deleted = true;
   }
 
-  bool isDeleted(){
+  bool isDeleted() {
     return this->deleted;
   }
 
-  T getValue(){
+  T getValue() {
     return this->value;
   }
 
-  void setValue(T value){
+  void setValue(T value) {
     this->value = value;
   }
 
-  unsigned long getHash(){
+  unsigned long getHash() {
     return this->hash();
   }
 
+  T operator*() const {
+    return this->value;
+  }
+
+  T operator->() const {
+    return this->operator*();
+  }
 };
 
 
