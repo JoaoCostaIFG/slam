@@ -7,68 +7,70 @@
 
 #include "vector"
 
-namespace HashTableIterator {
+namespace HashTable {
   template<typename TYPE>
   class HashTableIterator {
+  protected:
+    bool isEnd;
+
   private:
-    std::vector<TYPE>* vec;
-    size_t currInd;
-  public:
-    explicit HashTableIterator(std::vector<TYPE>* vec) {
-      this->vec = vec;
-      this->currInd = 0;
-    }
+    typename std::vector<TYPE>::const_iterator vecBegin;
+    typename std::vector<TYPE>::const_iterator vecEnd;
 
     bool nextIndex() {
-      while(currInd < this->vec->size()){
-        currInd++;
-
-        if(currInd >= this->vec->size()){
-          return false;
+      if (vecBegin != vecEnd) {
+        ++vecBegin;
+        for (; vecBegin != vecEnd; ++vecBegin) {
+          if (*vecBegin != nullptr && !(*vecBegin)->isDeleted())
+            return true;
         }
-
-        if(vec->at(currInd) != nullptr) return true;
       }
+
+      this->isEnd = true;
       return false;
     }
 
+  public:
+    explicit HashTableIterator(const std::vector<TYPE>& vec, bool isEnd = false) : isEnd(isEnd) {
+      this->vecBegin = vec.begin();
+      this->vecEnd = vec.end();
+
+      if (isEnd) {
+        this->vecBegin = this->vecEnd;
+      } else if (*this->vecBegin == nullptr) {
+        this->nextIndex();
+      }
+    }
+
+    HashTableIterator operator++() {
+      if (!this->nextIndex())
+        this->isEnd = true;
+      return *this;
+    }
+
     HashTableIterator operator++(int) {
-      if(currInd >= this->vec->size()) return HashTableIterator(new std::vector<TYPE>());
       HashTableIterator result = *this;
       ++(*this);
       return result;
     }
 
-    HashTableIterator operator++() {
-      if (this->nextIndex())
-        return *this;
-      return HashTableIterator(new std::vector<TYPE>());
+    TYPE operator*() const {
+      if (this->vecBegin == this->vecEnd) return nullptr;
+      return *(this->vecBegin);
     }
 
-    TYPE operator*() {
-      if (done()) return this->vec->at(currInd-1);
-      return this->vec->at(currInd);
-    }
-
-    TYPE operator->() {
-      if (done()) return this->vec->at(currInd-1);
-      return this->vec->at(currInd);
+    TYPE operator->() const {
+      return this->operator*();
     }
 
     bool operator==(const HashTableIterator& rhs) const {
-      return **this == *rhs;
+      return (this->isEnd && rhs.isEnd) || **this == *rhs;
     }
 
     bool operator!=(const HashTableIterator& rhs) const {
       return !(rhs == *this);
     }
-
-    bool done(){
-      return currInd >= this->vec->size();
-    }
-
   };
 }
-
 
 #endif //SLAM_HASHTABLEITERATOR_H

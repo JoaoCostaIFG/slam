@@ -23,7 +23,7 @@ class TableEntry {
     this->deleted = true;
   }
 
-  bool getDeleted(){
+  bool isDeleted(){
     return this->deleted;
   }
 

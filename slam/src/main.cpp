@@ -54,7 +54,7 @@ void benchmark() {
       auto startTime = high_resolution_clock::now();
       for (int j = 0; j < cnt; ++j) {
         Vector3f dest(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
-        auto n = o.updateOccupancy(dest, 0.8);
+        o.updateOccupancy(dest, 0.8);
       }
       auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
       file << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
@@ -120,60 +120,34 @@ void menu() {
 int main() {
   //menu();
 
-//  auto h1 = HashTable::HashTable<Vector3<int>>(10);
-//  auto h2 = HashTable::HashTable<Vector3<int>>(10);
-//  auto v = Vector3<int>(2,1,4);
-//  auto v1 = Vector3<int>(2,2,4);
-//  auto v2 = Vector3<int>(2,3,4);
-//  auto v3 = Vector3<int>(2,4,4);
-//  auto v4 = Vector3<int>(2,5,4);
-//  auto v5 = Vector3<int>(2,6,4);
-//  auto v6 = Vector3<int>(2,7,4);
-//  auto v7 = Vector3<int>(2,8,4);
-//  auto v8 = Vector3<int>(2,9,4);
-//  auto v9 = Vector3<int>(2,0,4);
-//  auto v10 = Vector3<int>(2,10,4);
-//  vector<Vector3<int>*> vec;
-//  vec.push_back(&v1);
-//  vec.push_back(&v2);
-//  vec.push_back(&v3);
-//
-//  auto hti = HashTableIterator::HashTableIterator<Vector3<int>*>(vec.begin(), vec.end());
-//
-//  cout << **hti << endl;
-//  hti++;
-//  cout << **hti << endl;
-//  hti++;
-//  cout << **hti << endl;
-//  hti++;
-//  cout << **hti << endl;
-//  hti++;
-//  cout << (hti!=hti) << endl;
+  auto h1 = HashTable::HashTable<Vector3<int>>(2);
+  //auto h2 = HashTable::HashTable<Vector3<int>>(10);
+  vector<Vector3<int>> vec{
+      Vector3<int>(1, 1, 1),
+      Vector3<int>(2, 2, 2),
+      Vector3<int>(3, 3, 3),
+      Vector3<int>(4, 4, 4),
+      Vector3<int>(5, 5, 5),
+      Vector3<int>(6, 6, 6),
+      Vector3<int>(7, 7, 7),
+      Vector3<int>(8, 8, 8),
+      Vector3<int>(9, 9, 9),
+      Vector3<int>(10, 10, 10),
+  };
+  h1.insert(vec);
+  for (auto it = h1.begin(); it != h1.end(); ++it) {
+    cout << (*it)->getValue() << endl;
+  }
 
-//
-//
-//  h1.insert(vec.begin(), vec.end());
-//  h1.printAll();
-//  std::cout << h1.contains(v) << std::endl;
-//  h1.insert(v1);
-//  h1.insert(v2);
-//  h1.insert(v3);
-//  h1.insert(v4);
-//  h1.insert(v5);
-//  h1.insert(v6);
-//  h1.printAll();
-//
-//  h2.insert(v7);
-//  h2.insert(v8);
-//  h2.insert(v9);
-//  h2.insert(v10);
-//
-//  h2.printAll();
-//  h1.merge(h2);
-//  std::cout << "----------------------------------------" << std::endl;
-//  h1.printAll();
-//  std::cout << "----------------------------------------" << std::endl;
-//  h2.printAll();
+  cout << endl;
+
+  auto all = h1.getTable();
+  for (int i = 0; i < all.size(); ++i) {
+    auto entry = all.at(i);
+    if (entry != nullptr && !entry->isDeleted()) {
+      cout << all.at(i)->getValue() << endl;
+    }
+  }
 
   return EXIT_SUCCESS;
 }
