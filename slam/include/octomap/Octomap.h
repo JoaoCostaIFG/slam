@@ -418,13 +418,14 @@ namespace octomap {
         freeNodes.merge(freeNodesI);
       }
 
-      //TODO: maybe change to iterators
       // update nodes, discarding updates on freenodes that will be set as occupied
-      auto allFreeNodes = freeNodes.getAll();
-      for (size_t i = 0; i < allFreeNodes.size(); i++) {
-        if (!occupiedNodes.contains(allFreeNodes.at(i)->getValue())) {
-          this->setEmpty(allFreeNodes.at(i)->getValue(), true);
-        }
+      for (const auto& freeNode: freeNodes) {
+        if (!occupiedNodes.contains(freeNode->getValue()))
+          this->updateOccupancy(freeNode->getValue(), 0, true);
+      }
+
+      for (const auto& occupiedNode: occupiedNodes) {
+        this->updateOccupancy(occupiedNode->getValue(), occ, true);
       }
 
       this->rootNode->fix();

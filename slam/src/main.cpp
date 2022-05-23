@@ -118,9 +118,10 @@ void menu() {
 }
 
 int main() {
-  //menu();
+  menu();
 
-  auto h1 = HashTable::HashTable<Vector3<int>>(2);
+  /*
+  auto h1 = HashTable::HashTable<Vector3<int>>(1);
   //auto h2 = HashTable::HashTable<Vector3<int>>(10);
   vector<Vector3<int>> vec{
       Vector3<int>(1, 1, 1),
@@ -138,6 +139,7 @@ int main() {
   for (auto it = h1.begin(); it != h1.end(); ++it) {
     cout << (*it)->getValue() << endl;
   }
+   */
 
   return EXIT_SUCCESS;
 }
