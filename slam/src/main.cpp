@@ -60,7 +60,7 @@ void benchmark() {
   }
 }
 
-int main() {
+void menu() {
   std::cout << "Welcome to SLAM." << endl << endl;
 
   int option, finished = 0;
@@ -113,6 +113,10 @@ int main() {
       }
     }
   }
+}
+
+int main() {
+  menu();
 
 //  // insert some measurements of free cells
 //  for (float x = -2; x <= 0; x += 0.02f) {
