@@ -38,7 +38,7 @@ namespace octomap {
   private:
     using Key = OcNodeKey<T>;
 
-    inline static double occThreshold = prob2logodds(0.5);
+    inline static double occThreshold = prob2logodds(0.85);
     inline static double minThreshold = prob2logodds(0.1);
     inline static double maxThreshold = prob2logodds(0.9);
 

@@ -2,23 +2,14 @@
 #include "../include/sonar/Sonar.h"
 
 #include <algorithm>
+#include <cmath>
 
 
 namespace sonar {
 
   void Sonar::update(const Sweep& sweep) {
-    size_t max_beam = 0;
     for (const Beam* beam: sweep.getBeams()) {
       size_t obstacle_index = beam->getObstacleST();
-
-      size_t max_prob = 0;
-      for (size_t i=0; i < 399; ++i) {
-        if (beam->getIntensities()[i] > max_prob)
-          max_prob = beam->getIntensities()[i];
-      }
-
-      if (max_prob > max_beam )
-        max_beam = max_prob;
 
       double base_angle = beam->getAngle();
       std::vector<Vector3<>> pointCloud;
@@ -31,8 +22,7 @@ namespace sonar {
       }
 
       // TODO Use sonar position instead of center of axis
-      float prob = (float) beam->at(obstacle_index) / MAX_INTENSITY;
-      // std::cout << "PROB " << prob << std::endl;
+      double prob = double(unsigned(beam->at(obstacle_index))) / 255.0;
       for (const auto& dest: pointCloud) {
         this->octomap.rayCastUpdate(this->position, dest, prob);
       }

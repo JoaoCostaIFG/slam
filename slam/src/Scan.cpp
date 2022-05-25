@@ -42,7 +42,7 @@ namespace sonar {
     for (size_t i = 0; i + 1 < this->beam_len - 1; ++i) {
         size_t diff = filteredInts[i + 1] - filteredInts[i];
         if (diff > OBSTACLE_THRESHOLD)
-          return i;
+          return i + 1;
     }
 
     return this->beam_len - 1;

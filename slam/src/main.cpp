@@ -128,13 +128,14 @@ int main() {
   auto sweeps = s->getSweeps();
   for (size_t i = 0; i < sweeps.size(); ++i) {
     Sweep* sweep = sweeps.at(i);
-    applyGaussian(*sweep, 9, 5);
-    // displaySweep(*sweep, true);
+    // applyGaussian(*sweep, 9, 5);
+    applyMedian(*sweep, 3);
+    // displaySweep(*sweep, false);
 
     cout << "Doing sweep: " << i << endl;
     sonar.update(*sweep);
     sonar.writeBinary("auv-" + std::to_string(i) + ".bt");
-    break;
+
   }
 
   return EXIT_SUCCESS;
