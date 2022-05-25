@@ -484,8 +484,8 @@ namespace octomap {
       return writeBinary(binary_outfile);
     }
 
-    typedef OctomapIterator<Key> iterator;
-    typedef const OctomapIterator<Key> const_iterator;
+    typedef OctomapIterator<Node> iterator;
+    typedef const OctomapIterator<Node> const_iterator;
 
     iterator begin() {
       return iterator(this->rootNode);
