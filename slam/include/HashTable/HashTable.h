@@ -34,16 +34,49 @@ namespace HashTable {
       moveIndexes();
     }
 
-    std::pair<TableEntry<T>*, size_t> getEntry(const T& toFind) {
+    unsigned long long int getLinearIndex(unsigned long long int index){
+      return this->indexFromHash(index + 1);
+    }
+
+    unsigned long long int getQuadraticIndex(unsigned long long int index, int nIters){
+      return this->indexFromHash(index + nIters*nIters);
+    }
+
+    unsigned long long int getDoubleHashingIndex(unsigned long long int hash, int nIters){
+      return this->indexFromHash(hash * (nIters + 1));
+    }
+
+    std::pair<TableEntry<T>*, size_t> getFree(const T& toFind){
       auto index = this->indexFromKey(toFind);
 
       TableEntry<T>* entry = table.at(index);
-      while (entry != nullptr) {
+      int nIters = 0;
+      while (entry != nullptr && !entry->isDeleted()) {
         if (entry->getValue() == toFind) return {entry, index};
-        index = this->indexFromHash(index + 1);
+        index = this->getQuadraticIndex(index, nIters);
         entry = table.at(index);
+        ++nIters;
       }
       return {entry, index};
+    }
+
+    std::pair<TableEntry<T>*, size_t> isPresent(const T& toFind){
+      auto index = this->indexFromKey(toFind);
+
+      TableEntry<T>* entry = table.at(index);
+      int nIters = 0;
+      while (entry != nullptr) {
+        if (entry->getValue() == toFind) return {entry, index};
+        index = this->getQuadraticIndex(index, nIters);
+        entry = table.at(index);
+        ++nIters;
+      }
+      return {entry, index};
+    }
+
+    std::pair<TableEntry<T>*, size_t> getEntry(const T& toFind, bool findFree) {
+      if(findFree) return getFree(toFind);
+      else return isPresent(toFind);
     }
 
     /**
@@ -52,7 +85,7 @@ namespace HashTable {
      * @return
      */
     bool insert(const T& key, bool isRealloc) {
-      auto entryPair = getEntry(key);
+      auto entryPair = getEntry(key, true);
       auto entry = entryPair.first;
       auto index = entryPair.second;
 
@@ -99,7 +132,7 @@ namespace HashTable {
     }
 
     bool contains(const T& toFind) {
-      return this->getEntry(toFind).first != nullptr;
+      return this->getEntry(toFind, false).first != nullptr;
     }
 
     bool insert(const T& key) {
@@ -116,7 +149,7 @@ namespace HashTable {
     }
 
     bool remove(const T& key) {
-      auto entry = this->getEntry(key).first;
+      auto entry = this->getEntry(key, false).first;
       if (entry != nullptr) {
         entry->setDeleted();
         --nOccupied;
