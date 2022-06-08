@@ -37,7 +37,7 @@ public:
   }
 
   [[nodiscard]] unsigned long getHash() const {
-    return this->hash();
+    return this->hash;
   }
 
   T operator*() const {

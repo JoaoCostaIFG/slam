@@ -22,26 +22,36 @@ namespace HashTable {
       return this->table.size();
     }
 
-    void moveIndexes() {
-      nOccupied = 0;
+    void move(TableEntry<T>* entry) {
+      const auto hash = entry->getHash();
+      auto index = this->indexFromHash(hash);
 
-      for (size_t i = 0; i < this->tableSize(); ++i) {
-        auto e = this->table.at(i);
-        if (e == nullptr) continue;
-        if (e->isDeleted()) {
-          delete e;
-          this->table.at(i) = nullptr;
-        } else {
-          e->setDeleted();
-          this->insert(e->getValue());
-        }
+      TableEntry<T>* search = table.at(index);
+      int nIters = 0;
+      while (search != nullptr) {
+        // loop
+        index = this->indexFromHash(this->strategy->nextHash(index, hash, nIters++));
+        search = table.at(index);
       }
+
+      table[index] = entry;
+
+      ++nOccupied;
     }
 
     void resize() {
-      int newSize = this->tableSize() * 2;
-      this->table.resize(newSize, nullptr);
-      moveIndexes();
+      std::cout << this->tableSize() << " " << this->nOccupied << "\n";
+
+      nOccupied = 0;
+
+      auto oldTable = std::move(this->table);
+      this->table = std::vector<TableEntry<T>*>(oldTable.size() * 2, nullptr);
+
+      for (size_t i = 0; i < oldTable.size(); ++i) {
+        auto e = oldTable.at(i);
+        if (e == nullptr) continue;
+        this->move(e);
+      }
     }
 
     TableEntry<T>* getEntry(const T& toFind) const {
@@ -60,8 +70,8 @@ namespace HashTable {
     }
 
   public:
-    explicit HashTable(int size, HashStrategy<T>* strategy = new QuadraticHashStrategy<T>()) : nOccupied(0) {
-      this->table.resize(size, nullptr);
+    explicit HashTable(int size, HashStrategy<T>* strategy = new QuadraticHashStrategy<T>()) : table(size, nullptr),
+                                                                                               nOccupied(0) {
       this->strategy = strategy;
     }
 
