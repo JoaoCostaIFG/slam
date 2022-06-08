@@ -76,7 +76,7 @@ void menu() {
     std::cin >> option;
     switch (option) {
       case (1): {
-        o.pointcloudUpdate(importOff("../datasets/airplane_0119.off"), Vector3f(), 1);
+        o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1);
         o.writeBinary("plane.bt");
         cout << "\nResult saved as plane.bt\n\n";
         break;
