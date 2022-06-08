@@ -1389,7 +1389,7 @@ namespace priv {
         }
         static btree_node *init_internal(btree_node *n, btree_node *parent) {
             init_leaf(n, parent, kNodeValues);
-            // Set `max_count` to a sentinel value to indicate that this node is
+            // HashTable `max_count` to a sentinel value to indicate that this node is
             // internal.
             n->set_max_count(kInternalNodeMaxCount);
             phmap::priv::SanitizerPoisonMemoryRegion(

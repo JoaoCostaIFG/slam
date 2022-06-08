@@ -59,7 +59,6 @@ namespace sonar {
 
     friend std::ostream& operator<<(std::ostream& os, const Beam& beam);
 
-
     /**
      * Converts a measurement to cartesian coordinates using the beam angle
      * @param i The index of the measurment

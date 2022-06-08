@@ -5,7 +5,7 @@ set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_CXX_FLAGS "-Wall -pedantic -march=native -O2")
 
-add_executable(SLAM slam/src/main.cpp slam/include/octomap/Octomap.h slam/include/octomap/OcNode.h slam/include/octomap/Vector3.h slam/include/octomap/OcNodeKey.h slam/include/sonar/Scan.h slam/src/Scan.cpp slam/include/octomap/OctomapIterator.h slam/include/sonar/Filters.h slam/include/sonar/Sonar.h slam/src/Sonar.cpp)
+add_executable(SLAM slam/src/main.cpp slam/include/octomap/Octomap.h slam/include/octomap/OcNode.h slam/include/octomap/Vector3.h slam/include/octomap/OcNodeKey.h slam/include/sonar/Scan.h slam/src/Scan.cpp slam/include/octomap/OctomapIterator.h slam/include/sonar/Filters.h slam/include/sonar/Sonar.h slam/src/Sonar.cpp slam/include/HashTable/HashTable.h slam/include/HashTable/TableEntry.h slam/include/HashTable/HashTableIterator.h slam/include/HashTable/strategies/HashStrategy.h slam/include/HashTable/strategies/LinearHashStrategy.h slam/include/HashTable/strategies/QuadraticHashStrategy.h slam/include/HashTable/strategies/DoubleHashingStrategy.h)
 
 find_package(OpenCV REQUIRED)
 find_package(RapidJSON REQUIRED)

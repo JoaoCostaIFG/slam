@@ -5,6 +5,8 @@
 #include <random>
 
 #include "../include/octomap/Octomap.h"
+#include "../include/HashTable/HashTable.h"
+#include "../include/HashTable/HashTableIterator.h"
 #include "../include/sonar/Scan.h"
 #include "../include/sonar/Sonar.h"
 #include "../include/sonar/Filters.h"
@@ -117,6 +119,32 @@ void menu() {
 
 int main() {
   menu();
+
+  /*
+  auto h1 = HashTable::HashTable<Vector3<int>>(10);
+  vector<Vector3<int>> vec{
+      Vector3<int>(1, 1, 1),
+      Vector3<int>(2, 2, 2),
+      Vector3<int>(3, 3, 3),
+      Vector3<int>(4, 4, 4),
+      Vector3<int>(5, 5, 5),
+      //Vector3<int>(6, 6, 6),
+      //Vector3<int>(7, 7, 7),
+      //Vector3<int>(8, 8, 8),
+      //Vector3<int>(9, 9, 9),
+      //Vector3<int>(10, 10, 10),
+  };
+  h1.insert(vec);
+  //for (const auto& e: h1) {
+  //  cout << e->getValue() << endl;
+  //}
+  auto asd = h1.getTable();
+  for (auto& e: asd) {
+    if (!e) continue;
+
+    cout << (e->isDeleted() ? "DELETED: " : "") << e->getValue() << endl;
+  }
+   */
 
   return EXIT_SUCCESS;
 }
