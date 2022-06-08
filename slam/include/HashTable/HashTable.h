@@ -5,14 +5,21 @@
 #include <iostream>
 #include "./TableEntry.h"
 #include "./HashTableIterator.h"
+#include "../strategies/HashStrategy.h"
+#include "../strategies/LinearHashStrategy.h"
+#include "../strategies/QuadraticHashStrategy.h"
+#include "../strategies/DoubleHashingStrategy.h"
+
 
 
 namespace HashTable {
   template<typename T>
   class HashTable {
   private:
+    HashStrategy<T> *strategy;
     std::vector<TableEntry<T>*> table;
     int nOccupied;
+
 
     [[nodiscard]] size_t tableSize() const {
       return this->table.size();
@@ -34,26 +41,28 @@ namespace HashTable {
       moveIndexes();
     }
 
-    unsigned long long int getLinearIndex(unsigned long long int index){
-      return this->indexFromHash(index + 1);
-    }
-
-    unsigned long long int getQuadraticIndex(unsigned long long int index, int nIters){
-      return this->indexFromHash(index + nIters*nIters);
-    }
-
-    unsigned long long int getDoubleHashingIndex(unsigned long long int hash, int nIters){
-      return this->indexFromHash(hash * (nIters + 1));
-    }
+//    size_t getLinearIndex(size_t index){
+//      return this->indexFromHash(index + 1);
+//    }
+//
+//    size_t getQuadraticIndex(size_t index, int nIters){
+//      return this->indexFromHash(index + nIters*nIters);
+//    }
+//
+//    size_t getDoubleHashingIndex(size_t hash, int nIters){
+//      return this->indexFromHash(hash * (nIters + 1));
+//    }
 
     std::pair<TableEntry<T>*, size_t> getFree(const T& toFind){
       auto index = this->indexFromKey(toFind);
+//      auto index = this->strategy->indexFromKey(toFind);
 
       TableEntry<T>* entry = table.at(index);
       int nIters = 0;
       while (entry != nullptr && !entry->isDeleted()) {
         if (entry->getValue() == toFind) return {entry, index};
-        index = this->getQuadraticIndex(index, nIters);
+//        index = this->getQuadraticIndex(index, nIters);
+        index = this->indexFromHash(this->strategy->nextHash(index, 0 /*ignore*/ , nIters));
         entry = table.at(index);
         ++nIters;
       }
@@ -62,12 +71,14 @@ namespace HashTable {
 
     std::pair<TableEntry<T>*, size_t> isPresent(const T& toFind){
       auto index = this->indexFromKey(toFind);
+//      auto index = this->strategy->indexFromKey(toFind);
 
       TableEntry<T>* entry = table.at(index);
       int nIters = 0;
       while (entry != nullptr) {
         if (entry->getValue() == toFind) return {entry, index};
-        index = this->getQuadraticIndex(index, nIters);
+//        index = this->getQuadraticIndex(index, nIters);
+        index = this->indexFromHash(this->strategy->nextHash(index, 0 /*ignore*/ , nIters));
         entry = table.at(index);
         ++nIters;
       }
@@ -104,8 +115,9 @@ namespace HashTable {
     }
 
   public:
-    explicit HashTable(int size) : nOccupied(0) {
+    explicit HashTable(int size, HashStrategy<T>* strategy = new QuadraticHashStrategy<T>()) : nOccupied(0) {
       this->table.resize(size, nullptr);
+      this->strategy = strategy;
     }
 
     HashTable() : HashTable(20) {}
