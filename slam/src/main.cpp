@@ -118,8 +118,9 @@ void menu() {
 }
 
 int main() {
-  //menu();
+  menu();
 
+  /*
   auto h1 = HashTable::HashTable<Vector3<int>>(10);
   vector<Vector3<int>> vec{
       Vector3<int>(1, 1, 1),
@@ -143,6 +144,7 @@ int main() {
 
     cout << (e->isDeleted() ? "DELETED: " : "") << e->getValue() << endl;
   }
+   */
 
   return EXIT_SUCCESS;
 }

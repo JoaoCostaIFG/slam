@@ -23,11 +23,18 @@ namespace HashTable {
     }
 
     void moveIndexes() {
+      nOccupied = 0;
+
       for (size_t i = 0; i < this->tableSize(); ++i) {
-        if (this->table.at(i) != nullptr && !this->table.at(i)->isDeleted()) {
-          if (this->insert(this->table.at(i)->getValue())) {
-            this->table.at(i)->setDeleted();
-          }
+        if (this->table.at(i) == nullptr) continue;
+        if (this->table.at(i)->isDeleted()) {
+          delete this->table.at(i);
+          this->table.at(i) = nullptr;
+        } else {
+          auto toMove = this->table.at(i)->getValue();
+          delete this->table.at(i);
+          this->table.at(i) = nullptr;
+          this->insert(toMove);
         }
       }
     }
@@ -39,61 +46,34 @@ namespace HashTable {
     }
 
     std::pair<TableEntry<T>*, size_t>
-    getEntry(const T& toFind, std::function<bool(const TableEntry<T>*)> pred) const {
-      const auto hash = toFind.hash();
-      auto index = this->indexFromHash(hash);
+    getEntry(const T& toFind, bool (* pred)(const T&, const TableEntry<T>*)) const {
+      const auto initialHash = toFind.hash();
+      auto index = this->indexFromHash(initialHash);
 
       TableEntry<T>* entry = table.at(index);
       int nIters = 0;
       while (entry != nullptr) {
-        std::cout << "A: " << entry->getValue() << std::endl;
-        if (pred(entry)) return {entry, index};
-        this->strategy->nextHash(index, hash, nIters++);
-        index = this->indexFromHash(hash);
+        if (pred(toFind, entry)) return {entry, index};
+        index = this->indexFromHash(this->strategy->nextHash(index, initialHash, nIters++));
         entry = table.at(index);
       }
       return {nullptr, index};
     }
 
+    static bool getEntryTest(const T& toFind, const TableEntry<T>* entry) {
+      return !entry->isDeleted() && entry->getValue() == toFind;
+    }
+
     std::pair<TableEntry<T>*, size_t> getEntry(const T& toFind) const {
-      return this->getEntry(toFind,
-                            [&toFind](const TableEntry<T>* entry) -> bool {
-                              return !entry->isDeleted() && entry->getValue() == toFind;
-                            }
-      );
+      return this->getEntry(toFind, getEntryTest);
+    }
+
+    static bool getFreeTest(const T& toFind, const TableEntry<T>* entry) {
+      return entry->isDeleted() || entry->getValue() == toFind;
     }
 
     std::pair<TableEntry<T>*, size_t> getFree(const T& toFind) const {
-      return this->getEntry(toFind,
-                            [&toFind](const TableEntry<T>* entry) -> bool {
-                              std::cout << "B: " << entry->getValue() << std::endl;
-                              return entry->isDeleted() || entry->getValue() == toFind;
-                            }
-      );
-    }
-
-    /**
-     * Linear probing.
-     * @param key
-     * @return
-     */
-    bool insert(const T& key, bool isRealloc) {
-      auto entryPair = getFree(key);
-      auto entry = entryPair.first;
-      auto index = entryPair.second;
-
-      if (entry == nullptr) {
-        table[index] = new TableEntry<T>(key, key.hash());
-      } else if (entry->isDeleted()) {
-        entry->setValue(key);
-      } else {
-        // the element is already part of the set
-        return false;
-      }
-
-      if (!isRealloc) ++nOccupied;
-      if ((nOccupied * 100) / this->tableSize() > 75) resize();
-      return true;
+      return this->getEntry(toFind, getFreeTest);
     }
 
   public:
@@ -129,8 +109,27 @@ namespace HashTable {
       return this->getEntry(toFind).first != nullptr;
     }
 
+    /**
+     * @param key
+     * @return
+     */
     bool insert(const T& key) {
-      return this->insert(key, false);
+      auto entryPair = getFree(key);
+      auto entry = entryPair.first;
+      auto index = entryPair.second;
+
+      if (entry == nullptr) {
+        table[index] = new TableEntry<T>(key, key.hash());
+      } else if (entry->isDeleted()) {
+        entry->setValue(key);
+      } else {
+        // the element is already part of the set
+        return false;
+      }
+
+      ++nOccupied;
+      if ((nOccupied * 100) / this->tableSize() > 75) resize();
+      return true;
     }
 
     bool insert(const std::vector<T>& vec) {
