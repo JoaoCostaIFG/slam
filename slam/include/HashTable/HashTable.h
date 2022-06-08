@@ -38,53 +38,38 @@ namespace HashTable {
       moveIndexes();
     }
 
-//    size_t getLinearIndex(size_t index){
-//      return this->indexFromHash(index + 1);
-//    }
-//
-//    size_t getQuadraticIndex(size_t index, int nIters){
-//      return this->indexFromHash(index + nIters*nIters);
-//    }
-//
-//    size_t getDoubleHashingIndex(size_t hash, int nIters){
-//      return this->indexFromHash(hash * (nIters + 1));
-//    }
-
-    std::pair<TableEntry<T>*, size_t> getFree(const T& toFind) {
-      auto index = this->indexFromKey(toFind);
-//      auto index = this->strategy->indexFromKey(toFind);
-
-      TableEntry<T>* entry = table.at(index);
-      int nIters = 0;
-      while (entry != nullptr && !entry->isDeleted()) {
-        if (entry->getValue() == toFind) return {entry, index};
-//        index = this->getQuadraticIndex(index, nIters);
-        index = this->indexFromHash(this->strategy->nextHash(index, 0 /*ignore*/ , nIters));
-        entry = table.at(index);
-        ++nIters;
-      }
-      return {entry, index};
-    }
-
-    std::pair<TableEntry<T>*, size_t> isPresent(const T& toFind) {
-      auto index = this->indexFromKey(toFind);
-//      auto index = this->strategy->indexFromKey(toFind);
+    std::pair<TableEntry<T>*, size_t>
+    getEntry(const T& toFind, std::function<bool(const TableEntry<T>*)> pred) const {
+      const auto hash = toFind.hash();
+      auto index = this->indexFromHash(hash);
 
       TableEntry<T>* entry = table.at(index);
       int nIters = 0;
       while (entry != nullptr) {
-        if (entry->getValue() == toFind) return {entry, index};
-//        index = this->getQuadraticIndex(index, nIters);
-        index = this->indexFromHash(this->strategy->nextHash(index, 0 /*ignore*/ , nIters));
+        std::cout << "A: " << entry->getValue() << std::endl;
+        if (pred(entry)) return {entry, index};
+        this->strategy->nextHash(index, hash, nIters++);
+        index = this->indexFromHash(hash);
         entry = table.at(index);
-        ++nIters;
       }
-      return {entry, index};
+      return {nullptr, index};
     }
 
-    std::pair<TableEntry<T>*, size_t> getEntry(const T& toFind, bool findFree) {
-      if (findFree) return getFree(toFind);
-      else return isPresent(toFind);
+    std::pair<TableEntry<T>*, size_t> getEntry(const T& toFind) const {
+      return this->getEntry(toFind,
+                            [&toFind](const TableEntry<T>* entry) -> bool {
+                              return !entry->isDeleted() && entry->getValue() == toFind;
+                            }
+      );
+    }
+
+    std::pair<TableEntry<T>*, size_t> getFree(const T& toFind) const {
+      return this->getEntry(toFind,
+                            [&toFind](const TableEntry<T>* entry) -> bool {
+                              std::cout << "B: " << entry->getValue() << std::endl;
+                              return entry->isDeleted() || entry->getValue() == toFind;
+                            }
+      );
     }
 
     /**
@@ -93,7 +78,7 @@ namespace HashTable {
      * @return
      */
     bool insert(const T& key, bool isRealloc) {
-      auto entryPair = getEntry(key, true);
+      auto entryPair = getFree(key);
       auto entry = entryPair.first;
       auto index = entryPair.second;
 
@@ -132,16 +117,16 @@ namespace HashTable {
       this->table.resize(newSize, nullptr);
     }
 
-    size_t indexFromHash(const size_t i) {
+    size_t indexFromHash(const size_t i) const {
       return i % this->tableSize();
     }
 
-    size_t indexFromKey(const T& key) {
+    size_t indexFromKey(const T& key) const {
       return this->indexFromHash(key.hash());
     }
 
-    bool contains(const T& toFind) {
-      return this->getEntry(toFind, false).first != nullptr;
+    bool contains(const T& toFind) const {
+      return this->getEntry(toFind).first != nullptr;
     }
 
     bool insert(const T& key) {
@@ -158,7 +143,7 @@ namespace HashTable {
     }
 
     bool remove(const T& key) {
-      auto entry = this->getEntry(key, false).first;
+      auto entry = this->getEntry(key).first;
       if (entry != nullptr) {
         entry->setDeleted();
         --nOccupied;

@@ -127,9 +127,9 @@ int main() {
       Vector3<int>(3, 3, 3),
       Vector3<int>(4, 4, 4),
       Vector3<int>(5, 5, 5),
-      Vector3<int>(6, 6, 6),
-      Vector3<int>(7, 7, 7),
-      Vector3<int>(8, 8, 8),
+      //Vector3<int>(6, 6, 6),
+      //Vector3<int>(7, 7, 7),
+      //Vector3<int>(8, 8, 8),
       //Vector3<int>(9, 9, 9),
       //Vector3<int>(10, 10, 10),
   };

@@ -12,7 +12,6 @@ private:
   T value;
   unsigned long hash;
 public:
-
   TableEntry(T value, unsigned long hash) {
     this->value = value;
     this->deleted = false;
@@ -23,19 +22,20 @@ public:
     this->deleted = true;
   }
 
-  bool isDeleted() {
+  bool isDeleted() const {
     return this->deleted;
   }
 
-  T getValue() {
+  T getValue() const {
     return this->value;
   }
 
   void setValue(T value) {
     this->value = value;
+    this->deleted = false;
   }
 
-  unsigned long getHash() {
+  unsigned long getHash() const {
     return this->hash();
   }
 
