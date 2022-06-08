@@ -32,10 +32,8 @@ namespace HashTable {
           delete e;
           this->table.at(i) = nullptr;
         } else {
-          auto toMove = e->getValue();
-          delete e;
-          this->table.at(i) = nullptr;
-          this->insert(toMove);
+          e->setDeleted();
+          this->insert(e->getValue());
         }
       }
     }
