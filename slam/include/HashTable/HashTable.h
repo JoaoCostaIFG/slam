@@ -26,13 +26,14 @@ namespace HashTable {
       nOccupied = 0;
 
       for (size_t i = 0; i < this->tableSize(); ++i) {
-        if (this->table.at(i) == nullptr) continue;
-        if (this->table.at(i)->isDeleted()) {
-          delete this->table.at(i);
+        auto e = this->table.at(i);
+        if (e == nullptr) continue;
+        if (e->isDeleted()) {
+          delete e;
           this->table.at(i) = nullptr;
         } else {
-          auto toMove = this->table.at(i)->getValue();
-          delete this->table.at(i);
+          auto toMove = e->getValue();
+          delete e;
           this->table.at(i) = nullptr;
           this->insert(toMove);
         }
@@ -45,35 +46,19 @@ namespace HashTable {
       moveIndexes();
     }
 
-    std::pair<TableEntry<T>*, size_t>
-    getEntry(const T& toFind, bool (* pred)(const T&, const TableEntry<T>*)) const {
+    TableEntry<T>* getEntry(const T& toFind) const {
       const auto initialHash = toFind.hash();
       auto index = this->indexFromHash(initialHash);
 
       TableEntry<T>* entry = table.at(index);
       int nIters = 0;
       while (entry != nullptr) {
-        if (pred(toFind, entry)) return {entry, index};
+        if (!entry->isDeleted() && entry->getValue() == toFind)
+          return entry;
         index = this->indexFromHash(this->strategy->nextHash(index, initialHash, nIters++));
         entry = table.at(index);
       }
-      return {nullptr, index};
-    }
-
-    static bool getEntryTest(const T& toFind, const TableEntry<T>* entry) {
-      return !entry->isDeleted() && entry->getValue() == toFind;
-    }
-
-    std::pair<TableEntry<T>*, size_t> getEntry(const T& toFind) const {
-      return this->getEntry(toFind, getEntryTest);
-    }
-
-    static bool getFreeTest(const T& toFind, const TableEntry<T>* entry) {
-      return entry->isDeleted() || entry->getValue() == toFind;
-    }
-
-    std::pair<TableEntry<T>*, size_t> getFree(const T& toFind) const {
-      return this->getEntry(toFind, getFreeTest);
+      return nullptr;
     }
 
   public:
@@ -101,31 +86,35 @@ namespace HashTable {
       return i % this->tableSize();
     }
 
-    size_t indexFromKey(const T& key) const {
-      return this->indexFromHash(key.hash());
-    }
-
     bool contains(const T& toFind) const {
-      return this->getEntry(toFind).first != nullptr;
+      return this->getEntry(toFind) != nullptr;
     }
 
     /**
      * @param key
-     * @return
+     * @return If container didn't "contain" the element
      */
     bool insert(const T& key) {
-      auto entryPair = getFree(key);
-      auto entry = entryPair.first;
-      auto index = entryPair.second;
+      const auto hash = key.hash();
+      auto index = this->indexFromHash(hash);
+      TableEntry<T>* entry = table.at(index);
 
-      if (entry == nullptr) {
-        table[index] = new TableEntry<T>(key, key.hash());
-      } else if (entry->isDeleted()) {
-        entry->setValue(key);
-      } else {
-        // the element is already part of the set
-        return false;
+      int nIters = 0;
+      while (entry != nullptr) {
+        if (entry->isDeleted()) {
+          entry->setValue(key, hash);
+          break;
+        } else if (entry->getValue() == key) {
+          return false;
+        }
+        // loop
+        index = this->indexFromHash(this->strategy->nextHash(index, hash, nIters++));
+        entry = table.at(index);
       }
+
+      // need to create the container
+      if (entry == nullptr)
+        table[index] = new TableEntry<T>(key, hash);
 
       ++nOccupied;
       if ((nOccupied * 100) / this->tableSize() > 75) resize();
@@ -142,7 +131,7 @@ namespace HashTable {
     }
 
     bool remove(const T& key) {
-      auto entry = this->getEntry(key).first;
+      auto entry = this->getEntry(key);
       if (entry != nullptr) {
         entry->setDeleted();
         --nOccupied;

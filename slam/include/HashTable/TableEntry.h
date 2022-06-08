@@ -30,12 +30,13 @@ public:
     return this->value;
   }
 
-  void setValue(T value) {
+  void setValue(T value, unsigned long hash) {
     this->value = value;
+    this->hash = hash;
     this->deleted = false;
   }
 
-  unsigned long getHash() const {
+  [[nodiscard]] unsigned long getHash() const {
     return this->hash();
   }
 
