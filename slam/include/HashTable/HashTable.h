@@ -28,6 +28,7 @@ namespace HashTable {
 
       TableEntry<T>* search = table.at(index);
       int nIters = 0;
+      // there are neither deleted entries nor repeated values
       while (search != nullptr) {
         // loop
         index = this->indexFromHash(this->strategy->nextHash(index, hash, nIters++));

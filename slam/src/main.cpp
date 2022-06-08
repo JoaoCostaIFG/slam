@@ -15,6 +15,10 @@ using namespace std;
 using namespace octomap;
 using namespace sonar;
 
+using chrono::high_resolution_clock;
+using chrono::milliseconds;
+using chrono::duration_cast;
+
 // https://segeval.cs.princeton.edu/public/off_format.html
 vector<Vector3f> importOff(const string& filename) {
   ifstream f(filename);
@@ -36,10 +40,6 @@ vector<Vector3f> importOff(const string& filename) {
 }
 
 void benchmark() {
-  using chrono::high_resolution_clock;
-  using chrono::milliseconds;
-  using chrono::duration_cast;
-
   std::ofstream file("bench.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
@@ -76,7 +76,10 @@ void menu() {
     std::cin >> option;
     switch (option) {
       case (1): {
+        auto startTime = high_resolution_clock::now();
         o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1);
+        auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
+        cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
         o.writeBinary("plane.bt");
         cout << "\nResult saved as plane.bt\n\n";
         break;

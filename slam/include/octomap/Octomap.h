@@ -381,7 +381,7 @@ namespace octomap {
           occupiedNodesList.resize(threadCnt);
           for (int i = 0; i < threadCnt; ++i) {
             freeNodesList.at(i).reserve((pointcloud.size() / threadCnt) * 50);
-            occupiedNodesList.at(i).reserve(pointcloud.size() / threadCnt);
+            occupiedNodesList.at(i).reserve((pointcloud.size() / threadCnt) * 2);
           }
         }
       }
@@ -409,11 +409,11 @@ namespace octomap {
       }
 
       // join measurements
-      KeySet occupiedNodes;
+      KeySet occupiedNodes(pointcloud.size() * 2);
       for (auto& occupiedNodesI: occupiedNodesList) {
         occupiedNodes.merge(occupiedNodesI);
       }
-      KeySet freeNodes;
+      KeySet freeNodes(pointcloud.size() * 50);
       for (auto& freeNodesI: freeNodesList) {
         freeNodes.merge(freeNodesI);
       }
