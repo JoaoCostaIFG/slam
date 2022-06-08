@@ -3,23 +3,20 @@
 
 #include "vector"
 #include <iostream>
-#include "./TableEntry.h"
-#include "./HashTableIterator.h"
-#include "../strategies/HashStrategy.h"
-#include "../strategies/LinearHashStrategy.h"
-#include "../strategies/QuadraticHashStrategy.h"
-#include "../strategies/DoubleHashingStrategy.h"
-
-
+#include "TableEntry.h"
+#include "HashTableIterator.h"
+#include "strategies/HashStrategy.h"
+#include "strategies/LinearHashStrategy.h"
+#include "strategies/QuadraticHashStrategy.h"
+#include "strategies/DoubleHashingStrategy.h"
 
 namespace HashTable {
   template<typename T>
   class HashTable {
   private:
-    HashStrategy<T> *strategy;
+    HashStrategy<T>* strategy;
     std::vector<TableEntry<T>*> table;
     int nOccupied;
-
 
     [[nodiscard]] size_t tableSize() const {
       return this->table.size();
@@ -53,7 +50,7 @@ namespace HashTable {
 //      return this->indexFromHash(hash * (nIters + 1));
 //    }
 
-    std::pair<TableEntry<T>*, size_t> getFree(const T& toFind){
+    std::pair<TableEntry<T>*, size_t> getFree(const T& toFind) {
       auto index = this->indexFromKey(toFind);
 //      auto index = this->strategy->indexFromKey(toFind);
 
@@ -69,7 +66,7 @@ namespace HashTable {
       return {entry, index};
     }
 
-    std::pair<TableEntry<T>*, size_t> isPresent(const T& toFind){
+    std::pair<TableEntry<T>*, size_t> isPresent(const T& toFind) {
       auto index = this->indexFromKey(toFind);
 //      auto index = this->strategy->indexFromKey(toFind);
 
@@ -86,7 +83,7 @@ namespace HashTable {
     }
 
     std::pair<TableEntry<T>*, size_t> getEntry(const T& toFind, bool findFree) {
-      if(findFree) return getFree(toFind);
+      if (findFree) return getFree(toFind);
       else return isPresent(toFind);
     }
 
