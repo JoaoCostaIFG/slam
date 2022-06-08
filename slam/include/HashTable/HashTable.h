@@ -40,8 +40,6 @@ namespace HashTable {
     }
 
     void resize() {
-      std::cout << this->tableSize() << " " << this->nOccupied << "\n";
-
       nOccupied = 0;
 
       auto oldTable = std::move(this->table);
