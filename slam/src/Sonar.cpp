@@ -58,7 +58,7 @@ namespace sonar {
       for (const auto& dest: pointCloud) {
         this->octomap.rayCastUpdate(this->position, dest, prob);
       }
-      this->octomap.pointcloudUpdate(pointCloud, this->position, prob);
+      this->octomap.discretizedPointcloudUpdate(pointCloud, this->position, prob);
     }
   }
 }

@@ -122,25 +122,25 @@ void menu() {
 }
 
 int main() {
-  //menu();
+  menu();
 
   // Reads data from json, displays cartesian and exports to octovis format
-  ifstream ss("../data.json");
-  Scan* s = Scan::importJson(ss);
+  //ifstream ss("../data.json");
+  //Scan* s = Scan::importJson(ss);
 
-  Sonar sonar;
+  //Sonar sonar;
 
-  auto sweeps = s->getSweeps();
-  for (size_t i = 0; i < sweeps.size(); ++i) {
-    Sweep* sweep = sweeps.at(i);
-    // applyGaussian(*sweep, 9, 5);
-    applyMedian(*sweep, 3);
-    // displaySweep(*sweep, false);
+  //auto sweeps = s->getSweeps();
+  //for (size_t i = 0; i < sweeps.size(); ++i) {
+  //  Sweep* sweep = sweeps.at(i);
+  //  // applyGaussian(*sweep, 9, 5);
+  //  applyMedian(*sweep, 3);
+  //  // displaySweep(*sweep, false);
 
-    cout << "Doing sweep: " << i << endl;
-    sonar.update(*sweep);
-    sonar.writeBinary("auv-" + std::to_string(i) + ".bt");
-  }
+  //  cout << "Doing sweep: " << i << endl;
+  //  sonar.update(*sweep);
+  //  sonar.writeBinary("auv-" + std::to_string(i) + ".bt");
+  //}
 
   return EXIT_SUCCESS;
 }
