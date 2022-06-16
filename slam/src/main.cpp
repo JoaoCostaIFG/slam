@@ -59,7 +59,7 @@ void benchmarkSetInsert() {
           ++dups;
       }
       auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
-      file << " (" << micros << ", " << dups << ", " << h.collisions << ")";
+      //file << " (" << micros << ", " << dups << ", " << h.collisions << ")";
     }
     file << "\n";
   }

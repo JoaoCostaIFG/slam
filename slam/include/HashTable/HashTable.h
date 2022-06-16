@@ -97,8 +97,6 @@ namespace HashTable {
       return this->getEntry(toFind) != nullptr;
     }
 
-    unsigned int collisions = 0;
-
     /**
      * @param key
      * @return If container didn't "contain" the element
@@ -116,7 +114,6 @@ namespace HashTable {
         } else if (entry->getValue() == key) {
           return false;
         }
-        ++collisions;
         // loop
         index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
         entry = table.at(index);
