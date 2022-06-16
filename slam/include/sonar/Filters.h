@@ -84,7 +84,7 @@ namespace sonar {
           int cnt = vote_count[pos];
           if (cnt != 0) {
             uint8_t mean = round(vote_intensities[pos] / (double) cnt);
-            img.at<uchar>(y, x) = mean;
+            img.at<uint8_t>(y, x) = mean;
           }
         }
       }
@@ -101,6 +101,7 @@ namespace sonar {
     do {
       k = cv::waitKey(0); // Wait for a keystroke in the window
     } while (k != 'q');
+    cv::destroyWindow("Sweep" + std::to_string(sweep.getSweepNo()));
   }
 
 }

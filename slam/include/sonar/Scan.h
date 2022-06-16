@@ -12,11 +12,14 @@
 
 using namespace octomap;
 
-/** Using the simple threshold method, the minimum difference between two
+/** Using the range to first feature method, the minimum intensity that a cell
+ * can have to be considered for the differential threshold phase **/
+#define INTENSITY_THRESHOLD 128u
+/** Using the range to first feature method, the minimum difference between two
  * intensities for them to be considered an obstacle  **/
-#define OBSTACLE_THRESHOLD 70
+#define OBSTACLE_THRESHOLD 40u // 60 %
 /** The maximum intensity that a beam intensity may have **/
-#define MAX_INTENSITY 255
+#define MAX_INTENSITY 255u
 
 namespace sonar {
   /* Our dataset comprises a scan. A Scan has multiple sweeps. Each sweep, composed of multiple beams, has information
@@ -26,7 +29,7 @@ namespace sonar {
   private:
     /** The information of all intensities is stored in the sweep.
      * A beam only needs to point to its row in that matrix. **/
-    uchar* row;
+    uint8_t* row;
     /** The length of the intensities that the beam has. Should be the same for all beams **/
     size_t beam_len;
     /** Distance of the step between each intensity of the beam **/
@@ -37,9 +40,9 @@ namespace sonar {
     double angle;
 
   public:
-    Beam(uchar* row, size_t beam_len, double step_dist, double time, double angle) : row(row), beam_len(beam_len),
-                                                                                     step_dist(step_dist), time(time),
-                                                                                     angle(angle) {}
+    Beam(uint8_t* row, size_t beam_len, double step_dist, double time, double angle) : row(row), beam_len(beam_len),
+                                                                                       step_dist(step_dist), time(time),
+                                                                                       angle(angle) {}
 
     /**
      * Yields the first obstacle found by using the simple threshold method. It uses OBSTACLE_THRESHOLD as a threshold.
@@ -47,7 +50,7 @@ namespace sonar {
      */
     [[nodiscard]] size_t getObstacleST() const;
 
-    [[nodiscard]] uchar* getIntensities() const { return row; }
+    [[nodiscard]] uint8_t* getIntensities() const { return row; }
 
     [[nodiscard]] double getTime() const { return time; }
 
@@ -60,25 +63,25 @@ namespace sonar {
     friend std::ostream& operator<<(std::ostream& os, const Beam& beam);
 
     /**
-     * Converts a measurement to cartesian coordinates using the beam angle
-     * @param i The index of the measurment
-     * @return the coordinates of the measurement in cartesian space
+     * Yields the point in the center of a beam wave of a given measurement
+     * @param index Index of the measurement
+     * @return Center point in cartesian coordinates
      */
-    [[nodiscard]] Vector3<> measurementToCartesian(size_t i) const {
+    [[nodiscard]] Vector3<> getCenterPoint(size_t index) const {
       double angle_rad = ((angle + 180) * CV_PI) / 180;
-      return this->measurementToCartesian(i, angle_rad);
+      return sonar::Beam::measurementToCartesian(index, angle_rad);
     }
 
     /**
-     * Converts a measurement to cartesian coordinates, across a given angle
-     * @param i The index of the measurment
+     * Converts a measurement to cartesian coordinates, across a given angle. The returned coordinates
+     * are scaled to step_dist of the beam, so 1 = 1 step_dist
+     * @param i The index of the measurement
      * @param angle_rad The angle of the measurement
      * @return the coordinates of the measurement in cartesian space
      */
     [[nodiscard]] static Vector3<> measurementToCartesian(size_t i, double angle_rad) {
       float x = (double) i * cos(angle_rad);
       float y = (double) i * sin(angle_rad);
-      // TODO Move to 3D here
       return {x, y, 0};
     }
 
@@ -98,13 +101,13 @@ namespace sonar {
      * @param i The index of measurement to return
      * @return Returns the intensity of the beam at the given index
      */
-    uchar& at(int i) { return *(row + i); }
+    uint8_t& at(int i) { return *(row + i); }
 
     /**
      * @param i The index of measurement to return
      * @return Returns the intensity of the beam at the given index
      */
-    uchar& at(int i) const { return *(row + i); }
+    [[nodiscard]] uint8_t& at(int i) const { return *(row + i); }
 
     /**
      * Creates a beam in the heap from a json node
