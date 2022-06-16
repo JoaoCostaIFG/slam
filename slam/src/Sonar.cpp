@@ -2,27 +2,59 @@
 #include "../include/sonar/Sonar.h"
 
 #include <algorithm>
-#include <cmath>
 
 
 namespace sonar {
 
+  std::vector<Vector3<>> Sonar::getBeamEndpoints2D(const Beam* beam, size_t obstacle_index) const {
+    std::vector<Vector3<>> pointCloud;
+    // In 2D We only want to get the beam's center point across the obstacle
+    Vector3<> centerPoint = beam->coordToReal(beam->getCenterPoint(obstacle_index));
+    pointCloud.push_back(centerPoint);
+    return pointCloud;
+  }
+
+  std::vector<Vector3<>> Sonar::getBeamEndpoints3D(const Beam* beam, size_t obstacle_index,
+                                                   const unsigned &ndiv_horiz, const unsigned &ndiv_vert) const {
+    assert(ndiv_horiz != 0);
+    assert(ndiv_vert != 0);
+
+    std::vector<Vector3<>> pointCloud;
+    Vector3<> centerPoint = beam->coordToReal(beam->getCenterPoint(obstacle_index));
+    pointCloud.push_back(centerPoint);
+    // Horizontal Plane = xOy
+    double step_xoy = this->y_horiz / ndiv_horiz, low_horiz = beam->getAngle() - (this->y_horiz / 2);
+    // Vertical Plane = yOz
+    double step_yoz = this->y_vert / ndiv_vert, low_vert = 0;
+
+
+    double xoy_angle = low_horiz;
+    for (size_t i=0; i < ndiv_horiz + 1; ++i) {
+      double xoy_rad = (xoy_angle * CV_PI) / 180;
+      double yoz_angle = low_vert;
+      for (size_t j=0; j < ndiv_vert + 1; ++j) {
+        double yoz_rad = (yoz_angle * CV_PI) / 180;
+
+        double x = sin(xoy_rad) * cos(yoz_rad) * (double) obstacle_index;
+        double y = x; // Is the same
+        double z = cos(yoz_rad) * (double) obstacle_index;
+        Vector3<> point = beam->coordToReal(Vector3<>(x, y, z));
+        pointCloud.push_back(point);
+        yoz_angle += step_yoz;
+      }
+      xoy_angle += step_xoy;
+    }
+
+    return pointCloud;
+  }
+
   void Sonar::update(const Sweep& sweep) {
     for (const Beam* beam: sweep.getBeams()) {
       size_t obstacle_index = beam->getObstacleST();
-
-      double base_angle = beam->getAngle();
-      std::vector<Vector3<>> pointCloud;
-
-      for (double angle = base_angle - 1.5;
-           angle < base_angle + 1.601; angle += 0.1) { // TODO Replace 1.601 with angle step
-        double angle_rad = ((angle + 180) * CV_PI) / 180;
-        Vector3f v = beam->coordToReal(beam->measurementToCartesian(obstacle_index, angle_rad));
-        pointCloud.push_back(v);
-      }
+      std::vector<Vector3<>> pointCloud = this->getBeamEndpoints3D(beam, obstacle_index, 2, 2);
 
       // TODO Use sonar position instead of center of axis
-      double prob = double(unsigned(beam->at(obstacle_index))) / 255.0;
+      float prob = float(unsigned(beam->at(obstacle_index))) / 255.0;
       for (const auto& dest: pointCloud) {
         this->octomap.rayCastUpdate(this->position, dest, prob);
       }

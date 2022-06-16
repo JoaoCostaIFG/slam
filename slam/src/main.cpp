@@ -135,7 +135,6 @@ int main() {
     cout << "Doing sweep: " << i << endl;
     sonar.update(*sweep);
     sonar.writeBinary("auv-" + std::to_string(i) + ".bt");
-
   }
 
   return EXIT_SUCCESS;

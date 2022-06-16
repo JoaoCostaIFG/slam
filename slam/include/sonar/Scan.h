@@ -62,27 +62,26 @@ namespace sonar {
 
     friend std::ostream& operator<<(std::ostream& os, const Beam& beam);
 
-
     /**
-     * Converts a measurement to cartesian coordinates using the beam angle
-     * @param i The index of the measurment
-     * @return the coordinates of the measurement in cartesian space
+     * Yields the point in the center of a beam wave of a given measurement
+     * @param index Index of the measurement
+     * @return Center point in cartesian coordinates
      */
-    [[nodiscard]] Vector3<> measurementToCartesian(size_t i) const {
+    [[nodiscard]] Vector3<> getCenterPoint(size_t index) const {
       double angle_rad = ((angle + 180) * CV_PI) / 180;
-      return this->measurementToCartesian(i, angle_rad);
+      return sonar::Beam::measurementToCartesian(index, angle_rad);
     }
 
     /**
-     * Converts a measurement to cartesian coordinates, across a given angle
-     * @param i The index of the measurment
+     * Converts a measurement to cartesian coordinates, across a given angle. The returned coordinates
+     * are scaled to step_dist of the beam, so 1 = 1 step_dist
+     * @param i The index of the measurement
      * @param angle_rad The angle of the measurement
      * @return the coordinates of the measurement in cartesian space
      */
     [[nodiscard]] static Vector3<> measurementToCartesian(size_t i, double angle_rad) {
       float x = (double) i * cos(angle_rad);
       float y = (double) i * sin(angle_rad);
-      // TODO Move to 3D here
       return {x, y, 0};
     }
 

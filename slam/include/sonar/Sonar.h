@@ -13,8 +13,8 @@ using namespace octomap;
 /** Frequency (Hz) of the CRAS sub's sonar **/
 #define SONAR_FREQ 700000
 /** Beam spread (in rads) **/
-#define Y_HORIZONTAL (3 / CV_PI)
-#define Y_VERTICAL (35 / CV_PI)
+#define Y_HORIZONTAL 3
+#define Y_VERTICAL 35
 
 namespace sonar {
   /** This class represents the sonar and its environment **/
@@ -38,6 +38,19 @@ namespace sonar {
      * @param sweep The sweep that holds the measurement data that will be used to update the map
      */
     void update(const Sweep& sweep);
+
+
+    /**
+     * Retrieves a list of estimated points, in 2D, that hit an obstacle in the given obstacle_index
+     * across a given beam (in its angle)
+     * @param beam Beam whose intersection will be estimated
+     * @param obstacle_index Index of the measurement that hit the obstacle
+     * @return Vector of points that belong to the beam that have hit the obstacle
+     */
+    std::vector<Vector3<>> getBeamEndpoints2D(const Beam* beam, size_t obstacle_index) const;
+
+
+    std::vector<Vector3<>> getBeamEndpoints3D(const Beam* beam, size_t obstacle_index, const unsigned &ndiv_horiz=1, const unsigned &ndiv_vert=1) const;
 
     bool writeBinary(const std::string& outfilename) {
       return this->octomap.writeBinary(outfilename);
