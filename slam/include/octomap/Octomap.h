@@ -10,12 +10,14 @@
 
 #include <omp.h>
 
+
 #endif
 
 #include "OcNode.h"
 #include "OcNodeKey.h"
 #include "OctomapIterator.h"
 #include "Vector3.h"
+#include "../HashTable/HashTable.h"
 
 #define DFLT_RESOLUTION 0.1
 
@@ -24,7 +26,7 @@ namespace octomap {
   class Octomap {
   private:
     using Key = OcNodeKey<T>;
-    using KeySet = std::unordered_set<Key, typename Key::Hash, typename Key::Cmp>;
+    using KeySet = HashTable::HashTable<Key>;
     using Node = OcNode<T>;
 
     /** The max depth of tree */
@@ -354,6 +356,7 @@ namespace octomap {
       if (lazy) this->rootNode->fix();
     }
 
+    //TODO: Estimar quantos pontos vai ter cada thread para nao haver tantos resizes
     /**
      * Calculates a ray for each endpoint in pointcloud (with origin in @param origin).
      * The rays are calculated in parallel and the reported free and occupied nodes for
@@ -378,15 +381,15 @@ namespace octomap {
           occupiedNodesList.resize(threadCnt);
           for (int i = 0; i < threadCnt; ++i) {
             freeNodesList.at(i).reserve((pointcloud.size() / threadCnt) * 50);
-            occupiedNodesList.at(i).reserve(pointcloud.size() / threadCnt);
+            occupiedNodesList.at(i).reserve((pointcloud.size() / threadCnt) * 2);
           }
         }
       }
 #else
       freeNodesList.resize(1);
-  occupiedNodesList.resize(1);
-  freeNodesList.at(0).reserve(pointcloud.size() * 50);
-  occupiedNodesList.at(0).reserve(pointcloud.size());
+      occupiedNodesList.resize(1);
+      freeNodesList.at(0).reserve(pointcloud.size() * 50);
+      occupiedNodesList.at(0).reserve(pointcloud.size());
 #endif
 
 #ifdef _OPENMP
@@ -401,29 +404,30 @@ namespace octomap {
         //auto ray = this->rayCast(origin, endpoint);
         auto ray = this->rayCastBresenham(origin, endpoint);
         // store the ray info
-        freeNodesList.at(idx).insert(ray.begin(), ray.end());
+        freeNodesList.at(idx).insert(ray);
         occupiedNodesList.at(idx).insert(Key(endpoint));
       }
 
       // join measurements
-      KeySet occupiedNodes;
+      KeySet occupiedNodes(pointcloud.size() * 2);
       for (auto& occupiedNodesI: occupiedNodesList) {
         occupiedNodes.merge(occupiedNodesI);
       }
-      KeySet freeNodes;
+      KeySet freeNodes(pointcloud.size() * 50);
       for (auto& freeNodesI: freeNodesList) {
         freeNodes.merge(freeNodesI);
       }
 
       // update nodes, discarding updates on freenodes that will be set as occupied
       for (const auto& freeNode: freeNodes) {
-        if (!occupiedNodes.contains(freeNode)) {
-          this->setEmpty(freeNode, true);
-        }
+        if (!occupiedNodes.contains(freeNode->getValue()))
+          this->updateOccupancy(freeNode->getValue(), 0, true);
       }
-      for (auto& endpoint: occupiedNodes) {
-        this->updateOccupancy(endpoint, occ);
+
+      for (const auto& occupiedNode: occupiedNodes) {
+        this->updateOccupancy(occupiedNode->getValue(), occ, true);
       }
+
       this->rootNode->fix();
     }
 
@@ -484,8 +488,8 @@ namespace octomap {
       return writeBinary(binary_outfile);
     }
 
-    typedef OctomapIterator<Key> iterator;
-    typedef const OctomapIterator<Key> const_iterator;
+    typedef OctomapIterator<Node> iterator;
+    typedef const OctomapIterator<Node> const_iterator;
 
     iterator begin() {
       return iterator(this->rootNode);

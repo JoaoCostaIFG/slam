@@ -62,7 +62,7 @@ namespace octomap {
     }
 
     /**
-     * Set the value of the first component of the vector (x-dimension).
+     * HashTable the value of the first component of the vector (x-dimension).
      * @param x The value to set.
      */
     void setX(T x) {
@@ -70,7 +70,7 @@ namespace octomap {
     }
 
     /**
-     * Set the value of the second component of the vector (y-dimension).
+     * HashTable the value of the second component of the vector (y-dimension).
      * @param y The value to set.
      */
     void setY(T y) {
@@ -78,7 +78,7 @@ namespace octomap {
     }
 
     /**
-     * Set the value of the third component of the vector (z-dimension).
+     * HashTable the value of the third component of the vector (z-dimension).
      * @param z The value to set.
      */
     void setZ(T z) {
