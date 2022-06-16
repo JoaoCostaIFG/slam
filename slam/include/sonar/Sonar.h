@@ -50,6 +50,15 @@ namespace sonar {
     std::vector<Vector3<>> getBeamEndpoints2D(const Beam* beam, size_t obstacle_index) const;
 
 
+    /**
+     * Same as function above, but in 3D. Retrives all points that have hit an obstacle aross a beam.
+     * The 3d space is divided into cells to better estimate the space
+     * @param beam Beam whose intersection will be estimated
+     * @param obstacle_index Index of the measurement that hit the obstacle
+     * @param ndiv_horiz Number of divisions in the horizontal plane to use
+     * @param ndiv_vert Number of divisions in the vertical plane to use
+     * @return Vector of points that belong to the beam that have hit the obstacle
+     */
     std::vector<Vector3<>> getBeamEndpoints3D(const Beam* beam, size_t obstacle_index, const unsigned &ndiv_horiz=1, const unsigned &ndiv_vert=1) const;
 
     bool writeBinary(const std::string& outfilename) {

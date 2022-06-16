@@ -15,7 +15,7 @@ namespace sonar {
   }
 
   std::vector<Vector3<>> Sonar::getBeamEndpoints3D(const Beam* beam, size_t obstacle_index,
-                                                   const unsigned &ndiv_horiz, const unsigned &ndiv_vert) const {
+                                                   const unsigned& ndiv_horiz, const unsigned& ndiv_vert) const {
     assert(ndiv_horiz != 0);
     assert(ndiv_vert != 0);
 
@@ -25,25 +25,25 @@ namespace sonar {
     // Horizontal Plane = xOy
     double step_xoy = this->y_horiz / ndiv_horiz, low_horiz = beam->getAngle() - (this->y_horiz / 2);
     // Vertical Plane = yOz
-    double step_yoz = this->y_vert / ndiv_vert, low_vert = 0;
-
+    double step_yoz = this->y_vert / ndiv_vert, low_vert = -this->y_vert / 2;
 
     double xoy_angle = low_horiz;
-    for (size_t i=0; i < ndiv_horiz + 1; ++i) {
+    for (size_t i = 0; i < ndiv_horiz + 1; ++i) {
       double xoy_rad = (xoy_angle * CV_PI) / 180;
       double yoz_angle = low_vert;
-      for (size_t j=0; j < ndiv_vert + 1; ++j) {
+      for (size_t j = 0; j < ndiv_vert + 1; ++j) {
         double yoz_rad = (yoz_angle * CV_PI) / 180;
 
-        double x = sin(xoy_rad) * cos(yoz_rad) * (double) obstacle_index;
-        double y = x; // Is the same
-        double z = cos(yoz_rad) * (double) obstacle_index;
-        Vector3<> point = beam->coordToReal(Vector3<>(x, y, z));
-        pointCloud.push_back(point);
+        double x = cos(xoy_rad) * (double) obstacle_index;
+        double y = sin(xoy_rad) * (double) obstacle_index;
+        double z = sin(yoz_rad) * (double) obstacle_index;
+        Vector3<> point = Vector3<>(x, y, z);
+        pointCloud.push_back(beam->coordToReal(point));
         yoz_angle += step_yoz;
       }
       xoy_angle += step_xoy;
     }
+
 
     return pointCloud;
   }
@@ -51,7 +51,7 @@ namespace sonar {
   void Sonar::update(const Sweep& sweep) {
     for (const Beam* beam: sweep.getBeams()) {
       size_t obstacle_index = beam->getObstacleST();
-      std::vector<Vector3<>> pointCloud = this->getBeamEndpoints3D(beam, obstacle_index, 2, 2);
+      std::vector<Vector3<>> pointCloud = this->getBeamEndpoints3D(beam, obstacle_index, 16, 16);
 
       // TODO Use sonar position instead of center of axis
       float prob = float(unsigned(beam->at(obstacle_index))) / 255.0;
