@@ -446,8 +446,7 @@ namespace octomap {
       KeySet endpoints;
       for (const auto& endpointCoord: pointcloud) {
         Key endpoint = Key(endpointCoord);
-        auto succ = endpoints.insert(std::move(endpoint));
-        if (succ.second) {
+        if (endpoints.insert(std::move(endpoint))) {
           discretizedPc.push_back(endpointCoord);
         }
       }

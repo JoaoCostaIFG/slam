@@ -27,11 +27,11 @@ namespace HashTable {
       auto index = this->indexFromHash(hash);
 
       TableEntry<T>* search = table.at(index);
-      int nIters = 0;
+      int nIters = 1;
       // there are neither deleted entries nor repeated values
       while (search != nullptr) {
         // loop
-        index = this->indexFromHash(this->strategy->nextHash(index, hash, nIters++));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
         search = table.at(index);
       }
 
@@ -54,27 +54,27 @@ namespace HashTable {
     }
 
     TableEntry<T>* getEntry(const T& toFind) const {
-      const auto initialHash = toFind.hash();
-      auto index = this->indexFromHash(initialHash);
+      const auto hash = this->strategy->hash(toFind);
+      auto index = this->indexFromHash(hash);
 
       TableEntry<T>* entry = table.at(index);
-      int nIters = 0;
+      int nIters = 1;
       while (entry != nullptr) {
         if (!entry->isDeleted() && entry->getValue() == toFind)
           return entry;
-        index = this->indexFromHash(this->strategy->nextHash(index, initialHash, nIters++));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
         entry = table.at(index);
       }
       return nullptr;
     }
 
   public:
-    explicit HashTable(int size, HashStrategy<T>* strategy = new QuadraticHashStrategy<T>()) : table(size, nullptr),
-                                                                                               nOccupied(0) {
+    // PLEASE KEEP THE INITIAL TABLE SIZE A POWER OF 2, SO DOUBLE HASHING CAN WORK
+    explicit HashTable(size_t size = 32, HashStrategy<T>* strategy = new QuadraticHashStrategy<T>()) :
+        table(size, nullptr),
+        nOccupied(0) {
       this->strategy = strategy;
     }
-
-    HashTable() : HashTable(20) {}
 
     std::vector<TableEntry<T>*> getTable() const {
       return table;
@@ -97,16 +97,18 @@ namespace HashTable {
       return this->getEntry(toFind) != nullptr;
     }
 
+    unsigned int collisions = 0;
+
     /**
      * @param key
      * @return If container didn't "contain" the element
      */
     bool insert(const T& key) {
-      const auto hash = key.hash();
+      const auto hash = this->strategy->hash(key);
       auto index = this->indexFromHash(hash);
       TableEntry<T>* entry = table.at(index);
 
-      int nIters = 0;
+      int nIters = 1;
       while (entry != nullptr) {
         if (entry->isDeleted()) {
           entry->setValue(key, hash);
@@ -114,8 +116,9 @@ namespace HashTable {
         } else if (entry->getValue() == key) {
           return false;
         }
+        ++collisions;
         // loop
-        index = this->indexFromHash(this->strategy->nextHash(index, hash, nIters++));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
         entry = table.at(index);
       }
 
@@ -148,8 +151,8 @@ namespace HashTable {
     }
 
     void merge(const HashTable& h) {
-      for (TableEntry<T>* i: h.getAll()) {
-        insert(i->getValue());
+      for (const TableEntry<T>* e: h) {
+        insert(e->getValue());
       }
     }
 
@@ -166,11 +169,11 @@ namespace HashTable {
 
     typedef HashTableIterator<TableEntry<T>*> const_iterator;
 
-    const_iterator begin() {
+    const_iterator begin() const {
       return const_iterator(this->table);
     }
 
-    const_iterator end() {
+    const_iterator end() const {
       return const_iterator(this->table, true);
     }
   };
