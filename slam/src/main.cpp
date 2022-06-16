@@ -1,12 +1,9 @@
 #include <bitset>
 #include <iostream>
-#include <fstream>
 #include <chrono>
 #include <random>
 
 #include "../include/octomap/Octomap.h"
-#include "../include/HashTable/HashTable.h"
-#include "../include/HashTable/HashTableIterator.h"
 #include "../include/sonar/Scan.h"
 #include "../include/sonar/Sonar.h"
 #include "../include/sonar/Filters.h"
@@ -16,7 +13,7 @@ using namespace octomap;
 using namespace sonar;
 
 using chrono::high_resolution_clock;
-using chrono::milliseconds;
+using chrono::microseconds;
 using chrono::duration_cast;
 
 // https://segeval.cs.princeton.edu/public/off_format.html
@@ -39,27 +36,104 @@ vector<Vector3f> importOff(const string& filename) {
   return ret;
 }
 
-void benchmark() {
-  std::ofstream file("bench.txt", std::ios_base::trunc);
+void benchmarkSetInsert() {
+  std::ofstream file("benchmark_set_insert_nodups_quad_reserve.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
-  float a = 10000.0, b = 2.0;
+  float a = 10000.0, b = 5.0;
   std::normal_distribution<float> distribution(a, b);
-  for (int cnt = 1000; cnt < 2000000; cnt *= 1.5) {
-    Vector3f orig;
-    Octomap o = Octomap<>();
-    file << "Inserting to normal distribution of coordinates (" << a << ", " << b << ") " << cnt
-         << " times\n";
+
+  file << "Number of inserts: (microseconds, number of duplicates, number of colisions)x5\n";
+
+  for (unsigned int cnt = 1000; cnt <= 4000000; cnt += (cnt / 10)) {
+    //cout << cnt << "\n";
+    file << cnt << ":";
     for (int i = 0; i < 5; ++i) {
+      HashTable::HashTable<Vector3f> h(cnt * 2, new HashTable::QuadraticHashStrategy<Vector3f>());
       auto startTime = high_resolution_clock::now();
-      for (int j = 0; j < cnt; ++j) {
-        Vector3f dest(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
-        o.updateOccupancy(dest, 0.8);
+      unsigned int dups = 0;
+      for (unsigned int j = 0; j < cnt; ++j) {
+        //auto v = Vector3f(distribution(generator));
+        auto v = Vector3f(distribution(generator), distribution(generator), distribution(generator));
+        if (!h.insert(v))
+          ++dups;
       }
-      auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
-      file << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
+      auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
+      file << " (" << micros << ", " << dups << ", " << h.collisions << ")";
     }
+    file << "\n";
   }
+}
+
+void benchmarkLookup() {
+  std::ofstream file("benchmark_set_lookup_nonexisting.txt", std::ios_base::trunc);
+
+  std::default_random_engine generator(std::hash<std::string>()("peedors"));
+  float a = 10000.0, b = 5.0;
+  std::normal_distribution<float> distribution(a, b);
+
+  unsigned int cnt = 4000000;
+  HashTable::HashTable<Vector3f> h(cnt * 2, new HashTable::QuadraticHashStrategy<Vector3f>());
+
+  file << "Perform lookups that don't exist in set. Number of lookups: time. Number of inserts: " << cnt << "\n";
+
+  for (unsigned int i = 0; i < cnt; ++i) {
+    auto v = Vector3f(distribution(generator), distribution(generator), distribution(generator));
+    h.insert(v);
+  }
+
+  cout << "Insertei\n";
+
+  auto it = h.begin();
+  for (int i = 0; i < 1000; ++i)
+    ++it;
+  auto lookup = it->getValue();
+  h.remove(lookup);
+
+  unsigned int lookupCnt = 500000;
+  for (int i = 0; i < 5; ++i) {
+    auto startTime = high_resolution_clock::now();
+    for (unsigned int j = 0; j < lookupCnt; ++j) {
+      if (h.contains(lookup)) {
+        [[unlikely]]
+            cout << "Something went wrong, element found.\n";
+      }
+      ++it;
+    }
+    auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
+    file << lookupCnt << ": " << micros << "\n";
+  }
+}
+
+void benchmark() {
+  std::ofstream file("benchmark_set_merge.txt", std::ios_base::trunc);
+
+  std::default_random_engine generator(std::hash<std::string>()("peedors"));
+  float a = 10000.0, b = 5.0;
+  std::normal_distribution<float> distribution(a, b);
+
+  file << "Merge 2 big sets. Number of inserts on each: times\n";
+
+  for (unsigned int cnt = 250000; cnt <= 4000000; cnt *= 2) {
+    cout << cnt << "\n";
+
+    file << cnt << ":";
+    for (int i = 0; i < 5; ++i) {
+      HashTable::HashTable<Vector3f> h(cnt * 2, new HashTable::QuadraticHashStrategy<Vector3f>());
+      HashTable::HashTable<Vector3f> h2(cnt * 2, new HashTable::QuadraticHashStrategy<Vector3f>());
+      for (unsigned int i = 0; i < cnt; ++i) {
+        h.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
+        h2.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
+      }
+
+      auto startTime = high_resolution_clock::now();
+      h.merge(h2);
+      auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
+      file << " " << micros;
+    }
+    file << "\n";
+  }
+
 }
 
 void menu() {
@@ -78,8 +152,8 @@ void menu() {
       case (1): {
         auto startTime = high_resolution_clock::now();
         o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1);
-        auto millis = duration_cast<milliseconds>(high_resolution_clock::now() - startTime).count();
-        cout << "Ms: " << millis << " Secs: " << (double) millis / 1000.0 << endl;
+        auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
+        cout << "Micros: " << micros;
         o.writeBinary("plane.bt");
         cout << "\nResult saved as plane.bt\n\n";
         break;
@@ -141,6 +215,8 @@ int main() {
   //  sonar.update(*sweep);
   //  sonar.writeBinary("auv-" + std::to_string(i) + ".bt");
   //}
+
+  // benchmark();
 
   return EXIT_SUCCESS;
 }
