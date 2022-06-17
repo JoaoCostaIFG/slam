@@ -208,5 +208,6 @@ void menu() {
 int main() {
   menu();
   //benchmark();
+
   return EXIT_SUCCESS;
 }
