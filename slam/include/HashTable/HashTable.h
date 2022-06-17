@@ -29,11 +29,12 @@ namespace HashTable {
       auto index = this->indexFromHash(hash);
 
       TableEntry<T>* search = table.at(index);
-      int nIters = 1;
+      int nIters = 0;
       // there are neither deleted entries nor repeated values
       while (search != nullptr) {
+        ++nIters;
         // loop
-        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters));
         search = table.at(index);
       }
 
@@ -62,11 +63,12 @@ namespace HashTable {
       auto index = this->indexFromHash(hash);
 
       TableEntry<T>* entry = table.at(index);
-      int nIters = 1;
+      int nIters = 0;
       while (entry != nullptr) {
+        ++nIters;
         if (!entry->isDeleted() && entry->getValue() == toFind)
           return entry;
-        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters));
         entry = table.at(index);
       }
       return nullptr;
@@ -110,8 +112,9 @@ namespace HashTable {
       auto index = this->indexFromHash(hash);
       TableEntry<T>* entry = table.at(index);
 
-      int nIters = 1;
+      int nIters = 0;
       while (entry != nullptr) {
+        ++nIters;
         if (entry->isDeleted()) {
           entry->setValue(key, hash);
           break;
@@ -119,7 +122,7 @@ namespace HashTable {
           return false;
         }
         // loop
-        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters));
         entry = table.at(index);
       }
 

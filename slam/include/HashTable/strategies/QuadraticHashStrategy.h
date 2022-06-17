@@ -1,7 +1,6 @@
 #ifndef SLAM_QUADRATICHASHSTRATEGY_H
 #define SLAM_QUADRATICHASHSTRATEGY_H
 
-#include <stdint.h>
 #include "HashStrategy.h"
 
 namespace HashTable {
@@ -9,7 +8,7 @@ namespace HashTable {
   class QuadraticHashStrategy : public HashStrategy<T> {
   public:
     [[nodiscard]] size_t offset(size_t hash, int nIters) const override {
-      return nIters * nIters;
+      return (nIters * nIters + nIters) / 2;
     }
   };
 }
