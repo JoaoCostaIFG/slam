@@ -1,7 +1,3 @@
-//
-// Created by joao on 3/22/22.
-//
-
 #ifndef SLAM_VECTOR3_H
 #define SLAM_VECTOR3_H
 

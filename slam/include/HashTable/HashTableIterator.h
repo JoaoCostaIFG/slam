@@ -1,7 +1,3 @@
-//
-// Created by PC on 17/05/2022.
-//
-
 #ifndef SLAM_HASHTABLEITERATOR_H
 #define SLAM_HASHTABLEITERATOR_H
 

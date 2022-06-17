@@ -14,6 +14,8 @@ namespace HashTable {
   template<typename T>
   class HashTable {
   private:
+    inline static float loadFactor = 0.75f;
+
     HashStrategy<T>* strategy;
     std::vector<TableEntry<T>*> table;
     int nOccupied;
@@ -27,11 +29,11 @@ namespace HashTable {
       auto index = this->indexFromHash(hash);
 
       TableEntry<T>* search = table.at(index);
-      int nIters = 0;
+      int nIters = 1;
       // there are neither deleted entries nor repeated values
       while (search != nullptr) {
         // loop
-        index = this->indexFromHash(this->strategy->nextHash(index, hash, nIters++));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
         search = table.at(index);
       }
 
@@ -40,10 +42,12 @@ namespace HashTable {
       ++nOccupied;
     }
 
-    void resize() {
+    void resize(size_t neededSize) {
       nOccupied = 0;
 
       auto oldTable = std::move(this->table);
+      size_t newSize = oldTable.size() * 2;
+      while (newSize < neededSize) newSize *= 2;
       this->table = std::vector<TableEntry<T>*>(oldTable.size() * 2, nullptr);
 
       for (size_t i = 0; i < oldTable.size(); ++i) {
@@ -54,27 +58,27 @@ namespace HashTable {
     }
 
     TableEntry<T>* getEntry(const T& toFind) const {
-      const auto initialHash = toFind.hash();
-      auto index = this->indexFromHash(initialHash);
+      const auto hash = this->strategy->hash(toFind);
+      auto index = this->indexFromHash(hash);
 
       TableEntry<T>* entry = table.at(index);
-      int nIters = 0;
+      int nIters = 1;
       while (entry != nullptr) {
         if (!entry->isDeleted() && entry->getValue() == toFind)
           return entry;
-        index = this->indexFromHash(this->strategy->nextHash(index, initialHash, nIters++));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
         entry = table.at(index);
       }
       return nullptr;
     }
 
   public:
-    explicit HashTable(int size, HashStrategy<T>* strategy = new QuadraticHashStrategy<T>()) : table(size, nullptr),
-                                                                                               nOccupied(0) {
+    // PLEASE KEEP THE INITIAL TABLE SIZE A POWER OF 2, SO DOUBLE HASHING CAN WORK
+    explicit HashTable(size_t size = 32, HashStrategy<T>* strategy = new QuadraticHashStrategy<T>()) :
+        table(size, nullptr),
+        nOccupied(0) {
       this->strategy = strategy;
     }
-
-    HashTable() : HashTable(20) {}
 
     std::vector<TableEntry<T>*> getTable() const {
       return table;
@@ -102,11 +106,11 @@ namespace HashTable {
      * @return If container didn't "contain" the element
      */
     bool insert(const T& key) {
-      const auto hash = key.hash();
+      const auto hash = this->strategy->hash(key);
       auto index = this->indexFromHash(hash);
       TableEntry<T>* entry = table.at(index);
 
-      int nIters = 0;
+      int nIters = 1;
       while (entry != nullptr) {
         if (entry->isDeleted()) {
           entry->setValue(key, hash);
@@ -115,7 +119,7 @@ namespace HashTable {
           return false;
         }
         // loop
-        index = this->indexFromHash(this->strategy->nextHash(index, hash, nIters++));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
         entry = table.at(index);
       }
 
@@ -123,8 +127,8 @@ namespace HashTable {
       if (entry == nullptr)
         table[index] = new TableEntry<T>(key, hash);
 
-      ++nOccupied;
-      if ((nOccupied * 100) / this->tableSize() > 75) resize();
+      // we pass 0 to the resize because we just want to double the current size (only 1 jump)
+      if (++nOccupied > HashTable::loadFactor * this->tableSize()) resize(0);
       return true;
     }
 
@@ -147,30 +151,28 @@ namespace HashTable {
       return false;
     }
 
-    void merge(const HashTable& h) {
-      for (TableEntry<T>* i: h.getAll()) {
-        insert(i->getValue());
-      }
-    }
-
-    std::vector<TableEntry<T>*> getAll() const {
-      std::vector<TableEntry<T>*> ret;
-      for (size_t i = 0; i < table.size(); i++) {
-        if (table.at(i) != nullptr && !table.at(i)->isDeleted()) {
-          ret.push_back(table.at(i));
+    void merge(const HashTable& h, bool doReserve = false) {
+      if (doReserve) {
+        size_t maxNeededSize = nOccupied + h.size();
+        if (maxNeededSize > HashTable::loadFactor * this->tableSize()) {
+          this->resize(maxNeededSize);
         }
       }
 
-      return ret;
+      size_t k = 0;
+      for (const TableEntry<T>* e: h) {
+        if (insert(e->getValue())) ++k;
+      }
+      //std::cout << " - " << (double) k / h.size() << "\n";
     }
 
     typedef HashTableIterator<TableEntry<T>*> const_iterator;
 
-    const_iterator begin() {
+    const_iterator begin() const {
       return const_iterator(this->table);
     }
 
-    const_iterator end() {
+    const_iterator end() const {
       return const_iterator(this->table, true);
     }
   };

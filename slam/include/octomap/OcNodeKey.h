@@ -1,7 +1,3 @@
-//
-// Created by joao on 3/23/22.
-//
-
 #ifndef SLAM_OCNODEKEY_H
 #define SLAM_OCNODEKEY_H
 
