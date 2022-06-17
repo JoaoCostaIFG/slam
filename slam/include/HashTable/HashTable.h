@@ -103,6 +103,8 @@ namespace HashTable {
       return this->getEntry(toFind) != nullptr;
     }
 
+    size_t collisions = 0;
+
     /**
      * @param key
      * @return If container didn't "contain" the element
@@ -114,6 +116,7 @@ namespace HashTable {
 
       int nIters = 0;
       while (entry != nullptr) {
+        ++collisions;
         ++nIters;
         if (entry->isDeleted()) {
           entry->setValue(key, hash);

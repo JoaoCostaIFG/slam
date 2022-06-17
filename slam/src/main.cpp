@@ -36,8 +36,8 @@ vector<Vector3f> importOff(const string& filename) {
   return ret;
 }
 
-void benchmarkSetInsert() {
-  std::ofstream file("benchmark_set_insert_nodups_quad_reserve.txt", std::ios_base::trunc);
+void benchmarkInsert() {
+  std::ofstream file("benchmark_set_insert_dups_linear.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
   float a = 10000.0, b = 5.0;
@@ -46,15 +46,15 @@ void benchmarkSetInsert() {
   file << "Number of inserts: (microseconds, number of duplicates, number of colisions)x5\n";
 
   for (unsigned int cnt = 1000; cnt <= 4000000; cnt += (cnt / 10)) {
-    //cout << cnt << "\n";
+    cout << cnt << "\n";
     file << cnt << ":";
     for (int i = 0; i < 5; ++i) {
-      HashTable::HashTable<Vector3f> h(cnt * 2, new HashTable::QuadraticHashStrategy<Vector3f>());
+      HashTable::HashTable<Vector3f> h(32, new HashTable::LinearHashStrategy<Vector3f>());
       auto startTime = high_resolution_clock::now();
       unsigned int dups = 0;
       for (unsigned int j = 0; j < cnt; ++j) {
-        //auto v = Vector3f(distribution(generator));
-        auto v = Vector3f(distribution(generator), distribution(generator), distribution(generator));
+        auto v = Vector3f(distribution(generator));
+        //auto v = Vector3f(distribution(generator), distribution(generator), distribution(generator));
         if (!h.insert(v))
           ++dups;
       }
@@ -65,14 +65,14 @@ void benchmarkSetInsert() {
   }
 }
 
-void benchmark() {
-  std::ofstream file("benchmark_set_lookup_nonexisting.txt", std::ios_base::trunc);
+void benchmarkLookup() {
+  unsigned int lookupCnt = 600000;
+  std::ofstream file("benchmark_set_lookup_existing_600000.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
   float a = 10000.0, b = 5.0;
   std::normal_distribution<float> distribution(a, b);
 
-  unsigned int lookupCnt = 600000;
   unsigned int cnt = lookupCnt * 8;
   HashTable::HashTable<Vector3f> h(cnt * 2, new HashTable::QuadraticHashStrategy<Vector3f>());
 
@@ -86,15 +86,15 @@ void benchmark() {
   cout << "Insertei\n";
 
   auto it = h.begin();
-  for (unsigned int i = 0; i < cnt / 4; ++i) ++it;
-  auto lookup = it->getValue();
-  h.remove(lookup);
+  //for (unsigned int i = 0; i < cnt / 4; ++i) ++it;
+  //auto lookup = it->getValue();
+  //h.remove(lookup);
 
   for (int i = 0; i < 5; ++i) {
     auto startTime = high_resolution_clock::now();
     for (unsigned int j = 0; j < lookupCnt; ++j) {
-      //auto lookup = it->getValue();
-      if (h.contains(lookup)) {
+      auto lookup = it->getValue();
+      if (!h.contains(lookup)) {
         [[unlikely]]
             cout << "Something went wrong, element not found.\n";
       }
@@ -105,8 +105,8 @@ void benchmark() {
   }
 }
 
-void benchmarkMerge() {
-  std::ofstream file("benchmark_set_merge_dups.txt", std::ios_base::trunc);
+void benchmark() {
+  std::ofstream file("benchmark_set_merge_resize.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
   float a = 10000.0, b = 5.0;
@@ -124,14 +124,15 @@ void benchmarkMerge() {
       for (unsigned int j = 0; j < cnt; ++j) {
         auto v = Vector3f(distribution(generator), distribution(generator), distribution(generator));
         h.insert(v);
-        if (((int) distribution(generator)) % 2 == 0)
-          h2.insert(v);
-        else
-          h2.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
+        //if (((int) distribution(generator)) % 2 == 0)
+        //  h2.insert(v);
+        //else
+        //  h2.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
+        h2.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
       }
 
       auto startTime = high_resolution_clock::now();
-      h.merge(h2, false);
+      h.merge(h2, true);
       auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
       file << " " << micros;
     }
@@ -206,8 +207,8 @@ void menu() {
 }
 
 int main() {
-  menu();
-  //benchmark();
+  //menu();
+  benchmark();
 
   return EXIT_SUCCESS;
 }
