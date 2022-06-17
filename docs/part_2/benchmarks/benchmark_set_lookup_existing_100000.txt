@@ -1,0 +1,6 @@
+Perform lookups that don't exist in set. Number of lookups: time. Number of inserts: 800000
+100000: 7323
+100000: 7182
+100000: 6847
+100000: 6595
+100000: 7233

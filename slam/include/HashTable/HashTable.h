@@ -14,6 +14,8 @@ namespace HashTable {
   template<typename T>
   class HashTable {
   private:
+    inline static float loadFactor = 0.75f;
+
     HashStrategy<T>* strategy;
     std::vector<TableEntry<T>*> table;
     int nOccupied;
@@ -40,10 +42,12 @@ namespace HashTable {
       ++nOccupied;
     }
 
-    void resize() {
+    void resize(size_t neededSize) {
       nOccupied = 0;
 
       auto oldTable = std::move(this->table);
+      size_t newSize = oldTable.size() * 2;
+      while (newSize < neededSize) newSize *= 2;
       this->table = std::vector<TableEntry<T>*>(oldTable.size() * 2, nullptr);
 
       for (size_t i = 0; i < oldTable.size(); ++i) {
@@ -123,8 +127,8 @@ namespace HashTable {
       if (entry == nullptr)
         table[index] = new TableEntry<T>(key, hash);
 
-      ++nOccupied;
-      if ((nOccupied * 100) / this->tableSize() > 75) resize();
+      // we pass 0 to the resize because we just want to double the current size (only 1 jump)
+      if (++nOccupied > HashTable::loadFactor * this->tableSize()) resize(0);
       return true;
     }
 
@@ -147,21 +151,19 @@ namespace HashTable {
       return false;
     }
 
-    void merge(const HashTable& h) {
-      for (const TableEntry<T>* e: h) {
-        insert(e->getValue());
-      }
-    }
-
-    std::vector<TableEntry<T>*> getAll() const {
-      std::vector<TableEntry<T>*> ret;
-      for (size_t i = 0; i < table.size(); i++) {
-        if (table.at(i) != nullptr && !table.at(i)->isDeleted()) {
-          ret.push_back(table.at(i));
+    void merge(const HashTable& h, bool doReserve = false) {
+      if (doReserve) {
+        size_t maxNeededSize = nOccupied + h.size();
+        if (maxNeededSize > HashTable::loadFactor * this->tableSize()) {
+          this->resize(maxNeededSize);
         }
       }
 
-      return ret;
+      size_t k = 0;
+      for (const TableEntry<T>* e: h) {
+        if (insert(e->getValue())) ++k;
+      }
+      //std::cout << " - " << (double) k / h.size() << "\n";
     }
 
     typedef HashTableIterator<TableEntry<T>*> const_iterator;

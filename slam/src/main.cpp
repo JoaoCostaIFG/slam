@@ -65,14 +65,15 @@ void benchmarkSetInsert() {
   }
 }
 
-void benchmarkLookup() {
+void benchmark() {
   std::ofstream file("benchmark_set_lookup_nonexisting.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
   float a = 10000.0, b = 5.0;
   std::normal_distribution<float> distribution(a, b);
 
-  unsigned int cnt = 4000000;
+  unsigned int lookupCnt = 600000;
+  unsigned int cnt = lookupCnt * 8;
   HashTable::HashTable<Vector3f> h(cnt * 2, new HashTable::QuadraticHashStrategy<Vector3f>());
 
   file << "Perform lookups that don't exist in set. Number of lookups: time. Number of inserts: " << cnt << "\n";
@@ -85,18 +86,17 @@ void benchmarkLookup() {
   cout << "Insertei\n";
 
   auto it = h.begin();
-  for (int i = 0; i < 1000; ++i)
-    ++it;
+  for (unsigned int i = 0; i < cnt / 4; ++i) ++it;
   auto lookup = it->getValue();
   h.remove(lookup);
 
-  unsigned int lookupCnt = 500000;
   for (int i = 0; i < 5; ++i) {
     auto startTime = high_resolution_clock::now();
     for (unsigned int j = 0; j < lookupCnt; ++j) {
+      //auto lookup = it->getValue();
       if (h.contains(lookup)) {
         [[unlikely]]
-            cout << "Something went wrong, element found.\n";
+            cout << "Something went wrong, element not found.\n";
       }
       ++it;
     }
@@ -105,8 +105,8 @@ void benchmarkLookup() {
   }
 }
 
-void benchmark() {
-  std::ofstream file("benchmark_set_merge.txt", std::ios_base::trunc);
+void benchmarkMerge() {
+  std::ofstream file("benchmark_set_merge_dups.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
   float a = 10000.0, b = 5.0;
@@ -114,26 +114,29 @@ void benchmark() {
 
   file << "Merge 2 big sets. Number of inserts on each: times\n";
 
-  for (unsigned int cnt = 250000; cnt <= 4000000; cnt *= 2) {
+  for (unsigned int cnt = 250000; cnt <= 2500000; cnt += cnt / 10) {
     cout << cnt << "\n";
 
     file << cnt << ":";
     for (int i = 0; i < 5; ++i) {
       HashTable::HashTable<Vector3f> h(cnt * 2, new HashTable::QuadraticHashStrategy<Vector3f>());
       HashTable::HashTable<Vector3f> h2(cnt * 2, new HashTable::QuadraticHashStrategy<Vector3f>());
-      for (unsigned int i = 0; i < cnt; ++i) {
-        h.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
-        h2.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
+      for (unsigned int j = 0; j < cnt; ++j) {
+        auto v = Vector3f(distribution(generator), distribution(generator), distribution(generator));
+        h.insert(v);
+        if (((int) distribution(generator)) % 2 == 0)
+          h2.insert(v);
+        else
+          h2.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
       }
 
       auto startTime = high_resolution_clock::now();
-      h.merge(h2);
+      h.merge(h2, false);
       auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
       file << " " << micros;
     }
     file << "\n";
   }
-
 }
 
 void menu() {
@@ -167,7 +170,6 @@ void menu() {
 
         Sonar sonar;
         sonar.update(*sweep);
-        sonar.writeBinary("auv.bt");
         cout << "\nResult saved as auv.bt\n\n";
         break;
       }
@@ -196,27 +198,8 @@ void menu() {
 }
 
 int main() {
-  menu();
-
-  // Reads data from json, displays cartesian and exports to octovis format
-  //ifstream ss("../data.json");
-  //Scan* s = Scan::importJson(ss);
-
-  //Sonar sonar;
-
-  //auto sweeps = s->getSweeps();
-  //for (size_t i = 0; i < sweeps.size(); ++i) {
-  //  Sweep* sweep = sweeps.at(i);
-  //  // applyGaussian(*sweep, 9, 5);
-  //  applyMedian(*sweep, 3);
-  //  // displaySweep(*sweep, false);
-
-  //  cout << "Doing sweep: " << i << endl;
-  //  sonar.update(*sweep);
-  //  sonar.writeBinary("auv-" + std::to_string(i) + ".bt");
-  //}
-
-  // benchmark();
+  //menu();
+  benchmark();
 
   return EXIT_SUCCESS;
 }
