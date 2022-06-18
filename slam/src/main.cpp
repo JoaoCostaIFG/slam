@@ -2,6 +2,7 @@
 #include <iostream>
 #include <chrono>
 #include <random>
+#include <unordered_set>
 
 #include "../include/octomap/Octomap.h"
 #include "../include/sonar/Scan.h"
@@ -37,7 +38,7 @@ vector<Vector3f> importOff(const string& filename) {
 }
 
 void benchmarkInsert() {
-  std::ofstream file("benchmark_set_insert_dups_linear.txt", std::ios_base::trunc);
+  std::ofstream file("benchmark_set_insert_nodups_quad_inplace.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
   float a = 10000.0, b = 5.0;
@@ -46,20 +47,20 @@ void benchmarkInsert() {
   file << "Number of inserts: (microseconds, number of duplicates, number of colisions)x5\n";
 
   for (unsigned int cnt = 1000; cnt <= 4000000; cnt += (cnt / 10)) {
-    cout << cnt << "\n";
+    //cout << cnt << "\n";
     file << cnt << ":";
     for (int i = 0; i < 5; ++i) {
-      HashTable::HashTable<Vector3f> h(32, new HashTable::LinearHashStrategy<Vector3f>());
+      HashTable::HashTable<Vector3f> h(32, new HashTable::QuadraticHashStrategy<Vector3f>());
       auto startTime = high_resolution_clock::now();
       unsigned int dups = 0;
       for (unsigned int j = 0; j < cnt; ++j) {
-        auto v = Vector3f(distribution(generator));
-        //auto v = Vector3f(distribution(generator), distribution(generator), distribution(generator));
+        //auto v = Vector3f(distribution(generator));
+        auto v = Vector3f(distribution(generator), distribution(generator), distribution(generator));
         if (!h.insert(v))
           ++dups;
       }
       auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
-      //file << " (" << micros << ", " << dups << ", " << h.collisions << ")";
+      file << " (" << micros << ", " << dups << ", " << h.collisions << ")";
     }
     file << "\n";
   }
@@ -105,7 +106,7 @@ void benchmarkLookup() {
   }
 }
 
-void benchmark() {
+void benchmarkMerge() {
   std::ofstream file("benchmark_set_merge_resize.txt", std::ios_base::trunc);
 
   std::default_random_engine generator(std::hash<std::string>()("peedors"));
@@ -140,6 +141,58 @@ void benchmark() {
   }
 }
 
+void benchmarkcppset() {
+  std::ofstream file("benchmark_cppset_merge.txt", std::ios_base::trunc);
+
+  std::default_random_engine generator(std::hash<std::string>()("peedors"));
+  float a = 10000.0, b = 5.0;
+  std::normal_distribution<float> distribution(a, b);
+
+  file << "Merge 2 big sets. Number of inserts on each: times\n";
+
+  for (unsigned int cnt = 250000; cnt <= 2500000; cnt += cnt / 10) {
+    cout << cnt << "\n";
+
+    file << cnt << ":";
+    for (int i = 0; i < 5; ++i) {
+      std::unordered_set<Vector3f, Vector3f::Hash, Vector3f::Cmp> h;
+      std::unordered_set<Vector3f, Vector3f::Hash, Vector3f::Cmp> h2;
+      for (unsigned int j = 0; j < cnt; ++j) {
+        auto v = Vector3f(distribution(generator), distribution(generator), distribution(generator));
+        h.insert(v);
+        //if (((int) distribution(generator)) % 2 == 0)
+        //  h2.insert(v);
+        //else
+        //  h2.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
+        h2.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
+      }
+
+      auto startTime = high_resolution_clock::now();
+      h.insert(h2.begin(), h2.end());
+      auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
+      file << " " << micros;
+    }
+    file << "\n";
+  }
+}
+
+void benchmark() {
+  std::ofstream file("real_test.txt", std::ios_base::trunc);
+
+  file << "Real test\n";
+
+  for (int i = 0; i < 5; ++i) {
+    Octomap o = Octomap<>();
+
+    auto startTime = high_resolution_clock::now();
+    o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1);
+    auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
+    file << micros << "\n";
+
+    cout << (micros / 1000) / 1000.0 << "\n";
+  }
+}
+
 void menu() {
   std::cout << "Welcome to SLAM." << endl << endl;
 
@@ -154,10 +207,7 @@ void menu() {
     std::cin >> option;
     switch (option) {
       case (1): {
-        auto startTime = high_resolution_clock::now();
         o.pointcloudUpdate(importOff("../datasets/airplane_smaller.off"), Vector3f(), 1);
-        auto micros = duration_cast<microseconds>(high_resolution_clock::now() - startTime).count();
-        cout << "Micros: " << micros;
         o.writeBinary("plane.bt");
         cout << "\nResult saved as plane.bt\n\n";
         break;

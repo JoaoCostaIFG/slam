@@ -29,13 +29,13 @@ namespace HashTable {
       const auto hash = entry->getHash();
       auto index = this->indexFromHash(hash);
 
-      TableEntry<T>* search = table.at(index);
-      int nIters = 1;
+      TableEntry<T>* search = table[index];
+      size_t nIters = 1;
       // there are neither deleted entries nor repeated values
       while (search != nullptr) {
         // loop
         index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
-        search = table.at(index);
+        search = table[index];
       }
 
       table[index] = entry;
@@ -52,8 +52,63 @@ namespace HashTable {
       this->table = std::vector<TableEntry<T>*>(oldTable.size() * 2, nullptr);
 
       for (size_t i = 0; i < oldTable.size(); ++i) {
-        auto e = oldTable.at(i);
+        auto e = oldTable[i];
         if (e == nullptr) continue;
+        if (e->isDeleted()) {
+          delete e;
+          continue;
+        }
+        this->move(e);
+      }
+    }
+
+    bool moveInplace(TableEntry<T>* entry, size_t oldSize) {
+      // if it doesn't fall on the first half of the set, just save it in a buffer
+      size_t hash = entry->getHash();
+      size_t index = this->indexFromHash(hash);
+
+      // try to place it on the second half of the set
+      TableEntry<T>* search = table[index];
+      size_t nIters = 1;
+      while (search != nullptr) {
+        if (index < oldSize) return false;
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
+        search = table[index];
+      }
+
+      // check if it is possible to place it on the second half
+      this->table[index] = entry;
+      ++nOccupied;
+      return true;
+    }
+
+    void resizeInplace(size_t neededSize) {
+      nOccupied = 0;
+
+      size_t oldSize = this->tableSize();
+
+      size_t newSize = oldSize * 2;
+      while (newSize < neededSize) newSize *= 2;
+      this->reserveInner(newSize);
+
+      std::vector<TableEntry<T>*> buffer;
+      buffer.reserve(oldSize / 2);
+
+      for (size_t i = 0; i < oldSize; ++i) {
+        auto e = this->table[i];
+
+        if (e == nullptr) continue;
+        if (e->isDeleted()) {
+          delete e;
+          continue;
+        }
+        // if it doesn't fall on the first half of the set, just save it in a buffer
+        if (!this->moveInplace(e, oldSize)) buffer.push_back(e);
+        // clear first half
+        this->table[i] = nullptr;
+      }
+
+      for (const auto& e: buffer) {
         this->move(e);
       }
     }
@@ -62,18 +117,21 @@ namespace HashTable {
       const auto hash = this->strategy->hash(toFind);
       auto index = this->indexFromHash(hash);
 
-      TableEntry<T>* entry = table.at(index);
-      int nIters = 1;
+      TableEntry<T>* entry = table[index];
+      size_t nIters = 1;
       while (entry != nullptr) {
         if (!entry->isDeleted() && entry->getValue() == toFind)
           return entry;
         index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
-        entry = table.at(index);
+        entry = table[index];
       }
       return nullptr;
     }
 
-  public:
+    void reserveInner(size_t newSize) {
+      if (newSize < this->tableSize()) return;
+      this->table.resize(newSize, nullptr);
+    }
 
     static size_t nextPow2(const size_t x) {
       // x is power of 2
@@ -83,6 +141,7 @@ namespace HashTable {
       return ret;
     }
 
+  public:
     // initial table size is kept as a power of 2, so the table size is always a power of 2
     // this enables quadratic probing and double hashing to work correctly
     explicit HashTable(size_t size = 32, HashStrategy<T>* strategy = new QuadraticHashStrategy<T>()) :
@@ -99,11 +158,6 @@ namespace HashTable {
       return nOccupied;
     }
 
-    void reserve(size_t newSize) {
-      if (newSize < this->tableSize()) return;
-      this->table.resize(newSize, nullptr);
-    }
-
     size_t indexFromHash(const size_t i) const {
       return i % this->tableSize();
     }
@@ -112,6 +166,8 @@ namespace HashTable {
       return this->getEntry(toFind) != nullptr;
     }
 
+    size_t collisions = 0;
+
     /**
      * @param key
      * @return If container didn't "contain" the element
@@ -119,10 +175,11 @@ namespace HashTable {
     bool insert(const T& key) {
       const auto hash = this->strategy->hash(key);
       auto index = this->indexFromHash(hash);
-      TableEntry<T>* entry = table.at(index);
+      TableEntry<T>* entry = table[index];
 
-      int nIters = 1;
+      size_t nIters = 1;
       while (entry != nullptr) {
+        ++collisions;
         if (entry->isDeleted()) {
           entry->setValue(key, hash);
           break;
@@ -131,7 +188,7 @@ namespace HashTable {
         }
         // loop
         index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
-        entry = table.at(index);
+        entry = table[index];
       }
 
       // need to create the container
@@ -139,7 +196,7 @@ namespace HashTable {
         table[index] = new TableEntry<T>(key, hash);
 
       // we pass 0 to the resize because we just want to double the current size (only 1 jump)
-      if (++nOccupied > HashTable::loadFactor * this->tableSize()) resize(0);
+      if (++nOccupied > HashTable::loadFactor * this->tableSize()) resizeInplace(0);
       return true;
     }
 
@@ -152,6 +209,19 @@ namespace HashTable {
       return ret;
     }
 
+    void merge(const HashTable& h, bool doReserve = true) {
+      if (doReserve) {
+        size_t maxNeededSize = nOccupied + h.size();
+        if (maxNeededSize > HashTable::loadFactor * this->tableSize()) {
+          this->resizeInplace(maxNeededSize);
+        }
+      }
+
+      for (const TableEntry<T>* e: h) {
+        insert(e->getValue());
+      }
+    }
+
     bool remove(const T& key) {
       auto entry = this->getEntry(key);
       if (entry != nullptr) {
@@ -162,19 +232,8 @@ namespace HashTable {
       return false;
     }
 
-    void merge(const HashTable& h, bool doReserve = false) {
-      if (doReserve) {
-        size_t maxNeededSize = nOccupied + h.size();
-        if (maxNeededSize > HashTable::loadFactor * this->tableSize()) {
-          this->resize(maxNeededSize);
-        }
-      }
-
-      size_t k = 0;
-      for (const TableEntry<T>* e: h) {
-        if (insert(e->getValue())) ++k;
-      }
-      //std::cout << " - " << (double) k / h.size() << "\n";
+    void reserve(size_t newSize) {
+      this->reserveInner(nextPow2(newSize));
     }
 
     typedef HashTableIterator<TableEntry<T>*> const_iterator;
