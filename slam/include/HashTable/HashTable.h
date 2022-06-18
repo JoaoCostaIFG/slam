@@ -150,6 +150,12 @@ namespace HashTable {
       this->strategy = strategy;
     }
 
+    ~HashTable() {
+      for (size_t i = 0; i < this->table.size(); ++i) {
+        delete this->table[i];
+      }
+    }
+
     std::vector<TableEntry<T>*> getTable() const {
       return table;
     }
