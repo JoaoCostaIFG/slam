@@ -1,8 +1,9 @@
 #ifndef SLAM_HASHTABLE_H
 #define SLAM_HASHTABLE_H
 
-#include "vector"
 #include <iostream>
+#include <vector>
+
 #include "TableEntry.h"
 #include "HashTableIterator.h"
 #include "strategies/HashStrategy.h"
@@ -29,12 +30,11 @@ namespace HashTable {
       auto index = this->indexFromHash(hash);
 
       TableEntry<T>* search = table.at(index);
-      int nIters = 0;
+      int nIters = 1;
       // there are neither deleted entries nor repeated values
       while (search != nullptr) {
-        ++nIters;
         // loop
-        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
         search = table.at(index);
       }
 
@@ -63,21 +63,30 @@ namespace HashTable {
       auto index = this->indexFromHash(hash);
 
       TableEntry<T>* entry = table.at(index);
-      int nIters = 0;
+      int nIters = 1;
       while (entry != nullptr) {
-        ++nIters;
         if (!entry->isDeleted() && entry->getValue() == toFind)
           return entry;
-        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
         entry = table.at(index);
       }
       return nullptr;
     }
 
   public:
-    // PLEASE KEEP THE INITIAL TABLE SIZE A POWER OF 2, SO DOUBLE HASHING CAN WORK
+
+    static size_t nextPow2(const size_t x) {
+      // x is power of 2
+      if ((x & (x - 1)) == 0) return x;
+      size_t ret = 1;
+      while (ret < x) ret <<= 1;
+      return ret;
+    }
+
+    // initial table size is kept as a power of 2, so the table size is always a power of 2
+    // this enables quadratic probing and double hashing to work correctly
     explicit HashTable(size_t size = 32, HashStrategy<T>* strategy = new QuadraticHashStrategy<T>()) :
-        table(size, nullptr),
+        table(nextPow2(size), nullptr),
         nOccupied(0) {
       this->strategy = strategy;
     }
@@ -103,8 +112,6 @@ namespace HashTable {
       return this->getEntry(toFind) != nullptr;
     }
 
-    size_t collisions = 0;
-
     /**
      * @param key
      * @return If container didn't "contain" the element
@@ -114,10 +121,8 @@ namespace HashTable {
       auto index = this->indexFromHash(hash);
       TableEntry<T>* entry = table.at(index);
 
-      int nIters = 0;
+      int nIters = 1;
       while (entry != nullptr) {
-        ++collisions;
-        ++nIters;
         if (entry->isDeleted()) {
           entry->setValue(key, hash);
           break;
@@ -125,7 +130,7 @@ namespace HashTable {
           return false;
         }
         // loop
-        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters));
+        index = this->indexFromHash(hash + this->strategy->offset(hash, nIters++));
         entry = table.at(index);
       }
 

@@ -207,8 +207,8 @@ void menu() {
 }
 
 int main() {
-  //menu();
-  benchmark();
+  menu();
+  //benchmark();
 
   return EXIT_SUCCESS;
 }
