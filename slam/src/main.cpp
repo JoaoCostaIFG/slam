@@ -281,14 +281,20 @@ void menu() {
   }
 }
 
+//#include <easy3d/viewer/viewer.h>
+//#include <easy3d/util/initializer.h>
+//#include <easy3d/core/point_cloud.h>
+//#include <easy3d/core/random.h>
+
 int main() {
   //menu();
   //benchmark();
+  //return EXIT_SUCCESS;
 
   ifstream ss("../data.json");
   Scan* s = Scan::importJson(ss);
   Sonar sonar;
-  Localization l(Vector3<>(0, 0, 0), 50, 10, 2);
+  localization::Localization<> l(Vector3<>(0, 0, 0), 50, 10, 42);
 
   auto sweeps = s->getSweeps();
   for (size_t i = 0; i < sweeps.size(); ++i) {
@@ -296,20 +302,36 @@ int main() {
 
     // applyGaussian(*sweep, 9, 5);
     applyMedian(*sweep, 3);
-    displaySweep(*sweep, false);
+    //displaySweep(*sweep, false);
 
     cout << "Doing sweep: " << i << endl;
     sonar.update(*sweep);
 
-    l.update(sonar.octomap, Vector3<>(1.0, 1.0, 1.0),
-             {
-                 Observation(Vector3<>(1, 2, 3), 50),
-             }
-    );
+
+    //l.update(sonar.octomap, Vector3<>(1.0, 1.0, 1.0),
+    //         {
+    //             Observation(Vector3<>(1, 2, 3), 50),
+    //         }
+    //);
 
     sonar.octomap.writeBinary("auv-" + std::to_string(i) + ".bt");
   }
 
+  //easy3d::initialize();
+  //easy3d::Viewer viewer("Octomap");
 
-  return EXIT_SUCCESS;
+  //auto cloud = new easy3d::PointCloud;
+  //auto colors = cloud->add_vertex_property<easy3d::vec3>("v:color");
+  //auto red = easy3d::vec3(1, 0, 0);
+  //auto blue = easy3d::vec3(0, 0, 1);
+  //for (auto& particle: l.particles) {
+  //  auto v = cloud->add_vertex(
+  //      easy3d::vec3(particle.position.x(), particle.position.y(),
+  //                   particle.position.z()));
+  //  colors[v] = red;
+  //}
+  //viewer.add_model(cloud);
+
+  //return viewer.run();
+  return 0;
 }

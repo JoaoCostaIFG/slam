@@ -103,13 +103,13 @@ public:
    * @param i The index of measurement to return
    * @return Returns the intensity of the beam at the given index
    */
-  uint8_t& at(int i) { return *(row + i); }
+  uint8_t& at(size_t i) { return *(row + i); }
 
   /**
    * @param i The index of measurement to return
    * @return Returns the intensity of the beam at the given index
    */
-  [[nodiscard]] uint8_t& at(int i) const { return *(row + i); }
+  [[nodiscard]] uint8_t& at(size_t i) const { return *(row + i); }
 
   /**
    * Creates a beam in the heap from a json node

@@ -99,7 +99,7 @@ public:
    * @param lazy Whether or not to lazy eval (default=false).
    * @return Pointer to the updated node.
    */
-  Node* setOccupancy(const Key& key, float occ, bool lazy = false) {
+  Node* setOccupancy(const Key& key, double occ, bool lazy = false) {
     bool createdRoot = this->createRootIfNeeded();
     return this->rootNode->setOccupancy(key, this->depth, occ, lazy, createdRoot);
   }
@@ -111,7 +111,7 @@ public:
    * @param lazy Whether or not to lazy eval (default=false).
    * @return Pointer to the updated node.
    */
-  Node* setOccupancy(const Vector3<>& location, float occ, bool lazy = false) {
+  Node* setOccupancy(const Vector3<>& location, double occ, bool lazy = false) {
     return this->setOccupancy(Key(location), occ, lazy);
   }
 
@@ -162,7 +162,7 @@ public:
    * @param lazy Whether or not to lazy eval (default=false).
    * @return Pointer to the updated node.
    */
-  Node* updateLogOdds(const Key& key, float logOdds, bool lazy = false) {
+  Node* updateLogOdds(const Key& key, double logOdds, bool lazy = false) {
     // We do a search before updating the target node. This small overhead can save a lot
     // of time in the long-run. Note: the search takes O(l) time, where l is the max depth, which is constant.
     // If the node already exists, we can see if the update would change its log-odds. If the node is stable
@@ -182,8 +182,8 @@ public:
    * @param lazy Whether or not to lazy eval (default=false).
    * @return Pointer to the updated node.
    */
-  Node* updateOccupancy(const Key& key, float occ, bool lazy = false) {
-    return this->updateLogOdds(key, (float) Node::prob2logodds(occ), lazy);
+  Node* updateOccupancy(const Key& key, double occ, bool lazy = false) {
+    return this->updateLogOdds(key, Node::prob2logodds(occ), lazy);
   }
 
   /**
@@ -193,7 +193,7 @@ public:
    * @param lazy Whether or not to lazy eval (default=false).
    * @return Pointer to the updated node.
    */
-  Node* updateOccupancy(const Vector3<>& location, float occ, bool lazy = false) {
+  Node* updateOccupancy(const Vector3<>& location, double occ, bool lazy = false) {
     return this->updateOccupancy(Key(location), occ, lazy);
   }
 
@@ -387,7 +387,7 @@ public:
    * @param occ The occupancy value to use in the update of the end cell.
    * @param lazy Whether or not to use lazy eval (default=false).
    */
-  void rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, float occ,
+  void rayCastUpdate(const Vector3<>& orig, const Vector3<>& end, double occ,
                      bool lazy = false) {
     auto ray = this->rayCast(orig, end);
     for (auto& it: ray)
@@ -409,7 +409,7 @@ public:
    */
   void
   pointcloudUpdate(const std::vector<Vector3<>>& pointcloud, const Vector3<>& origin,
-                   float occ) {
+                   double occ) {
     std::vector<KeySet> freeNodesList, occupiedNodesList;
 
     // small hack to alloc 2 containers for each simultaneous thread
@@ -484,7 +484,7 @@ public:
    * @param occ The occupancy value to update the end node with.
    */
   void discretizedPointcloudUpdate(const std::vector<Vector3<>>& pointcloud,
-                                   const Vector3<>& origin, float occ) {
+                                   const Vector3<>& origin, double occ) {
     std::vector<Vector3<>> discretizedPc;
     KeySet endpoints;
     for (const auto& endpointCoord: pointcloud) {
