@@ -80,6 +80,13 @@ public:
     this->d[2] = z;
   }
 
+  double distanceTo(const Vector3& target) const {
+    double x = this[0] - target[0];
+    double y = this[1] - target[1];
+    double z = this[2] - target[2];
+    return sqrt(x * x + y * y + z * z);
+  }
+
   /**
    * Tests if this vector represents a point in space at the left of another (this.x <= other.x).
    * @param other The point to compare with.

@@ -8,10 +8,12 @@
 #include "../include/sonar/Scan.h"
 #include "../include/sonar/Sonar.h"
 #include "../include/sonar/Filters.h"
+#include "../include/localization/Localization.h"
 
 using namespace std;
 using namespace octomap;
 using namespace sonar;
+using namespace localization;
 
 using chrono::high_resolution_clock;
 using chrono::microseconds;
@@ -280,8 +282,34 @@ void menu() {
 }
 
 int main() {
-  menu();
+  //menu();
   //benchmark();
+
+  ifstream ss("../data.json");
+  Scan* s = Scan::importJson(ss);
+  Sonar sonar;
+  Localization l(Vector3<>(0, 0, 0), 50, 10, 2);
+
+  auto sweeps = s->getSweeps();
+  for (size_t i = 0; i < sweeps.size(); ++i) {
+    Sweep* sweep = sweeps.at(i);
+
+    // applyGaussian(*sweep, 9, 5);
+    applyMedian(*sweep, 3);
+    displaySweep(*sweep, false);
+
+    cout << "Doing sweep: " << i << endl;
+    sonar.update(*sweep);
+
+    l.update(sonar.octomap, Vector3<>(1.0, 1.0, 1.0),
+             {
+                 Observation(Vector3<>(1, 2, 3), 50),
+             }
+    );
+
+    sonar.octomap.writeBinary("auv-" + std::to_string(i) + ".bt");
+  }
+
 
   return EXIT_SUCCESS;
 }

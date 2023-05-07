@@ -5,6 +5,7 @@
 #include <unordered_set>
 #include <vector>
 #include <fstream>
+#include <cmath>
 
 #ifdef _OPENMP
 
@@ -21,6 +22,7 @@
 #define DFLT_RESOLUTION 0.1
 
 namespace octomap {
+
 template<typename T = uint16_t>
 class Octomap {
 private:
@@ -225,8 +227,43 @@ public:
   }
 
   /**
+   * Returns a set of the nodes that are within the sphere created by the
+   * center and radius parameters.
+   * Note that the nodes might not be at the lowest level possible if the node
+   * isn't divided. This means that the parent can be used in place of the child
+   * (same information).
+   * @param center
+   * @param radius
+   * @return
+   */
+  std::unordered_set<Node*>
+  searchNeighbors(const Vector3<>& center, const double radius) {
+    if (this->rootNode == nullptr) return nullptr;
+    std::unordered_set<Node*> ret;
+    for (double x = center.x() - radius;
+         x < center.x() + radius; x += this->resolution) {
+      for (double y = center.y() - radius;
+           y < center.y() + radius; y += this->resolution) {
+        for (double z = center.z() - radius;
+             z < center.z() + radius; z += this->resolution) {
+          double xDiff = x - center.x();
+          double yDiff = y - center.y();
+          double zDiff = z - center.z();
+          if (xDiff * xDiff + yDiff * yDiff + zDiff * zDiff < radius * radius) {
+            // inside sphere created by the radius
+            auto n = this->search({x, y, z});
+            ret.insert(n);
+          }
+        }
+      }
+    }
+    return ret;
+  }
+
+  /**
    * Calculates the keys of the nodes traveled by the raycasting algorithm.
-   * Algorithm from: "A Fast Voxel Traversal Algorithm for Ray Tracing" by John Amanatides & Andrew Woo.
+   * Algorithm from: "A Fast Voxel Traversal Algorithm for Ray Tracing" by
+   * John Amanatides & Andrew Woo.
    * Based on DDA ray casting algorithm for 3D.
    * @param orig The location to start the raycast from.
    * @param end The end location of the raycast.
