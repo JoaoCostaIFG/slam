@@ -82,6 +82,10 @@ public:
     delete this->rootNode;
   }
 
+  const double getResolution() const {
+    return resolution;
+  }
+
   /**
    * Calculates the number of nodes in the Octomap.
    * Keep in mind that the number of nodes is calculated recursively each time this is called,

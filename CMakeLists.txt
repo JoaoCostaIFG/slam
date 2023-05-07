@@ -15,8 +15,8 @@ if (OpenMP_CXX_FOUND)
     target_link_libraries(SLAM PUBLIC OpenMP::OpenMP_CXX)
 endif ()
 
-#set(Easy3D_DIR /usr/local/easy3d-2.5.2/lib/CMake/Easy3D/)
-#find_package(Easy3D COMPONENTS viewer REQUIRED)
-#target_link_libraries(SLAM PUBLIC ${OpenCV_LIBS} ${RapidJSON_LIBS} easy3d::viewer)
+set(Easy3D_DIR /usr/local/easy3d-2.5.2/lib/CMake/Easy3D/)
+find_package(Easy3D COMPONENTS viewer REQUIRED)
+target_link_libraries(SLAM PUBLIC ${OpenCV_LIBS} ${RapidJSON_LIBS} easy3d::viewer)
 
-target_link_libraries(SLAM PUBLIC ${OpenCV_LIBS} ${RapidJSON_LIBS})
+#target_link_libraries(SLAM PUBLIC ${OpenCV_LIBS} ${RapidJSON_LIBS})

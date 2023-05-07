@@ -3,6 +3,7 @@
 #include <chrono>
 #include <random>
 #include <unordered_set>
+#include <cmath>
 
 #include "../include/octomap/Octomap.h"
 #include "../include/sonar/Scan.h"
@@ -54,14 +55,14 @@ void benchmarkInsert() {
     //cout << cnt << "\n";
     file << cnt << ":";
     for (int i = 0; i < 5; ++i) {
-      HashTable::HashTable<Vector3f> h(32,
-                                       new HashTable::QuadraticHashStrategy<Vector3f>());
+      HashTable::HashTable<Vector3<>> h(32,
+                                        new HashTable::QuadraticHashStrategy<Vector3<>>());
       auto startTime = high_resolution_clock::now();
       unsigned int dups = 0;
       for (unsigned int j = 0; j < cnt; ++j) {
-        //auto v = Vector3f(distribution(generator));
-        auto v = Vector3f(distribution(generator), distribution(generator),
-                          distribution(generator));
+        //auto v = Vector3<>(distribution(generator));
+        auto v = Vector3<>(distribution(generator), distribution(generator),
+                           distribution(generator));
         if (!h.insert(v))
           ++dups;
       }
@@ -82,16 +83,16 @@ void benchmarkLookup() {
   std::normal_distribution<float> distribution(a, b);
 
   unsigned int cnt = lookupCnt * 8;
-  HashTable::HashTable<Vector3f> h(cnt * 2,
-                                   new HashTable::QuadraticHashStrategy<Vector3f>());
+  HashTable::HashTable<Vector3<>> h(cnt * 2,
+                                    new HashTable::QuadraticHashStrategy<Vector3<>>());
 
   file
       << "Perform lookups that don't exist in set. Number of lookups: time. Number of inserts: "
       << cnt << "\n";
 
   for (unsigned int i = 0; i < cnt; ++i) {
-    auto v = Vector3f(distribution(generator), distribution(generator),
-                      distribution(generator));
+    auto v = Vector3<>(distribution(generator), distribution(generator),
+                       distribution(generator));
     h.insert(v);
   }
 
@@ -132,20 +133,20 @@ void benchmarkMerge() {
 
     file << cnt << ":";
     for (int i = 0; i < 5; ++i) {
-      HashTable::HashTable<Vector3f> h(cnt * 2,
-                                       new HashTable::QuadraticHashStrategy<Vector3f>());
-      HashTable::HashTable<Vector3f> h2(cnt * 2,
-                                        new HashTable::QuadraticHashStrategy<Vector3f>());
+      HashTable::HashTable<Vector3<>> h(cnt * 2,
+                                        new HashTable::QuadraticHashStrategy<Vector3<>>());
+      HashTable::HashTable<Vector3<>> h2(cnt * 2,
+                                         new HashTable::QuadraticHashStrategy<Vector3<>>());
       for (unsigned int j = 0; j < cnt; ++j) {
-        auto v = Vector3f(distribution(generator), distribution(generator),
-                          distribution(generator));
+        auto v = Vector3<>(distribution(generator), distribution(generator),
+                           distribution(generator));
         h.insert(v);
         //if (((int) distribution(generator)) % 2 == 0)
         //  h2.insert(v);
         //else
-        //  h2.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
-        h2.insert(Vector3f(distribution(generator), distribution(generator),
-                           distribution(generator)));
+        //  h2.insert(Vector3<>(distribution(generator), distribution(generator), distribution(generator)));
+        h2.insert(Vector3<>(distribution(generator), distribution(generator),
+                            distribution(generator)));
       }
 
       auto startTime = high_resolution_clock::now();
@@ -172,18 +173,18 @@ void benchmarkcppset() {
 
     file << cnt << ":";
     for (int i = 0; i < 5; ++i) {
-      std::unordered_set<Vector3f, Vector3f::Hash, Vector3f::Cmp> h;
-      std::unordered_set<Vector3f, Vector3f::Hash, Vector3f::Cmp> h2;
+      std::unordered_set<Vector3<>, Vector3<>::Hash, Vector3<>::Cmp> h;
+      std::unordered_set<Vector3<>, Vector3<>::Hash, Vector3<>::Cmp> h2;
       for (unsigned int j = 0; j < cnt; ++j) {
-        auto v = Vector3f(distribution(generator), distribution(generator),
-                          distribution(generator));
+        auto v = Vector3<>(distribution(generator), distribution(generator),
+                           distribution(generator));
         h.insert(v);
         //if (((int) distribution(generator)) % 2 == 0)
         //  h2.insert(v);
         //else
-        //  h2.insert(Vector3f(distribution(generator), distribution(generator), distribution(generator)));
-        h2.insert(Vector3f(distribution(generator), distribution(generator),
-                           distribution(generator)));
+        //  h2.insert(Vector3<>(distribution(generator), distribution(generator), distribution(generator)));
+        h2.insert(Vector3<>(distribution(generator), distribution(generator),
+                            distribution(generator)));
       }
 
       auto startTime = high_resolution_clock::now();
@@ -281,10 +282,10 @@ void menu() {
   }
 }
 
-//#include <easy3d/viewer/viewer.h>
-//#include <easy3d/util/initializer.h>
-//#include <easy3d/core/point_cloud.h>
-//#include <easy3d/core/random.h>
+#include <easy3d/viewer/viewer.h>
+#include <easy3d/util/initializer.h>
+#include <easy3d/core/point_cloud.h>
+#include <easy3d/core/random.h>
 
 int main() {
   //menu();
@@ -307,31 +308,45 @@ int main() {
     cout << "Doing sweep: " << i << endl;
     sonar.update(*sweep);
 
+    std::vector<localization::Observation> observations;
+    observations.reserve(256 * 200);
+    for (auto& beam: sweep->getBeams()) {
+      for (size_t x = 0; x < sweep->getBeamLen(); ++x) {
+        observations.push_back({
+                                   {
+                                       cos(beam->getAngle()),
+                                       sin(beam->getAngle()),
+                                       0.0,
+                                   },
+                                   (double) beam->at(x)
+                               }
+        );
+      }
+    }
 
-    //l.update(sonar.octomap, Vector3<>(1.0, 1.0, 1.0),
-    //         {
-    //             Observation(Vector3<>(1, 2, 3), 50),
-    //         }
-    //);
+    l.update(sonar.octomap, Vector3<>(1.0, 1.0, 1.0), observations);
 
-    sonar.octomap.writeBinary("auv-" + std::to_string(i) + ".bt");
+    //sonar.octomap.writeBinary("auv-" + std::to_string(i) + ".bt");
   }
 
-  //easy3d::initialize();
-  //easy3d::Viewer viewer("Octomap");
+  easy3d::initialize();
+  easy3d::Viewer viewer("Octomap");
 
-  //auto cloud = new easy3d::PointCloud;
-  //auto colors = cloud->add_vertex_property<easy3d::vec3>("v:color");
-  //auto red = easy3d::vec3(1, 0, 0);
-  //auto blue = easy3d::vec3(0, 0, 1);
-  //for (auto& particle: l.particles) {
-  //  auto v = cloud->add_vertex(
-  //      easy3d::vec3(particle.position.x(), particle.position.y(),
-  //                   particle.position.z()));
-  //  colors[v] = red;
-  //}
-  //viewer.add_model(cloud);
+  auto cloud = new easy3d::PointCloud;
+  auto colors = cloud->add_vertex_property<easy3d::vec3>("v:color");
+  auto red = easy3d::vec3(1, 0, 0);
+  auto green = easy3d::vec3(0, 1, 0);
+  for (auto& particle: l.particles) {
+    auto v = cloud->add_vertex(
+        easy3d::vec3(particle.position.x(), particle.position.y(),
+                     particle.position.z()));
+    if (particle.weight > 0.5) {
+      colors[v] = green;
+    } else {
+      colors[v] = red;
+    }
+  }
+  viewer.add_model(cloud);
 
-  //return viewer.run();
-  return 0;
+  return viewer.run();
 }

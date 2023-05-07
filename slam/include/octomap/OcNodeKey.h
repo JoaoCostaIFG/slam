@@ -19,6 +19,14 @@ private:
   inline static double resolution = 0.1;
   inline static double resolution_factor = 10.0; // 1.0 / resolution
 
+  constexpr static T coord2key(double coord) {
+    return (T) floor(resolution_factor * coord) + maxCoord;
+  }
+
+  [[nodiscard]] constexpr static double key2coord(T key) {
+    return (0.5 - double(maxCoord) + key) * resolution;
+  }
+
 public:
   constexpr static unsigned int size = (unsigned int) sizeof(T) * 8;
 
@@ -32,14 +40,6 @@ public:
 
   OcNodeKey(const OcNodeKey& other) :
       k{(T) other[0], (T) other[1], (T) other[2]} {};
-
-  constexpr static T coord2key(float coord) {
-    return (T) floor(resolution_factor * coord) + maxCoord;
-  }
-
-  [[nodiscard]] constexpr static float key2coord(T key) {
-    return (0.5 - float(maxCoord) + key) * resolution;
-  }
 
   [[nodiscard]] T get(unsigned int i) const {
     assert(i < 3);
@@ -58,7 +58,7 @@ public:
            bool(this->get(2) & mask) * 4;
   }
 
-  [[nodiscard]] float toCoord(unsigned int i) const {
+  [[nodiscard]] double toCoord(unsigned int i) const {
     return OcNodeKey::key2coord(this->get(i));
   }
 
@@ -133,12 +133,12 @@ private:
   inline static double resolution = 0.1;
   inline static double resolution_factor = 10.0; // 1.0 / resolution
 
-  static constexpr unsigned long coord2key(float coord) {
+  static constexpr unsigned long coord2key(double coord) {
     return (unsigned long) floor(resolution_factor * coord) + maxCoord;
   }
 
-  [[nodiscard]] constexpr static float key2coord(BitSet key) {
-    return (0.5 - float(maxCoord) + key) * resolution;
+  [[nodiscard]] constexpr static double key2coord(BitSet key) {
+    return (0.5 - double(maxCoord) + key) * resolution;
   }
 
 public:
@@ -172,7 +172,7 @@ public:
            bool(this->k[2] & mask) * 4;
   }
 
-  [[nodiscard]] float toCoord(unsigned int i) const {
+  [[nodiscard]] double toCoord(unsigned int i) const {
     return OcNodeKey::key2coord(this->k[i]);
   }
 

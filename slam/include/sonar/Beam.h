@@ -81,8 +81,8 @@ namespace sonar {
      * @return the coordinates of the measurement in cartesian space
      */
     [[nodiscard]] static Vector3<> measurementToCartesian(size_t i, double angle_rad) {
-      float x = (double) i * cos(angle_rad);
-      float y = (double) i * sin(angle_rad);
+      double x = (double) i * cos(angle_rad);
+      double y = (double) i * sin(angle_rad);
       return {x, y, 0};
     }
 

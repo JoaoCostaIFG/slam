@@ -5,6 +5,7 @@
 #include <random>
 #include <vector>
 #include <unordered_set>
+#include <iostream>
 
 #include "Particle.h"
 #include "Observation.h"
@@ -22,19 +23,18 @@ public:
 
   Localization(const octomap::Vector3<>& initialPos, unsigned particleCount,
                double displacementStddev, double distStddev,
-               unsigned long seed = randomDevice()) : generator(seed),
-                                                      displacementDistrib(0.0,
-                                                                          displacementStddev),
-                                                      distDistrib(0.0, distStddev) {
+               unsigned long seed = randomDevice()) :
+      generator(seed), displacementDistrib(0.0, displacementStddev),
+      distDistrib(0.0, distStddev) {
     assert(particleCount != 0);
 
     this->particles.reserve(particleCount);
     for (unsigned i = 0; i < particleCount; ++i) {
-      this->particles[i] = Particle(initialPos, 0);
+      this->particles.push_back(Particle(initialPos, 0));
     }
   }
 
-  void update(const octomap::Octomap<T>& octomap,
+  void update(octomap::Octomap<T>& octomap,
               const octomap::Vector3<>& displacement,
               const std::vector<Observation>& observations) {
     // TODO dynamic particle population size
@@ -47,8 +47,9 @@ public:
     newParticles.reserve(this->particles.size());
     for (size_t i = 0; i < this->particles.size(); ++i) {
       const octomap::Vector3<> noise = this->generateNoise();
-      newParticles[i] = Particle(this->particles[i].position * displacement + noise,
-                                 0.0);
+      newParticles.push_back(
+          Particle(this->particles[i].position * displacement + noise,
+                   0.0));
     }
 
     // select random sample from observations
@@ -70,10 +71,15 @@ public:
                 return a.weight > b.weight;
               });
     long ressampleQuantity = (long) ceil((double) newParticles.size() / 2) - 1;
-    newParticles.erase(newParticles.begin() + ressampleQuantity, newParticles.end());
-    std::sample(newParticles.begin(), newParticles.end(),
-                std::back_inserter(newParticles),
+    //newParticles.erase(newParticles.begin() + ressampleQuantity, newParticles.end());
+    std::vector<Particle> holder;
+    std::sample(newParticles.begin(), newParticles.end() - ressampleQuantity,
+                std::back_inserter(holder),
                 ressampleQuantity, std::mt19937{randomDevice()});
+    for (size_t i = ressampleQuantity + 1; i < (size_t) newParticles.size(); ++i) {
+      newParticles[i] = holder[i - ressampleQuantity - 1];
+      newParticles[i].weight = 1.0 / newParticles.size();
+    }
 
     this->particles = newParticles;
   }
@@ -92,7 +98,7 @@ private:
     };
   }
 
-  void calcWeight(const octomap::Octomap<T>& octomap, Particle& particle,
+  void calcWeight(octomap::Octomap<T>& octomap, Particle& particle,
                   const std::vector<Observation>& observations) {
     for (auto& obs: observations) {
       // TODO R is constant 1 meter
@@ -101,7 +107,7 @@ private:
       for (auto& neighbor: neighbors) {
         particle.weight += this->normalPDF(this->distDistrib,
                                            particle.position.distanceTo(
-                                               neighbor.position));
+                                               neighbor));
       }
     }
   }
@@ -121,24 +127,24 @@ private:
    * @param radius
    * @return
    */
-  std::unordered_set<NeighborNode<T>>
-  searchNeighbors(const Octomap<T> octomap, const Vector3<>& center,
+  std::unordered_set<Vector3<>, Vector3<>::Hash, Vector3<>::Cmp>
+  searchNeighbors(Octomap<T>& octomap, const Vector3<>& center,
                   const double radius) {
-    std::unordered_set<NeighborNode<T>> ret;
+    std::unordered_set<Vector3<>, Vector3<>::Hash, Vector3<>::Cmp> ret;
     for (double x = center.x() - radius;
-         x < center.x() + radius; x += this->resolution) {
+         x < center.x() + radius; x += octomap.getResolution()) {
       for (double y = center.y() - radius;
-           y < center.y() + radius; y += this->resolution) {
+           y < center.y() + radius; y += octomap.getResolution()) {
         for (double z = center.z() - radius;
-             z < center.z() + radius; z += this->resolution) {
+             z < center.z() + radius; z += octomap.getResolution()) {
           double xDiff = x - center.x();
           double yDiff = y - center.y();
           double zDiff = z - center.z();
           if (xDiff * xDiff + yDiff * yDiff + zDiff * zDiff < radius * radius) {
             // inside sphere created by the radius
             OcNodeKey<T> key({x, y, z});
-            auto n = octomap->search(key);
-            ret.insert(NeighborNode(OcNodeKey<T>::key2coord(key), n));
+            auto n = octomap.search(key);
+            ret.insert(key.toCoord());
           }
         }
       }

@@ -81,9 +81,9 @@ public:
   }
 
   double distanceTo(const Vector3& target) const {
-    double x = this[0] - target[0];
-    double y = this[1] - target[1];
-    double z = this[2] - target[2];
+    double x = this->d[0] - target[0];
+    double y = this->d[1] - target[1];
+    double z = this->d[2] - target[2];
     return sqrt(x * x + y * y + z * z);
   }
 

@@ -28,7 +28,7 @@ namespace sonar {
     size_t sweep_no;
     /** The length of each beam **/
     size_t beam_len;
-    /** The beams that correspond to the beam. Each beam has an angle that goes from 0ª to 360ª **/
+    /** The beams that correspond to the sweep. Each beam has an angle that goes from 0ª to 360ª **/
     std::vector<const Beam*> beams;
 
   public:
@@ -38,16 +38,16 @@ namespace sonar {
     }
 
     // Fill intensities with black cells
-    Sweep(size_t sweepNo, size_t beamNo, size_t beamLen) : intensities(
-        cv::Mat::zeros(beamNo, beamLen, CV_8U)),
-                                                           sweep_no(sweepNo),
-                                                           beam_len(beamLen) {}
+    Sweep(size_t sweepNo, size_t beamNo, size_t beamLen) :
+        intensities(cv::Mat::zeros(beamNo, beamLen, CV_8U)),
+        sweep_no(sweepNo),
+        beam_len(beamLen) {}
 
     [[nodiscard]] std::vector<const Beam*> getBeams() const { return beams; }
 
     [[nodiscard]] cv::Mat getIntensities() const { return intensities; }
 
-    size_t getSweepNo() const { return sweep_no; }
+    [[nodiscard]] size_t getSweepNo() const { return sweep_no; }
 
     [[nodiscard]] size_t getBeamLen() const { return beam_len; }
 
@@ -67,8 +67,7 @@ namespace sonar {
      */
     static Sweep*
     importJson(const rapidjson::Value& sweep_json, size_t sweep_no, size_t beam_no,
-               size_t beam_len,
-               double step_dist);
+               size_t beam_len, double step_dist);
   };
 
 }
