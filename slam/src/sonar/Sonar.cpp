@@ -54,15 +54,13 @@ Sonar::getBeamEndpoints3D(const Beam* beam, size_t obstacle_index,
 void Sonar::update(const Sweep& sweep) {
   for (const Beam* beam: sweep.getBeams()) {
     size_t obstacle_index = beam->getObstacleST();
-    std::vector<Vector3<>> pointCloud = this->getBeamEndpoints3D(beam, obstacle_index,
-                                                                 16, 16);
+    std::vector<Vector3<>> pointCloud =
+        this->getBeamEndpoints3D(beam, obstacle_index, 16, 16);
 
     // TODO Use sonar position instead of center of axis
     double prob = beam->at(obstacle_index) / 255.0;
-    for (const auto& dest: pointCloud) {
-      this->octomap.rayCastUpdate(this->position, dest, prob);
-    }
     this->octomap.discretizedPointcloudUpdate(pointCloud, this->position, prob);
   }
 }
+
 }

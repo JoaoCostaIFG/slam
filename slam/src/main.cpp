@@ -326,7 +326,7 @@ int main() {
 
     l.update(sonar.octomap, Vector3<>(1.0, 1.0, 1.0), observations);
 
-    //sonar.octomap.writeBinary("auv-" + std::to_string(i) + ".bt");
+    sonar.octomap.writeBinary("auv-" + std::to_string(i) + ".bt");
   }
 
   easy3d::initialize();

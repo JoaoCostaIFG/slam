@@ -82,7 +82,7 @@ public:
     delete this->rootNode;
   }
 
-  const double getResolution() const {
+  [[nodiscard]] double getResolution() const {
     return resolution;
   }
 
@@ -384,8 +384,8 @@ public:
 
   /**
    * Updates the cells in the Octomap using a raycast.
-   * The cells in the way are marked as free and the last cell is marked as occupied according
-   * to the @param occ passed.
+   * The cells in the way are marked as free and the last cell is marked as occupied
+   * according to the @param occ passed.
    * @param orig The location to start the raycast from.
    * @param end The end location of the raycast.
    * @param occ The occupancy value to use in the update of the end cell.
